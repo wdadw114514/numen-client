@@ -427,12 +427,12 @@ public final class BotConnection {
                         entity.setXRot(entity.getXRot() + move.getPitch());
                     }
                 } else if (packet instanceof ClientboundTeleportEntityPacket teleport) {
-                    net.minecraft.world.entity.Entity entity = entities.get(teleport.getEntityId());
+                    net.minecraft.world.entity.Entity entity = entities.get(teleport.getId());
                     if (entity != null) {
                         entity.setPosRaw(teleport.getPosition().getX(), teleport.getPosition().getY(),
                                 teleport.getPosition().getZ());
-                        entity.setYRot(teleport.getYaw());
-                        entity.setXRot(teleport.getPitch());
+                        entity.setYRot(teleport.getYRot());
+                        entity.setXRot(teleport.getXRot());
                     }
                 } else if (packet instanceof ClientboundEntityPositionSyncPacket sync) {
                     net.minecraft.world.entity.Entity entity = entities.get(sync.getId());
