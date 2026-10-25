@@ -452,6 +452,11 @@ public final class NumenPlayer extends ServerPlayer implements Body, BodyView {
     }
 
     @Override
+    public void closeContainer() {
+        super.closeContainer();
+    }
+
+    @Override
     public void tick() {
         // A fake player isn't auto-removed on death (no client to send a respawn packet), so it would
         // sit at 0 HP forever. Detect death once, hand off to the recoverable-death routine (stop the

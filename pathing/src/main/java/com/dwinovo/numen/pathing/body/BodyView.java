@@ -90,7 +90,6 @@ public interface BodyView {
     }
 
     default void closeContainer() {
-        player().closeContainer();
     }
 
     default int getBlockX() {
@@ -105,7 +104,7 @@ public interface BodyView {
         return player().getBlockZ();
     }
 
-    default net.minecraft.core.BlockPos chunkPosition() {
+    default net.minecraft.core.ChunkPos chunkPosition() {
         return player().chunkPosition();
     }
 
