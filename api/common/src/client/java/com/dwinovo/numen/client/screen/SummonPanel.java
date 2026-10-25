@@ -306,7 +306,8 @@ public final class SummonPanel extends ModalCard {
         }
         JoinWizard.connect();
         lastStatus = JoinWizard.status();
-        if (alert != null) alert.show(InlineAlert.Severity.INFO, lastStatus);
+        // 连接后收起卡片，假人已经进服务器，聊天列表里会多出她的会话
+        host.onCancel();
     }
 
     @Override
