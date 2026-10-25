@@ -471,5 +471,6 @@
     "numen.mcp.waiting_browser":  "等待浏览器授权…",
     "numen.mcp.oauth_ok":  "Numen 授权成功,可以关闭此页面。",
     "numen.mcp.oauth_failed":  "授权失败:%s",
-    "numen.skin.profile_no_skin":  "档案里没有皮肤数据"
+    "numen.skin.profile_no_skin":  "档案里没有皮肤数据",
+    "key.numen_api.open_wizard":  "打开入服向导"
 }

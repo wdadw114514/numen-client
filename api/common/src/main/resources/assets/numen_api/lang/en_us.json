@@ -471,5 +471,6 @@
     "numen.mcp.waiting_browser":  "Waiting for browser authorization…",
     "numen.mcp.oauth_ok":  "Numen is authorized; you can close this page.",
     "numen.mcp.oauth_failed":  "Authorization failed: %s",
-    "numen.skin.profile_no_skin":  "The profile has no skin data"
+    "numen.skin.profile_no_skin":  "The profile has no skin data",
+    "key.numen_api.open_wizard":  "Open Join Wizard"
 }
