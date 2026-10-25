@@ -246,7 +246,7 @@ public final class BotConnection {
 
     public boolean dimensionMatches(net.minecraft.world.level.Level level) {
         String current = worldName;
-        return current == null || current.equals(level.dimension().location().toString());
+        return current == null || current.equals(level.dimension().identifier().toString());
     }
 
     public Teleport takeTeleport() {
