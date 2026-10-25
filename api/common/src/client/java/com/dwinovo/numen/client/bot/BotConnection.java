@@ -64,6 +64,8 @@ public final class BotConnection {
     private final String username;
     private final String skinUrl;
     private static volatile net.raphimc.minecraftauth.java.JavaAuthManager premium;
+    private static volatile org.geysermc.mcprotocollib.auth.GameProfile externalProfile;
+    private static volatile String externalToken;
 
     private volatile State state = State.IDLE;
     private volatile String lastError = "";
@@ -426,6 +428,12 @@ public final class BotConnection {
         return premium;
     }
 
+    /** LittleSkin 等外置登录：角色与 token。 */
+    public static void setExternal(org.geysermc.mcprotocollib.auth.GameProfile profile, String token) {
+        externalProfile = profile;
+        externalToken = token;
+    }
+
     public synchronized void connect() {
         if (state == State.CONNECTING || state == State.PLAY) {
             return;
@@ -443,6 +451,8 @@ public final class BotConnection {
                     new org.geysermc.mcprotocollib.auth.GameProfile(
                             profile.getId(), profile.getName()),
                     token.getToken());
+        } else if (externalProfile != null && externalToken != null) {
+            protocol = new MinecraftProtocol(externalProfile, externalToken);
         } else {
             protocol = new MinecraftProtocol(username);
         }
