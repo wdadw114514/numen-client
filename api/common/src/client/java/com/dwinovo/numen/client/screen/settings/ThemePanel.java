@@ -106,6 +106,15 @@ public final class ThemePanel {
                         com.dwinovo.numen.client.data.ClientPrefs.aiPrefix(),
                         com.dwinovo.numen.client.data.ClientPrefs::setAiPrefix));
         prefix.setBounds(x + 44, py, Math.min(120, w - 44), NumenStyle.CONTROL_H);
+
+        // 添加客户端假人：从这里进入入服向导，不用记快捷键。
+        int by = py + NumenStyle.ROW_PITCH + 14;
+        com.dwinovo.numen.client.ui.widget.Button addBot = ui.add(
+                new com.dwinovo.numen.client.ui.widget.Button("添加客户端假人（入服向导）",
+                        com.dwinovo.numen.client.ui.widget.Button.Style.ACCENT,
+                        () -> Minecraft.getInstance().setScreen(
+                                new com.dwinovo.numen.client.wizard.JoinWizardScreen())));
+        addBot.setBounds(x, by, Math.min(220, w), NumenStyle.CONTROL_H);
     }
 
     private void renderRow(IDrawSurface s, NumenTheme.Colors c, UiTheme t, int index,
