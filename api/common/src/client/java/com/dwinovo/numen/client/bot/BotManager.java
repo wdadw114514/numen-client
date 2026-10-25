@@ -1,0 +1,43 @@
+package com.dwinovo.numen.client.bot;
+
+/**
+ * 当前这一只客户端假人的连接。同一时间只留一只；重新连接会先断开旧的。
+ */
+public final class BotManager {
+
+    private static volatile BotConnection bot;
+
+    private BotManager() {}
+
+    public static BotConnection connect(String host, int port, String username) {
+        disconnect();
+        BotConnection created = new BotConnection(host, port, username);
+        bot = created;
+        created.connect();
+        return created;
+    }
+
+    public static BotConnection bot() {
+        return bot;
+    }
+
+    public static boolean playing() {
+        BotConnection current = bot;
+        return current != null && current.state() == BotConnection.State.PLAY;
+    }
+
+    public static void disconnect() {
+        BotConnection current = bot;
+        bot = null;
+        if (current != null) {
+            current.disconnect();
+        }
+    }
+
+    public static void tick() {
+        BotConnection current = bot;
+        if (current != null) {
+            current.tick();
+        }
+    }
+}

@@ -3,12 +3,35 @@ plugins {
     id 'net.fabricmc.fabric-loom-remap'
 }
 
+repositories {
+    maven { url = 'https://repo.opencollab.dev/main/' }
+}
+
+configurations {
+    botLib
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     // Obfuscated MC (1.21.11) → loom remaps to Mojang names to match the common source set.
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+
+    // 客户端假人：独立协议连接（离线登录 / 聊天 / 移动）
+    implementation('org.geysermc.mcprotocollib:protocol:1.21.11-1') {
+        exclude group: 'io.netty'
+        exclude group: 'com.google.code.gson'
+        exclude group: 'org.slf4j'
+        exclude group: 'org.checkerframework'
+    }
+    botLib('org.geysermc.mcprotocollib:protocol:1.21.11-1') {
+        exclude group: 'io.netty'
+        exclude group: 'com.google.code.gson'
+        exclude group: 'org.slf4j'
+        exclude group: 'org.checkerframework'
+    }
+    botLib 'net.kyori:adventure-text-serializer-plain:4.25.0'
 }
 
 loom {
@@ -42,6 +65,10 @@ loom {
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+jar {
+    from { configurations.botLib.collect { it.isDirectory() ? it : zipTree(it) } }
+}
 
 // Implement mcgradleconventions loader attribute
 def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)

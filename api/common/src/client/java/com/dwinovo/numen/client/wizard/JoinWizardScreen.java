@@ -1,14 +1,18 @@
 package com.dwinovo.numen.client.wizard;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
 
-/** Four step wizard for hooking the assistant onto the local player and getting past server gates. */
+/** Four step wizard for the client-side fake player: address, account, QQ bind, premium check. */
 public class JoinWizardScreen extends Screen {
 
+    private EditBox addressBox;
+    private EditBox usernameBox;
     private EditBox passwordBox;
     private EditBox seedBox;
 
@@ -24,35 +28,74 @@ public class JoinWizardScreen extends Screen {
 
         switch (JoinWizard.step()) {
             case INTRO -> {
-                this.seedBox = new EditBox(this.font, left, y, 200, 20, Component.literal("世界种子"));
+                if (JoinWizard.serverAddress().isBlank()) {
+                    ServerData server = Minecraft.getInstance().getCurrentServer();
+                    if (server != null) {
+                        JoinWizard.serverAddress(server.ip);
+                    }
+                }
+                this.addressBox = new EditBox(this.font, left, y, 200, 20, Component.literal("服务器地址"));
+                this.addressBox.setMaxLength(128);
+                this.addressBox.setValue(JoinWizard.serverAddress());
+                this.addressBox.setResponder(JoinWizard::serverAddress);
+                this.addRenderableWidget(this.addressBox);
+
+                this.seedBox = new EditBox(this.font, left, y + 26, 200, 20, Component.literal("世界种子"));
                 this.seedBox.setMaxLength(32);
                 this.seedBox.setValue(JoinWizard.seed());
                 this.seedBox.setResponder(JoinWizard::seed);
                 this.addRenderableWidget(this.seedBox);
+
                 this.addRenderableWidget(Button.builder(Component.literal("开始"), button -> {
+                    JoinWizard.serverAddress(this.addressBox.getValue());
                     JoinWizard.seed(this.seedBox.getValue());
                     JoinWizard.step(JoinWizard.Step.ACCOUNT);
                     this.rebuildWidgets();
-                }).bounds(left, y + 26, 200, 20).build());
+                }).bounds(left, y + 52, 200, 20).build());
             }
             case ACCOUNT -> {
-                this.passwordBox = new EditBox(this.font, left, y, 200, 20, Component.literal("密码"));
+                this.usernameBox = new EditBox(this.font, left, y, 200, 20, Component.literal("假人用户名"));
+                this.usernameBox.setMaxLength(16);
+                this.usernameBox.setValue(JoinWizard.username());
+                this.usernameBox.setResponder(JoinWizard::username);
+                this.addRenderableWidget(this.usernameBox);
+
+                this.passwordBox = new EditBox(this.font, left, y + 26, 200, 20, Component.literal("密码"));
                 this.passwordBox.setMaxLength(32);
                 this.passwordBox.setValue(JoinWizard.password());
                 this.passwordBox.setResponder(JoinWizard::password);
                 this.addRenderableWidget(this.passwordBox);
-                this.addRenderableWidget(Button.builder(Component.literal("登录"), button -> {
-                    JoinWizard.login();
+
+                this.addRenderableWidget(Button.builder(Component.literal("连接并登录"), button -> {
+                    JoinWizard.username(this.usernameBox.getValue());
+                    JoinWizard.password(this.passwordBox.getValue());
+                    if (JoinWizard.username().isBlank()) {
+                        JoinWizard.status("先填假人用户名");
+                    } else if (com.dwinovo.numen.client.bot.BotManager.bot() == null
+                            || com.dwinovo.numen.client.bot.BotManager.bot().state()
+                                    != com.dwinovo.numen.client.bot.BotConnection.State.PLAY) {
+                        JoinWizard.connect();
+                    } else {
+                        JoinWizard.login();
+                    }
                     this.rebuildWidgets();
-                }).bounds(left, y + 26, 98, 20).build());
+                }).bounds(left, y + 52, 98, 20).build());
                 this.addRenderableWidget(Button.builder(Component.literal("注册"), button -> {
-                    JoinWizard.register();
+                    JoinWizard.username(this.usernameBox.getValue());
+                    JoinWizard.password(this.passwordBox.getValue());
+                    if (com.dwinovo.numen.client.bot.BotManager.bot() == null
+                            || com.dwinovo.numen.client.bot.BotManager.bot().state()
+                                    != com.dwinovo.numen.client.bot.BotConnection.State.PLAY) {
+                        JoinWizard.connect();
+                    } else {
+                        JoinWizard.register();
+                    }
                     this.rebuildWidgets();
-                }).bounds(left + 102, y + 26, 98, 20).build());
+                }).bounds(left + 102, y + 52, 98, 20).build());
                 this.addRenderableWidget(Button.builder(Component.literal("跳过"), button -> {
                     JoinWizard.step(JoinWizard.Step.BIND);
                     this.rebuildWidgets();
-                }).bounds(left, y + 52, 200, 20).build());
+                }).bounds(left, y + 78, 200, 20).build());
             }
             case BIND -> {
                 this.addRenderableWidget(Button.builder(Component.literal("已验证"), button -> {
@@ -66,7 +109,7 @@ public class JoinWizardScreen extends Screen {
             }
             case PREMIUM -> {
                 this.addRenderableWidget(Button.builder(Component.literal("开始正版验证"), button -> {
-                    JoinWizard.status("退出到主菜单 →「账户」登录正版账号，然后重新进服");
+                    JoinWizard.status("退出到主菜单 →「账户」登录正版账号，再重新连接");
                     this.rebuildWidgets();
                 }).bounds(left, y, 200, 20).build());
                 this.addRenderableWidget(Button.builder(Component.literal("检测错了？点我直接继续"), button -> {
@@ -80,6 +123,12 @@ public class JoinWizardScreen extends Screen {
     }
 
     @Override
+    public void tick() {
+        JoinWizard.poll();
+        super.tick();
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         int cx = this.width / 2;
@@ -88,16 +137,17 @@ public class JoinWizardScreen extends Screen {
 
         switch (JoinWizard.step()) {
             case INTRO -> {
-                graphics.drawCenteredString(this.font, Component.literal("这一步把 AI 助手接到你当前的角色上。"),
-                    cx, this.height / 4 - 6, 0xD0D0D0);
-                graphics.drawCenteredString(this.font, Component.literal("不会生成假人，服务器看不到额外的玩家。"),
-                    cx, this.height / 4 + 8, 0xD0D0D0);
-                graphics.drawCenteredString(this.font, Component.literal("填当前服务器的世界种子（找结构/找矿物用）"),
-                    cx, this.height / 4 + 22, 0x80C080);
+                graphics.drawCenteredString(this.font, Component.literal("这一步用独立账号把假人接进服务器。"),
+                    cx, this.height / 4 - 18, 0xD0D0D0);
+                graphics.drawCenteredString(this.font, Component.literal("服务器看不到你的本地角色，只看到这只假人。"),
+                    cx, this.height / 4 - 4, 0xD0D0D0);
+                graphics.drawCenteredString(this.font, Component.literal("填服务器地址和当前世界种子（找结构/找矿物用）"),
+                    cx, this.height / 4 + 10, 0x80C080);
             }
-            case ACCOUNT -> graphics.drawCenteredString(this.font,
-                Component.literal("输入登录密码；没注册过就点「注册」。"),
-                cx, this.height / 4 - 6, 0xD0D0D0);
+            case ACCOUNT -> {
+                graphics.drawCenteredString(this.font, Component.literal("假人用户名与服务器密码；没注册过就点「注册」。"),
+                    cx, this.height / 4 - 6, 0xD0D0D0);
+            }
             case BIND -> {
                 graphics.drawCenteredString(this.font, Component.literal("按服务器提示完成 QQ 绑定，验证码会自动抓取。"),
                     cx, this.height / 4 - 6, 0xD0D0D0);
@@ -115,7 +165,7 @@ public class JoinWizardScreen extends Screen {
             case PREMIUM -> {
                 graphics.drawCenteredString(this.font, Component.literal("如果进服被踢并提示正版验证，说明服务器开了正版模式。"),
                     cx, this.height / 4 - 6, 0xD0D0D0);
-                graphics.drawCenteredString(this.font, Component.literal("换成正版账号重进即可；检测错了就点下面第二个按钮。"),
+                graphics.drawCenteredString(this.font, Component.literal("离线假人进不去；换成正版账号或让服主关掉正版验证。"),
                     cx, this.height / 4 + 8, 0xD0D0D0);
             }
         }
@@ -128,8 +178,8 @@ public class JoinWizardScreen extends Screen {
 
     private String stepTitle() {
         return switch (JoinWizard.step()) {
-            case INTRO -> "第 1 步 / 4 · 开始";
-            case ACCOUNT -> "第 2 步 / 4 · 登录 / 注册";
+            case INTRO -> "第 1 步 / 4 · 服务器与种子";
+            case ACCOUNT -> "第 2 步 / 4 · 假人登录 / 注册";
             case BIND -> "第 3 步 / 4 · 绑定 QQ";
             case PREMIUM -> "第 4 步 / 4 · 正版验证";
         };
