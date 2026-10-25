@@ -30,6 +30,7 @@ import com.dwinovo.numen.sdk.ServerCall;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -161,9 +162,9 @@ public final class ScanApi {
         double radius = Math.clamp(args.radius().orElse((double) DEFAULT_ENTITY_RADIUS), MIN_ENTITY_RADIUS,
                 MAX_ENTITY_RADIUS);
         Kind filter = args.typeFilter().orElse(Kind.ALL);
-        List<Entity> raw = NearbyEntities.within(self, radius, Entity.class, Entity::isAlive);
+        List<Entity> raw = NearbyEntities.within(self.player(), radius, Entity.class, Entity::isAlive);
         raw = new ArrayList<>(raw);
-        raw.sort(Comparator.comparingDouble(self::distanceTo));
+        raw.sort(Comparator.comparingDouble(self.player()::distanceTo));
         List<Seen> out = new ArrayList<>();
         for (Entity e : raw) {
             Kind kind = kindOf(e);
@@ -174,7 +175,7 @@ public final class ScanApi {
             Optional<Double> maxHp = e instanceof LivingEntity le ? Optional.of((double) le.getMaxHealth())
                     : Optional.empty();
             EntityInfo info = EntityInfo.of(e).seen(Optional.of(kind.name().toLowerCase(java.util.Locale.ROOT)),
-                    Optional.of(Math.round(self.distanceTo(e) * 10.0) / 10.0), hp, maxHp,
+                    Optional.of(Math.round(self.player().distanceTo(e) * 10.0) / 10.0), hp, maxHp,
                     Optional.ofNullable(ownerOf(e, self)));
             if (e instanceof ItemEntity item) {
                 ItemStack stack = item.getItem();
@@ -272,7 +273,7 @@ public final class ScanApi {
             float divisor = !needsTool || handIsRightTool ? 30.0F : 100.0F;
             ticks = Optional.of(hardness == 0.0F ? 1 : Math.max(1, (int) Math.ceil(hardness * divisor / toolSpeed)));
         }
-        double distance = Math.sqrt(self.distanceToSqr(Vec3.atCenterOf(pos)));
+        double distance = Math.sqrt(self.player().distanceToSqr(Vec3.atCenterOf(pos)));
         return new BlockInfo(BlockAt.of(pos, state), properties, state.isAir(), state.isSolid(),
                 !state.getFluidState().isEmpty(), hardness, hardness < 0, needsTool, handIsRightTool, ticks,
                 Math.round(distance * 10.0) / 10.0, self.isWithinBlockInteractionRange(pos, 0.0));
@@ -334,7 +335,7 @@ public final class ScanApi {
     @SeeAlso({"numen.scan.block", "numen.scan.entities"})
     public static Sight sight(ServerCall call, Look args) {
         BodyView her = call.her();
-        ServerLevel level = her.level();
+        Level level = her.level();
         Vec3 eye = her.getEyePosition();
         CellOrEntity target = args.target();
         boolean visible;

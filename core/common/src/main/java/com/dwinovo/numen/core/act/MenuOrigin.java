@@ -26,9 +26,9 @@ public final class MenuOrigin {
      * @param block  右键的方块;右键实体传 null
      */
     public static void pressed(BodyView body, AbstractContainerMenu before, BlockPos block) {
-        if (body.containerMenu != before && body.containerMenu != body.inventoryMenu) {
+        if (body.containerMenu() != before && body.containerMenu() != body.inventoryMenu()) {
             MenuOrigin origin = body.state(MenuOrigin.class, MenuOrigin::new);
-            origin.menu = body.containerMenu;
+            origin.menu = body.containerMenu();
             origin.block = block == null ? null : block.immutable();
         }
     }
@@ -36,7 +36,7 @@ public final class MenuOrigin {
     /** 此刻开着的界面是不是右键打开的。 */
     public static boolean known(BodyView body) {
         MenuOrigin origin = body.state(MenuOrigin.class, MenuOrigin::new);
-        return origin.menu != null && origin.menu == body.containerMenu;
+        return origin.menu != null && origin.menu == body.containerMenu();
     }
 
     /** 此刻开着的界面是右键哪一格打开的;右键实体打开的、或来历不明的是 null。 */

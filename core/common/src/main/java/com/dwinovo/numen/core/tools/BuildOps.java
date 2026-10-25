@@ -66,7 +66,10 @@ public final class BuildOps {
      * 整份要的料她还缺多少。格子不交回,用到时 {@code numen.build.place} 与 {@code numen.build.diff} 再读文件。
      */
     public static Blueprint blueprint(BodyView her, String name, BlockPos origin, int quarters) {
-        Layout layout = load(her.level(), name, origin, quarters);
+        if (!(her.level() instanceof ServerLevel level)) {
+            throw new ApiError(ErrorKind.FAILED, "blueprints need a server-side body", null);
+        }
+        Layout layout = load(level, name, origin, quarters);
         Map<Item, Integer> cost = BuildBill.cost(layout.targets(), layout.cellNeeds().keySet());
         Vec3i size = layout.size();
         return new Blueprint(name, origin, quarters * 90, new BlockPos(size.getX(), size.getY(), size.getZ()),
@@ -135,7 +138,9 @@ public final class BuildOps {
 
     /** 摆出施工图、比出差异。 */
     private static Planned plan(BodyView her, Design design) {
-        ServerLevel level = her.level();
+        if (!(her.level() instanceof ServerLevel level)) {
+            throw new ApiError(ErrorKind.FAILED, "building needs a server-side body", null);
+        }
         if (design.blueprint() == null) {
             Canvas canvas = new Canvas();
             for (Design.Cell cell : design.cells()) {

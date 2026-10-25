@@ -106,7 +106,8 @@ public final class Planning {
         if (server == null) {
             return RouteSpec.defaults();
         }
-        LongSet built = Built.of(server).standingIn(her.level());
+        LongSet built = her.level() instanceof net.minecraft.server.level.ServerLevel sl
+                ? Built.of(server).standingIn(sl) : LongSet.of();
         if (built.isEmpty()) {
             return RouteSpec.defaults();
         }

@@ -67,7 +67,9 @@ public final class CraftOps {
 
     /** {@code numen.inv.craft}:在开着的格里照 {@code id} 那条配方合一次,至多合到 {@code count} 件。 */
     public static Crafted craft(Identifier id, int want, BodyView self) {
-        ServerLevel level = self.level();
+        if (!(self.level() instanceof ServerLevel level)) {
+            throw new ApiError(ErrorKind.FAILED, "crafting needs a server-side body", null);
+        }
         RecipeHolder<?> found = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
         if (found == null || !(found.value() instanceof CraftingRecipe recipe) || recipe.isSpecial()
                 || ingredientsOf(recipe).isEmpty()) {
@@ -80,7 +82,7 @@ public final class CraftOps {
         Item target = result.getItem();
         String name = BuiltInRegistries.ITEM.getKey(target).getPath();
 
-        AbstractContainerMenu menu = self.containerMenu;
+        AbstractContainerMenu menu = self.containerMenu();
         Grid grid = findGrid(menu);
         if (grid == null) {
             throw new ApiError(ErrorKind.FAILED, "the open window (" + menu.getClass().getSimpleName() + ") has no "
@@ -130,7 +132,7 @@ public final class CraftOps {
                     + "this grid?)", null);
         }
         int have0 = PlayerInv.count(self.getInventory(), target);
-        menu.clicked(grid.result(), 0, ClickType.QUICK_MOVE, self);   // vanilla mass-craft + onTake
+        menu.clicked(grid.result(), 0, ClickType.QUICK_MOVE, self.player());   // vanilla mass-craft + onTake
         self.swing(InteractionHand.MAIN_HAND);
         sweepGrid(menu, self, grid);
         int crafted = PlayerInv.count(self.getInventory(), target) - have0;
@@ -158,8 +160,10 @@ public final class CraftOps {
 
     /** {@code numen.inv.craftable}:她背着的料现在合得出的每一条合成配方。 */
     public static List<Recipe> craftable(BodyView self) {
-        ServerLevel level = self.level();
-        Map<Item, Integer> pool = poolOf(self.inventoryMenu, self);
+        if (!(self.level() instanceof ServerLevel level)) {
+            return List.of();
+        }
+        Map<Item, Integer> pool = poolOf(self.inventoryMenu(), self);
         List<Recipe> recipes = new ArrayList<>();
         // 服务端没有按类型取配方表的公开口:全量遍历再筛合成配方
         for (RecipeHolder<?> holder : level.recipeAccess().getRecipes()) {
@@ -189,7 +193,7 @@ public final class CraftOps {
      */
     static Recipe recipe(RecipeHolder<?> holder, CraftingRecipe recipe, ItemStack result, BodyView self) {
         List<Ingredient> ings = ingredientsOf(recipe);
-        Map<Item, Integer> pool = poolOf(self.inventoryMenu, self);
+        Map<Item, Integer> pool = poolOf(self.inventoryMenu(), self);
         return new Recipe(holder.id().identifier().toString(), Recipe.Station.CRAFTING,
                 BuiltInRegistries.ITEM.getKey(result.getItem()).toString(), result.getCount(),
                 ings.stream().map(RecipeBook::describeIngredient).toList(), java.util.Optional.of(gridOf(recipe)),
@@ -214,7 +218,7 @@ public final class CraftOps {
         Container cells = menu.slots.get(grid.cells()[0]).container;
         Container out = menu.slots.get(grid.result()).container;
         if (cells instanceof CraftingContainer craft && out instanceof ResultContainer result) {
-            CraftingMenuAccessor.numen$recompute(menu, level, self, craft, result, hint);
+            CraftingMenuAccessor.numen$recompute(menu, level, self.player(), craft, result, hint);
         }
     }
 
@@ -405,7 +409,7 @@ public final class CraftOps {
                 break;
             }
             int before = placed;
-            MenuOps.dripInto(menu, self, src, cellIdx, n - placed);
+            MenuOps.dripInto(menu, self.player(), src, cellIdx, n - placed);
             placed = menu.slots.get(cellIdx).getItem().getCount();
             if (placed <= before) {
                 break;   // 这一轮没放进任何东西(抓空/拒收),别空转
@@ -421,7 +425,7 @@ public final class CraftOps {
         }
         for (int idx : grid.cells()) {
             if (idx >= 0 && idx < menu.slots.size() && !menu.slots.get(idx).getItem().isEmpty()) {
-                menu.clicked(idx, 0, ClickType.QUICK_MOVE, self);
+                menu.clicked(idx, 0, ClickType.QUICK_MOVE, self.player());
             }
         }
     }
@@ -436,7 +440,7 @@ public final class CraftOps {
                 continue;
             }
             if (slot.getItem().isEmpty()) {
-                menu.clicked(slot.index, 0, ClickType.PICKUP, self);
+                menu.clicked(slot.index, 0, ClickType.PICKUP, self.player());
                 return menu.getCarried().isEmpty();
             }
         }

@@ -98,7 +98,8 @@ public final class StatusApi {
             }
         }
         // 身体状态片段:<worn>(穿戴位置,原版与模组同一份)打头,其后是插件从身体上读的片段;与挂进 runtime_state 的是同一个汇总
-        String bodyState = NumenPlugins.bodyStateFragments(self);
+        String bodyState = self.player() instanceof com.dwinovo.numen.entity.NumenPlayer np
+                ? NumenPlugins.bodyStateFragments(np) : "";
         return new Self(self.getId(), self.getName().getString(), WorkProfile.mode(self).getName(), self.getHealth(),
                 self.getMaxHealth(), self.getFoodData().getFoodLevel(), self.getFoodData().getSaturationLevel(),
                 self.position(), self.level().dimension().identifier().toString(),
@@ -148,7 +149,7 @@ public final class StatusApi {
         boolean sameDimension = self.level().dimension().equals(player.level().dimension());
         return new Owner(true, Optional.of(player.getId()), Optional.of(player.getName().getString()),
                 Optional.of(player.position()),
-                sameDimension ? Optional.of(Math.round(self.distanceTo(player) * 10.0) / 10.0) : Optional.empty(),
+                sameDimension ? Optional.of(Math.round(self.player().distanceTo(player) * 10.0) / 10.0) : Optional.empty(),
                 Optional.of(sameDimension), Optional.of(player.level().dimension().identifier().toString()),
                 Optional.of((double) player.getHealth()), Optional.of((double) player.getMaxHealth()),
                 Optional.of(player.getFoodData().getFoodLevel()),

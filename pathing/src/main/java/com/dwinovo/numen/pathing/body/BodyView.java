@@ -366,6 +366,19 @@ public interface BodyView {
         return player().getLookAngle();
     }
 
+    default net.minecraft.core.Direction getDirection() {
+        return player().getDirection();
+    }
+
+    default void stopRiding() {
+        player().stopRiding();
+    }
+
+    default com.mojang.datafixers.util.Either<net.minecraft.world.entity.player.Player.BedSleepingProblem,
+            net.minecraft.util.Unit> startSleepInBed(BlockPos pos) {
+        return player().startSleepInBed(pos);
+    }
+
     /** 转头看 {@code point}；客户端身体由协议连接同步朝向。 */
     default void lookAt(Vec3 point) {
         if (player() instanceof ServerPlayer serverPlayer) {

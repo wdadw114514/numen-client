@@ -41,7 +41,9 @@ public final class PathDebugRenderer {
             if (trip == null) {
                 continue;
             }
-            ServerLevel level = companion.level();
+            if (!(companion.level() instanceof ServerLevel level)) {
+                continue;
+            }
             List<ServerPlayer> viewers = new ArrayList<>();
             for (ServerPlayer p : server.getPlayerList().getPlayers()) {
                 if (PathDebug.isEnabled(p.getUUID()) && p.level() == level) {

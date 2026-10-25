@@ -30,18 +30,21 @@ public final class CompanionPorts {
 
     /** 她附近此刻要避开的敌对生物(每次派发搜索时问一次)。 */
     public static Threats dangers(BodyView player) {
-        return () -> Menace.dangers(player, DANGER_SCAN);
+        return () -> Menace.dangers(player.player(), DANGER_SCAN);
     }
 
     /** 她的寻路门面,避开 {@code threats},垫路从 {@code materials} 里挑。 */
     public static Navigator navigator(BodyView player, Threats threats, List<Item> materials) {
-        return Navigator.of(player, new Ports(CompanionHands.of(player), terrain(player), materials(player, materials),
-                threats));
+        if (player instanceof com.dwinovo.numen.pathing.body.Body body) {
+            return Navigator.of(body, new Ports(CompanionHands.of(player), terrain(player),
+                    materials(player, materials), threats));
+        }
+        throw new UnsupportedOperationException("client navigation driver is not wired yet");
     }
 
     /** 按 {@code spec} 与她此刻的身体、端口组一份成本模型:估一格挖多久、许不许挖,与寻路用的是同一份定价。 */
     static CostModel model(BodyView player, RouteSpec spec) {
-        return CostModel.of(spec, Snapshots.of(player), terrain(player), materials(player, ThrowawayBlocks.factory()),
+        return CostModel.of(spec, Snapshots.of(player.player()), terrain(player), materials(player, ThrowawayBlocks.factory()),
                 dangers(player));
     }
 
