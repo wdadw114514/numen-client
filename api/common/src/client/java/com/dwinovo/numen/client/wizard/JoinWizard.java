@@ -39,6 +39,7 @@ public final class JoinWizard {
     private static String username = "";
     private static String password = "";
     private static String seed = "";
+    private static String skinUrl = "";
     private static String code = "";
     private static String status = "";
 
@@ -83,6 +84,14 @@ public final class JoinWizard {
     public static void seed(String value) {
         seed = value == null ? "" : value.strip();
         WorldSeed.set(seed);
+    }
+
+    public static String skinUrl() {
+        return skinUrl;
+    }
+
+    public static void skinUrl(String value) {
+        skinUrl = value == null ? "" : value.strip();
     }
 
     public static String code() {
@@ -170,7 +179,7 @@ public final class JoinWizard {
         }
         processedMessages = 0;
         RECENT.clear();
-        BotManager.connect(host, port, username);
+        BotManager.connect(host, port, username, skinUrl);
         status = "正在连接 " + host + ":" + port + " …";
     }
 

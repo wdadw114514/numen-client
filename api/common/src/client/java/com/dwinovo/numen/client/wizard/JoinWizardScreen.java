@@ -15,6 +15,7 @@ public class JoinWizardScreen extends Screen {
     private EditBox usernameBox;
     private EditBox passwordBox;
     private EditBox seedBox;
+    private EditBox skinBox;
 
     public JoinWizardScreen() {
         super(Component.literal("加入服务器"));
@@ -46,12 +47,19 @@ public class JoinWizardScreen extends Screen {
                 this.seedBox.setResponder(JoinWizard::seed);
                 this.addRenderableWidget(this.seedBox);
 
+                this.skinBox = new EditBox(this.font, left, y + 52, 200, 20, Component.literal("自定义皮肤链接"));
+                this.skinBox.setMaxLength(256);
+                this.skinBox.setValue(JoinWizard.skinUrl());
+                this.skinBox.setResponder(JoinWizard::skinUrl);
+                this.addRenderableWidget(this.skinBox);
+
                 this.addRenderableWidget(Button.builder(Component.literal("开始"), button -> {
                     JoinWizard.serverAddress(this.addressBox.getValue());
                     JoinWizard.seed(this.seedBox.getValue());
+                    JoinWizard.skinUrl(this.skinBox.getValue());
                     JoinWizard.step(JoinWizard.Step.ACCOUNT);
                     this.rebuildWidgets();
-                }).bounds(left, y + 52, 200, 20).build());
+                }).bounds(left, y + 78, 200, 20).build());
             }
             case ACCOUNT -> {
                 this.usernameBox = new EditBox(this.font, left, y, 200, 20, Component.literal("假人用户名"));
@@ -141,7 +149,7 @@ public class JoinWizardScreen extends Screen {
                     cx, this.height / 4 - 18, 0xD0D0D0);
                 graphics.drawCenteredString(this.font, Component.literal("服务器看不到你的本地角色，只看到这只假人。"),
                     cx, this.height / 4 - 4, 0xD0D0D0);
-                graphics.drawCenteredString(this.font, Component.literal("填服务器地址和当前世界种子（找结构/找矿物用）"),
+                graphics.drawCenteredString(this.font, Component.literal("填服务器地址、世界种子，以及可选的皮肤链接"),
                     cx, this.height / 4 + 10, 0x80C080);
             }
             case ACCOUNT -> {

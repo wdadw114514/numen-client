@@ -46,6 +46,7 @@ public final class BotConnection {
     private final String host;
     private final int port;
     private final String username;
+    private final String skinUrl;
 
     private volatile State state = State.IDLE;
     private volatile String lastError = "";
@@ -74,11 +75,19 @@ public final class BotConnection {
     private boolean wasSprinting;
     private byte lastInputFlags = -1;
     private int positionReminder;
+    private volatile boolean skinProbeSent;
+    private volatile boolean skinApplied;
+    private volatile boolean skinPluginDetected;
 
     public BotConnection(String host, int port, String username) {
+        this(host, port, username, "");
+    }
+
+    public BotConnection(String host, int port, String username, String skinUrl) {
         this.host = host;
         this.port = port;
         this.username = username;
+        this.skinUrl = skinUrl == null ? "" : skinUrl.strip();
     }
 
     public String host() {
@@ -91,6 +100,14 @@ public final class BotConnection {
 
     public String username() {
         return username;
+    }
+
+    public boolean skinPluginDetected() {
+        return skinPluginDetected;
+    }
+
+    public String skinUrl() {
+        return skinUrl;
     }
 
     public State state() {
@@ -244,6 +261,10 @@ public final class BotConnection {
                 if (packet instanceof ClientboundLoginPacket login) {
                     entityId = login.getEntityId();
                     state = State.PLAY;
+                    if (!skinProbeSent) {
+                        skinProbeSent = true;
+                        sendCommand("skin");
+                    }
                 } else if (packet instanceof ClientboundPlayerPositionPacket position) {
                     x = position.getPosition().getX();
                     y = position.getPosition().getY();
@@ -388,6 +409,14 @@ public final class BotConnection {
         messages.add(message);
         while (messages.size() > MAX_MESSAGES) {
             messages.removeFirst();
+        }
+        String lower = message.toLowerCase(java.util.Locale.ROOT);
+        if (lower.contains("skinsrestorer") || lower.contains("skin url") || lower.contains("skin set")) {
+            skinPluginDetected = true;
+            if (!skinUrl.isBlank() && !skinApplied) {
+                skinApplied = true;
+                sendCommand("skin url " + skinUrl);
+            }
         }
     }
 

@@ -11,8 +11,12 @@ public final class BotManager {
     private BotManager() {}
 
     public static BotConnection connect(String host, int port, String username) {
+        return connect(host, port, username, "");
+    }
+
+    public static BotConnection connect(String host, int port, String username, String skinUrl) {
         disconnect();
-        BotConnection created = new BotConnection(host, port, username);
+        BotConnection created = new BotConnection(host, port, username, skinUrl);
         bot = created;
         created.connect();
         return created;
