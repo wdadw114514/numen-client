@@ -70,7 +70,7 @@ public final class LocalPrograms {
         @Override
         public void request(BodyView her, com.dwinovo.numen.network.payload.ClientCallPayload request,
                             Consumer<Answer> done) {
-            Dispatcher.client(request.function(), JsonParser.parseString(request.argumentsJson()),
+            Dispatcher.client(request.function(), JsonParser.parseString(request.argumentsJson()).getAsJsonObject(),
                     request.entityUuid(), reply -> done.accept(new Answer(reply, null)));
         }
 
