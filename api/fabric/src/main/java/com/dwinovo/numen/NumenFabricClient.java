@@ -111,6 +111,7 @@ public class NumenFabricClient implements ClientModInitializer {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK
                 .register(client -> {
                     com.dwinovo.numen.client.NumenKeys.tick();
+                    com.dwinovo.numen.client.bot.BotManager.tick();
                     com.dwinovo.numen.client.agent.AgentLoopRegistry.tickAll();
                     com.dwinovo.numen.mcp.server.McpMode.instance().clientTick();
                 });
