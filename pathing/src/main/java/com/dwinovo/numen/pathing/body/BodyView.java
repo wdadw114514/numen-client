@@ -104,7 +104,7 @@ public interface BodyView {
         return player().getBlockZ();
     }
 
-    default net.minecraft.core.ChunkPos chunkPosition() {
+    default net.minecraft.world.level.ChunkPos chunkPosition() {
         return player().chunkPosition();
     }
 
