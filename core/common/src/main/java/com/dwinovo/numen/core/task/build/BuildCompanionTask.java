@@ -291,7 +291,9 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
                 var verdict = player.level() instanceof net.minecraft.server.level.ServerLevel sl
                 ? gate.judgeLive(action, sl) : gate.judge(action, player.level());
                 if (verdict.asks()) {
-                    items.add(gate.consentItemLive(action, verdict, player.level()));
+                    items.add(player.level() instanceof net.minecraft.server.level.ServerLevel sl2
+                            ? gate.consentItemLive(action, verdict, sl2)
+                            : gate.consentItem(action, verdict, player.level()));
                 }
             }
         }

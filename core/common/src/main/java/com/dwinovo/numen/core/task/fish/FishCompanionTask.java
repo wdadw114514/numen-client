@@ -224,8 +224,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
 
     private void reelIn() {
         if (player.fishing() != null && player.getMainHandItem().is(Items.FISHING_ROD)) {
-            player.gameMode.useItem(player, player.level(), player.getMainHandItem(),
-                    InteractionHand.MAIN_HAND);
+            player.useItem(InteractionHand.MAIN_HAND);
         }
     }
 
@@ -407,7 +406,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
         FishingHook hook = player.fishing();
         if (hook != null) {
             hook.discard();
-            if (player.fishing() == hook) player.fishing() = null;
+            if (player.fishing() == hook) player.player().fishing = null;
         }
     }
 
