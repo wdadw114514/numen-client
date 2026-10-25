@@ -56,6 +56,7 @@ public final class SummonPanel extends ModalCard {
     private final Host host;
     private final Draft draft = new Draft();
     private int step;
+    private int loginMode;
 
     private TextField nameField;
     private TextField addressField;
@@ -219,24 +220,45 @@ public final class SummonPanel extends ModalCard {
     private void layoutConnect(int top) {
         title("添加客户端假人 · 3/3 连接");
         int ry = top;
-        TextField lsEmail = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2,
-                "LittleSkin 邮箱（外置登录）", new TextField("", v -> { }).placeholder("邮箱"));
-        ry += FIELD_H;
-        TextField lsPassword = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2,
-                "LittleSkin 密码", new TextField("", v -> { }).masked(true));
-        ry += FIELD_H;
-        Button littleSkin = ui.add(new Button(
-                com.dwinovo.numen.client.bot.LittleSkinAuth.pending ? "LittleSkin 登录中…" : "LittleSkin 登录",
-                Button.Style.LINK, () -> com.dwinovo.numen.client.bot.LittleSkinAuth.login(
-                        lsEmail.value(), lsPassword.value())));
-        littleSkin.setBounds(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, NumenStyle.CONTROL_H);
-        ry += ROW_H + 4;
+        select(ry, "登录方式", List.of("离线登录（默认）", "LittleSkin", "正版 Microsoft"), loginMode,
+                i -> {
+                    loginMode = i;
+                    rebuild();
+                });
+        ry += ROW_H;
 
-        Button premium = ui.add(new Button(
-                com.dwinovo.numen.client.bot.PremiumAuth.manager() != null ? "正版已登录" : "正版登录（设备码）",
-                Button.Style.LINK, com.dwinovo.numen.client.bot.PremiumAuth::login));
-        premium.setBounds(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, NumenStyle.CONTROL_H);
-        ry += ROW_H + 4;
+        switch (loginMode) {
+            case 0 -> {
+                nameField = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, "玩家名称",
+                        new TextField(JoinWizard.username(), JoinWizard::username)
+                                .placeholder("离线账号名"));
+                ry += FIELD_H;
+            }
+            case 1 -> {
+                TextField lsEmail = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2,
+                        "LittleSkin 邮箱", new TextField("", v -> { }).placeholder("邮箱"));
+                ry += FIELD_H;
+                TextField lsPassword = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2,
+                        "LittleSkin 密码", new TextField("", v -> { }).masked(true));
+                ry += FIELD_H;
+                Button littleSkin = ui.add(new Button(
+                        com.dwinovo.numen.client.bot.LittleSkinAuth.pending
+                                ? "LittleSkin 登录中…" : "LittleSkin 登录",
+                        Button.Style.LINK, () -> com.dwinovo.numen.client.bot.LittleSkinAuth.login(
+                                lsEmail.value(), lsPassword.value())));
+                littleSkin.setBounds(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, NumenStyle.CONTROL_H);
+                ry += ROW_H + 4;
+            }
+            default -> {
+                Button premium = ui.add(new Button(
+                        com.dwinovo.numen.client.bot.PremiumAuth.manager() != null
+                                ? "正版已登录" : "正版登录（设备码）",
+                        Button.Style.LINK, com.dwinovo.numen.client.bot.PremiumAuth::login));
+                premium.setBounds(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, NumenStyle.CONTROL_H);
+                ry += ROW_H + 4;
+            }
+        }
+
         alert = ui.add(new InlineAlert());
         alert.setBounds(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, 28);
         buttons("上一步", this::previous, "连接", this::submit);
@@ -279,6 +301,9 @@ public final class SummonPanel extends ModalCard {
 
     private void submit() {
         capture();
+        if (loginMode == 0) {
+            com.dwinovo.numen.client.bot.BotConnection.clearAuth();
+        }
         JoinWizard.connect();
         lastStatus = JoinWizard.status();
         if (alert != null) alert.show(InlineAlert.Severity.INFO, lastStatus);

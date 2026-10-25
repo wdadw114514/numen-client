@@ -429,6 +429,13 @@ public final class BotConnection {
         return premium;
     }
 
+    /** 切回离线登录：清掉正版与外置登录的身份。 */
+    public static void clearAuth() {
+        premium = null;
+        externalProfile = null;
+        externalToken = null;
+    }
+
     /** LittleSkin 等外置登录：角色与 token。 */
     public static void setExternal(org.geysermc.mcprotocollib.auth.GameProfile profile, String token) {
         externalProfile = profile;
