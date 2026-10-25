@@ -16,6 +16,7 @@ public class JoinWizardScreen extends Screen {
     private EditBox passwordBox;
     private EditBox seedBox;
     private EditBox skinBox;
+    private EditBox serverBox;
 
     public JoinWizardScreen() {
         super(Component.literal("加入服务器"));
@@ -25,7 +26,7 @@ public class JoinWizardScreen extends Screen {
     protected void init() {
         int cx = this.width / 2;
         int left = cx - 100;
-        int y = this.height / 4 + 30;
+        int y = this.height / 4 - 10;
 
         switch (JoinWizard.step()) {
             case INTRO -> {
@@ -53,13 +54,19 @@ public class JoinWizardScreen extends Screen {
                 this.skinBox.setResponder(JoinWizard::skinUrl);
                 this.addRenderableWidget(this.skinBox);
 
+                this.addRenderableWidget(Button.builder(
+                        Component.literal("大厅模式: " + (JoinWizard.lobbyEnabled() ? "开" : "关")), button -> {
+                            JoinWizard.lobbyEnabled(!JoinWizard.lobbyEnabled());
+                            this.rebuildWidgets();
+                        }).bounds(left, y + 78, 200, 20).build());
+
                 this.addRenderableWidget(Button.builder(Component.literal("开始"), button -> {
                     JoinWizard.serverAddress(this.addressBox.getValue());
                     JoinWizard.seed(this.seedBox.getValue());
                     JoinWizard.skinUrl(this.skinBox.getValue());
                     JoinWizard.step(JoinWizard.Step.ACCOUNT);
                     this.rebuildWidgets();
-                }).bounds(left, y + 78, 200, 20).build());
+                }).bounds(left, y + 104, 200, 20).build());
             }
             case ACCOUNT -> {
                 this.usernameBox = new EditBox(this.font, left, y, 200, 20, Component.literal("假人用户名"));
@@ -104,6 +111,16 @@ public class JoinWizardScreen extends Screen {
                     JoinWizard.step(JoinWizard.Step.BIND);
                     this.rebuildWidgets();
                 }).bounds(left, y + 78, 200, 20).build());
+                this.serverBox = new EditBox(this.font, left, y + 104, 200, 20, Component.literal("子服务器名"));
+                this.serverBox.setMaxLength(64);
+                this.serverBox.setValue(JoinWizard.serverName());
+                this.serverBox.setResponder(JoinWizard::serverName);
+                this.addRenderableWidget(this.serverBox);
+                this.addRenderableWidget(Button.builder(Component.literal("进入子服务器"), button -> {
+                    JoinWizard.serverName(this.serverBox.getValue());
+                    JoinWizard.enterServer(this.serverBox.getValue());
+                    this.rebuildWidgets();
+                }).bounds(left, y + 130, 200, 20).build());
             }
             case BIND -> {
                 this.addRenderableWidget(Button.builder(Component.literal("已验证"), button -> {

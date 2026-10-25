@@ -27,6 +27,9 @@ public final class JoinWizard {
         INTRO, ACCOUNT, BIND, PREMIUM
     }
 
+    private static final Pattern SERVER_LIST = Pattern.compile(
+            "(?:servers?|服务器)[:：]\\\\s*(.+)", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern CODE = Pattern.compile(
             "(?:绑定|验证码|验证码为|code)[^A-Za-z0-9]{0,10}([A-Za-z0-9]{4,12})",
             Pattern.CASE_INSENSITIVE);
@@ -40,6 +43,10 @@ public final class JoinWizard {
     private static String password = "";
     private static String seed = "";
     private static String skinUrl = "";
+    private static String serverName = "";
+    private static boolean lobbyEnabled;
+    private static boolean serverProbeSent;
+    private static final java.util.List<String> SERVERS = new java.util.ArrayList<>();
     private static String code = "";
     private static String status = "";
 
@@ -94,6 +101,26 @@ public final class JoinWizard {
         skinUrl = value == null ? "" : value.strip();
     }
 
+    public static boolean lobbyEnabled() {
+        return lobbyEnabled;
+    }
+
+    public static void lobbyEnabled(boolean value) {
+        lobbyEnabled = value;
+    }
+
+    public static String serverName() {
+        return serverName;
+    }
+
+    public static void serverName(String value) {
+        serverName = value == null ? "" : value.strip();
+    }
+
+    public static java.util.List<String> servers() {
+        return java.util.List.copyOf(SERVERS);
+    }
+
     public static String code() {
         return code;
     }
@@ -126,6 +153,10 @@ public final class JoinWizard {
         }
         processedMessages = all.size();
 
+        if (lobbyEnabled && !serverProbeSent && bot.state() == BotConnection.State.PLAY) {
+            serverProbeSent = true;
+            bot.sendCommand("server");
+        }
         switch (bot.state()) {
             case CONNECTING -> status = "正在连接服务器…";
             case PLAY -> {
@@ -152,6 +183,15 @@ public final class JoinWizard {
         }
         if (text.contains("登录成功") || text.contains("注册成功") || text.contains("已登录")) {
             status = text;
+        }
+        java.util.regex.Matcher list = SERVER_LIST.matcher(text);
+        if (list.find()) {
+            for (String part : list.group(1).split("[,，\\\\s]+")) {
+                String name = part.strip();
+                if (!name.isEmpty() && !name.startsWith("<") && !SERVERS.contains(name)) {
+                    SERVERS.add(name);
+                }
+            }
         }
     }
 
@@ -211,6 +251,16 @@ public final class JoinWizard {
         step = Step.BIND;
     }
 
+    public static void enterServer(String name) {
+        String target = name == null ? "" : name.strip();
+        if (target.isEmpty()) {
+            status = "先填子服务器名";
+            return;
+        }
+        sendCommand("server " + target);
+        status = "已发送 /server " + target;
+    }
+
     public static void verified() {
         step = Step.PREMIUM;
         status = "已标记验证完成";
@@ -223,6 +273,8 @@ public final class JoinWizard {
         status = "";
         RECENT.clear();
         processedMessages = 0;
+        serverProbeSent = false;
+        SERVERS.clear();
         BotManager.disconnect();
     }
 }
