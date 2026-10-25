@@ -399,6 +399,15 @@ public final class NumenScreen extends Screen {
     }
 
     /** {@code /numen settings} 入口:直接落在设置页(全局配置与同伴无关,空面板也能用)。 */
+    /** 快捷键/手册入口：直接打开「添加客户端假人」卡片（Numen 自己的 UI）。 */
+    public static void openSummonScreen() {
+        var entries = NumenRoster.instance().entries();
+        NumenScreen screen = new NumenScreen(
+                entries.isEmpty() ? null : Conversations.instance().of(entries.get(0).uuid()));
+        Minecraft.getInstance().setScreen(screen);
+        screen.openSummon();
+    }
+
     public static void openSettings() {
         var entries = NumenRoster.instance().entries();
         NumenScreen screen = new NumenScreen(

@@ -75,7 +75,7 @@ public final class NumenKeys {
         Minecraft mc = Minecraft.getInstance();
         while (OPEN_WIZARD.consumeClick()) {
             if (mc.player != null && mc.screen == null) {
-                mc.setScreen(new com.dwinovo.numen.client.wizard.JoinWizardScreen());
+                com.dwinovo.numen.client.screen.NumenScreen.openSummonScreen();
             }
         }
         while (OPEN_ROSTER.consumeClick()) {
