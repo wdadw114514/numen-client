@@ -70,6 +70,7 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    exclude 'it/unimi/dsi/fastutil/**'
     from { configurations.botLib.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
