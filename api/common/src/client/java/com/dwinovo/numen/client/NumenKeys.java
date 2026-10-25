@@ -60,6 +60,12 @@ public final class NumenKeys {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V,
             CATEGORY);
 
+    /** K opens the "join a server" wizard: login / register / QQ bind / premium check. */
+    public static final KeyMapping OPEN_WIZARD = new KeyMapping(
+            "key.numen_api.open_wizard",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K,
+            CATEGORY);
+
     private static boolean voiceWasDown;
 
     private NumenKeys() {}
@@ -67,6 +73,11 @@ public final class NumenKeys {
     /** Per-client-tick poll; key presses only register while no screen is open. */
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
+        while (OPEN_WIZARD.consumeClick()) {
+            if (mc.player != null && mc.screen == null) {
+                mc.setScreen(new com.dwinovo.numen.client.wizard.JoinWizardScreen());
+            }
+        }
         while (OPEN_ROSTER.consumeClick()) {
             if (mc.player != null && mc.screen == null) {
                 NumenScreen.openWorkspace();
