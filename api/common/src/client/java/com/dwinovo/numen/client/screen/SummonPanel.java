@@ -106,6 +106,13 @@ public final class SummonPanel extends ModalCard {
         ui.requestFocus(nameField);
     }
 
+    /** 服务端召唤流程的旧调用口（客户端假人不用），保留以免屏幕代码断掉。 */
+    public void setBusy(String message) {
+        if (alert != null) {
+            alert.show(InlineAlert.Severity.INFO, message);
+        }
+    }
+
     private void submit() {
         JoinWizard.username(nameField.value());
         JoinWizard.serverAddress(addressField.value());
