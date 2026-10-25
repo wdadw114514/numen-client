@@ -24,6 +24,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.Clie
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityPosRotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityRotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundRemoveEntitiesPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEquipmentPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundTeleportEntityPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerCombatKillPacket;
@@ -98,6 +99,8 @@ public final class BotConnection {
     /** 服务器要求把假人拉到这个位置（回拉校正）；客户端主线程取走。 */
     public record Teleport(double x, double y, double z, float yaw, float pitch) {}
     private volatile Teleport pendingTeleport;
+    /** 假人当前所在维度（服务器给的维度名）。 */
+    private volatile String worldName;
     private volatile OpenMenu pendingMenu;
     private volatile boolean pendingClose;
     private volatile int currentMenuId = 0;
@@ -235,6 +238,15 @@ public final class BotConnection {
 
     public Map<Integer, net.minecraft.world.item.ItemStack> menuItems() {
         return menuItems;
+    }
+
+    public String worldName() {
+        return worldName;
+    }
+
+    public boolean dimensionMatches(net.minecraft.world.level.Level level) {
+        String current = worldName;
+        return current == null || current.equals(level.dimension().location().toString());
     }
 
     public Teleport takeTeleport() {
@@ -441,6 +453,7 @@ public final class BotConnection {
             public void packetReceived(Session session, Packet packet) {
                 if (packet instanceof ClientboundLoginPacket login) {
                     entityId = login.getEntityId();
+                    worldName = login.getCommonPlayerSpawnInfo().getWorldName().toString();
                     state = State.PLAY;
                     if (!skinProbeSent) {
                         skinProbeSent = true;
@@ -479,6 +492,17 @@ public final class BotConnection {
                     }
                 } else if (packet instanceof ClientboundAddEntityPacket add) {
                     addEntity(add);
+                } else if (packet instanceof ClientboundSetEquipmentPacket equipment) {
+                    net.minecraft.world.entity.Entity entity = entities.get(equipment.getEntityId());
+                    if (entity instanceof net.minecraft.world.entity.LivingEntity living) {
+                        for (var entry : equipment.getEquipment()) {
+                            try {
+                                living.setItemSlot(net.minecraft.world.entity.EquipmentSlot
+                                        .valueOf(entry.getSlot().name()), toMc(entry.getItem()));
+                            } catch (IllegalArgumentException ignored) {
+                            }
+                        }
+                    }
                 } else if (packet instanceof ClientboundRemoveEntitiesPacket remove) {
                     for (int id : remove.getEntityIds()) {
                         entities.remove(id);
@@ -525,8 +549,9 @@ public final class BotConnection {
                     add("假人死亡，自动重生");
                     send(new ServerboundClientCommandPacket(
                             org.geysermc.mcprotocollib.protocol.data.game.ClientCommand.RESPAWN));
-                } else if (packet instanceof ClientboundRespawnPacket) {
+                } else if (packet instanceof ClientboundRespawnPacket respawn) {
                     positionKnown = false;
+                    worldName = respawn.getCommonPlayerSpawnInfo().getWorldName().toString();
                 } else if (packet instanceof ClientboundSetHealthPacket health) {
                     healthValue = health.getHealth();
                     foodValue = health.getFood();

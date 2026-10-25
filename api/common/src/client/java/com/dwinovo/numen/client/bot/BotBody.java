@@ -125,6 +125,9 @@ public final class BotBody implements BodyView {
             connection.resetPositionTracking(teleport.x(), teleport.y(), teleport.z(),
                     teleport.yaw(), teleport.pitch());
         }
+        if (!connection.dimensionMatches(player.level())) {
+            return;
+        }
         controls.apply(player);
         // 物理由客户端世界刻驱动；这里按原版 sendPosition 的规则发包
         connection.sendPosition(player);
