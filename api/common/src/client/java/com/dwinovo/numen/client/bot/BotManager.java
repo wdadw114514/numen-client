@@ -41,6 +41,10 @@ public final class BotManager {
         body = created;
         if (created != null) {
             com.dwinovo.numen.client.agent.AgentLoopRegistry.getOrCreate(created.getUUID());
+            // 把假人放进 Numen 的名册，聊天左栏/名册才看得到她
+            com.dwinovo.numen.client.agent.NumenRoster.instance().replaceAll("client",
+                    java.util.List.of(new com.dwinovo.numen.client.agent.NumenRoster.Entry(
+                            created.getUUID(), created.getName().getString())));
         }
         return created;
     }
@@ -57,6 +61,7 @@ public final class BotManager {
         if (current != null) {
             current.disconnect();
         }
+        com.dwinovo.numen.client.agent.NumenRoster.instance().clear();
     }
 
     public static void tick() {
