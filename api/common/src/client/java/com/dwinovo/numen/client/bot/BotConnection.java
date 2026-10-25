@@ -309,7 +309,8 @@ public final class BotConnection {
             var profile = auth.getMinecraftProfile().getUpToDateUnchecked();
             var token = auth.getMinecraftToken().getUpToDateUnchecked();
             protocol = new MinecraftProtocol(
-                    new com.mojang.authlib.GameProfile(java.util.UUID.fromString(profile.getId()), profile.getName()),
+                    new org.geysermc.mcprotocollib.auth.GameProfile(
+                            java.util.UUID.fromString(profile.getId()), profile.getName()),
                     token.getToken());
         } else {
             protocol = new MinecraftProtocol(username);
