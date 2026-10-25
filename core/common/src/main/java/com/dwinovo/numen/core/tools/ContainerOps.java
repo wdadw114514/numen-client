@@ -48,9 +48,9 @@ public final class ContainerOps {
      * {@link MenuOrigin} 取;右键实体开的、来历不明的,动作不带格子。
      */
     public static Action taking(Move m, BodyView self) {
-        AbstractContainerMenu menu = self.containerMenu;
+        AbstractContainerMenu menu = self.containerMenu();
         int max = menu.slots.size() - 1;
-        if (menu == self.inventoryMenu || m.from() < 0 || m.from() > max
+        if (menu == self.inventoryMenu() || m.from() < 0 || m.from() > max
                 || (m.to() != null && (m.to() < 0 || m.to() > max))) {
             return null;
         }
@@ -80,7 +80,7 @@ public final class ContainerOps {
 
     /** 执行一步,回执这一步的一行(不带序号)。 */
     public String step(Move m, BodyView self) {
-        AbstractContainerMenu menu = self.containerMenu;
+        AbstractContainerMenu menu = self.containerMenu();
         int max = menu.slots.size() - 1;
         int from = m.from();
         Integer to = m.to();
@@ -112,7 +112,7 @@ public final class ContainerOps {
             }
             return "slot " + from + " is empty — nothing to move.";
         }
-        menu.clicked(from, 0, ClickType.QUICK_MOVE, entity);
+        menu.clicked(from, 0, ClickType.QUICK_MOVE, entity.player());
         ItemStack after = menu.slots.get(from).getItem();
         int moved = before.getCount() - (sameItem(before, after) ? after.getCount() : 0);
         if (moved <= 0) {
@@ -145,12 +145,12 @@ public final class ContainerOps {
 
         if (exact) {
             int want = Math.min(count, fromBefore.getCount());
-            MenuOps.dripInto(menu, entity, from, to, want);
+            MenuOps.dripInto(menu, entity.player(), from, to, want);
         } else {
-            menu.clicked(from, 0, ClickType.PICKUP, entity);          // grab the stack
+            menu.clicked(from, 0, ClickType.PICKUP, entity.player());          // grab the stack
             menu.clicked(to, 0, ClickType.PICKUP, entity);            // place / merge / swap
             if (!menu.getCarried().isEmpty()) {
-                menu.clicked(from, 0, ClickType.PICKUP, entity);      // settle leftover / swapped item back
+                menu.clicked(from, 0, ClickType.PICKUP, entity.player());      // settle leftover / swapped item back
             }
         }
 

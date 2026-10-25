@@ -291,7 +291,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
                 }
             }
         }
-        Loadout loadout = Loadout.forTarget(player, player);
+        Loadout loadout = Loadout.forTarget(player, player.player());
         return new Battlefield(
                 Menace.effectiveHealth(player.player()),
                 reachToTarget(),
@@ -533,7 +533,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
         // 武器是<b>可选的</b>:拳头一点伤害,鸡四血、羊八血、牛十血,照样打得动。
         // 这里曾经"没有近战武器就直接返回" —— 那是按"打怪"写的前提(赤手对上会还手的
         // 东西不是出路),模型让她打一只鸡时那个前提不成立,她会走到跟前站着不动。
-        Loadout loadout = Loadout.forTarget(player, player);
+        Loadout loadout = Loadout.forTarget(player, player.player());
         Feet here = Feet.of(player);
         if (here == null) {
             return;   // 悬在半空:没有站着的那一格,够不够得着无从按站位判
@@ -677,7 +677,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
      * 出手都问它,按她此刻站的那一格判({@link Feet#in})。
      */
     private Goal reachOf(Entity e) {
-        return Goals.touch(e.getBoundingBox(), Snapshots.stats(player),
+        return Goals.touch(e.getBoundingBox(), Snapshots.stats(player.player()),
                 Swing.reachOf(player.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE)));
     }
 

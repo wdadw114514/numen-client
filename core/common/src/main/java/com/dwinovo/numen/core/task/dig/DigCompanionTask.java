@@ -247,7 +247,7 @@ public final class DigCompanionTask extends AbstractCompanionTask<DigTaskRecord>
 
     /** 挖 {@code cell} 的目标:挡着视线的格按 {@link #clearing} 清——判够不够得着、站在这儿办不办得成、挖掘器清遮挡都是它。 */
     private Goal digGoal(BlockPos cell) {
-        return Goals.dig(cell, Snapshots.stats(player), clearing.clearing());
+        return Goals.dig(cell, Snapshots.stats(player.player()), clearing.clearing());
     }
 
     /** 站在 {@code here} 手够不够得着 {@code cell}(够得着、身体不占着它)。 */

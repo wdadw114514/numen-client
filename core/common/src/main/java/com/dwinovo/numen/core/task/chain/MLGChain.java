@@ -129,7 +129,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
         }
         InputDriver.lookAt(companion, Vec3.atCenterOf(ground));
 
-        BlockHitResult aim = Crosshair.itemRay(companion, ClipContext.Fluid.NONE);
+        BlockHitResult aim = Crosshair.itemRay(companion.player(), ClipContext.Fluid.NONE);
         if (aim.getType() != HitResult.Type.BLOCK || !aim.getBlockPos().equals(ground)) {
             return TaskState.RUNNING;   // 还够不着,或者这一刻没瞄准 —— 下一刻更近
         }
@@ -161,7 +161,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
         }
         InputDriver.lookAt(companion, Vec3.atCenterOf(placed));
         // 空桶那条射线是认水源的(SOURCE_ONLY),和满桶那条不是同一种。
-        BlockHitResult aim = Crosshair.itemRay(companion, ClipContext.Fluid.SOURCE_ONLY);
+        BlockHitResult aim = Crosshair.itemRay(companion.player(), ClipContext.Fluid.SOURCE_ONLY);
         if (aim.getType() != HitResult.Type.BLOCK || !aim.getBlockPos().equals(placed)) {
             return TaskState.RUNNING;
         }
@@ -231,7 +231,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
         for (Vec3 from : origins) {
             BlockHitResult hit = companion.level().clip(new ClipContext(
                     from, from.add(0.0, -PROBE_DEPTH, 0.0),
-                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, companion));
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, companion.player()));
             if (hit.getType() != HitResult.Type.BLOCK) {
                 continue;
             }

@@ -329,6 +329,31 @@ public interface BodyView {
         return player().getProjectile(weapon);
     }
 
+    default boolean isWithinBlockInteractionRange(BlockPos pos, double extra) {
+        return player().isWithinBlockInteractionRange(pos, extra);
+    }
+
+    /** 本能是否被按住；客户端身体没有本能层，恒为 false。 */
+    default boolean reflexPaused(String reflexId) {
+        return false;
+    }
+
+    default boolean isEyeInFluid(net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> fluid) {
+        return player().isEyeInFluid(fluid);
+    }
+
+    default boolean onClimbable() {
+        return player().onClimbable();
+    }
+
+    default EquipmentSlot getEquipmentSlotForItem(ItemStack stack) {
+        return player().getEquipmentSlotForItem(stack);
+    }
+
+    default net.minecraft.world.entity.item.ItemEntity drop(ItemStack stack, boolean throwRandomly) {
+        return player().drop(stack, throwRandomly);
+    }
+
     /** 转头看 {@code point}；客户端身体由协议连接同步朝向。 */
     default void lookAt(Vec3 point) {
         if (player() instanceof ServerPlayer serverPlayer) {

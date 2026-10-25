@@ -96,7 +96,7 @@ public final class NumenEvents {
      * 不另起一套名字。永远不急:身体已经自己应对过了,这条是让她和翻聊天流的主人看得懂刚才发生了什么,
      * 攒着搭下一轮的车就够。
      */
-    public static void reflex(NumenPlayer companion, Reflex reflex, String text) {
+    public static void reflex(BodyView companion, Reflex reflex, String text) {
         emit(companion, EventTypes.REFLEX, Map.of("reflex", reflex.id()), text, false);
     }
 

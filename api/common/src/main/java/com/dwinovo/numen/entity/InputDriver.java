@@ -63,7 +63,7 @@ public final class InputDriver {
     }
 
     /** Turn the body (and head) to face {@code target} horizontally — walking goes where yaw points. */
-    public static void face(ServerPlayer p, Vec3 target) {
+    public static void face(BodyView p, Vec3 target) {
         double dx = target.x - p.getX();
         double dz = target.z - p.getZ();
         float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);

@@ -79,7 +79,7 @@ public final class FleeChain implements Task, Reflex {
         boolean beaten = mustBreakOff(companion);
         if (fleeing) {
             // 还扛不住、身边还有怪就接着跑;血回来了或者跑开了就收手
-            if (beaten && !Menace.hostilesAround(companion, Menace.FLEE_DISTANCE).isEmpty()) {
+            if (beaten && !Menace.hostilesAround(companion.player(), Menace.FLEE_DISTANCE).isEmpty()) {
                 return true;
             }
             done(companion, beaten);
@@ -90,14 +90,14 @@ public final class FleeChain implements Task, Reflex {
 
     /** 扛不住,或者赤手而有东西在追她。 */
     private static boolean mustBreakOff(BodyView companion) {
-        Loadout loadout = Loadout.forTarget(companion, companion);
+        Loadout loadout = Loadout.forTarget(companion, companion.player());
         return AttackPlan.breakOff(Menace.effectiveHealth(companion), loadout.hasMelee() || loadout.hasRanged(),
                 !chasers(companion).isEmpty());
     }
 
     /** 正在针对她的:锁定了她,或刚打了她。 */
     private static List<Mob> chasers(BodyView companion) {
-        return Menace.hostilesAround(companion, CHASE_RADIUS).stream()
+        return Menace.hostilesAround(companion.player(), CHASE_RADIUS).stream()
                 .filter(m -> m.getTarget() == companion || m == companion.getLastHurtByMob())
                 .toList();
     }
@@ -110,7 +110,7 @@ public final class FleeChain implements Task, Reflex {
                     chasers(companion).size());
         }
         if (haven == null || companion.blockPosition().closerThan(haven, HAVEN_ARRIVED)) {
-            haven = Haven.awayFrom(companion, Menace.hostilesAround(companion, SCAN_RADIUS));
+            haven = Haven.awayFrom(companion.player(), Menace.hostilesAround(companion.player(), SCAN_RADIUS));
             stopNav();
         }
         if (haven == null) {
@@ -126,7 +126,7 @@ public final class FleeChain implements Task, Reflex {
             // 路上要绕开谁:四十格内每一只,经过它们身边的格变贵;落点旁边站着一只怪也算到了,不然她永远到不了、
             // 也就永远不换落点
             nav = Trip.to(companion, Goals.within(Goals.at(haven), 0, HAVEN_ARRIVED), RouteSpec.defaults(), haven)
-                    .avoiding(() -> Menace.dangers(companion, SCAN_RADIUS));
+                    .avoiding(() -> Menace.dangers(companion.player(), SCAN_RADIUS));
         }
         Trip.Status status = nav.tick();
         if (status == Trip.Status.FAILED) {

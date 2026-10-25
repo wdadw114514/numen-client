@@ -113,7 +113,8 @@ public final class Wardrobe {
         String where = slot;
         List<GearSlot> candidates = List.of();
         if (where == null) {
-            Set<String> kinds = NumenPlugins.gearKinds(body, one);
+            Set<String> kinds = body.player() instanceof com.dwinovo.numen.entity.NumenPlayer np
+                ? NumenPlugins.gearKinds(np, one) : Set.of();
             if (kinds.isEmpty()) {
                 return Outcome.failed(label + " is not something you wear — numen.gear.hold(\""
                         + BuiltInRegistries.ITEM.getKey(item) + "\") takes it in hand", FailureType.UNKNOWN, data);
@@ -219,7 +220,8 @@ public final class Wardrobe {
                         + String.join(", ", slotNames(body)), FailureType.UNKNOWN, data);
             }
         } else {
-            slots = NumenPlugins.gearSlots(body);
+            slots = body.player() instanceof com.dwinovo.numen.entity.NumenPlayer np
+                ? NumenPlugins.gearSlots(np) : List.of();
         }
         if (item != null) {
             List<GearSlot> wearing = new ArrayList<>();
@@ -349,7 +351,8 @@ public final class Wardrobe {
     /** 身上叫这些名字的穿戴位置,按来源给出的顺序。 */
     private static List<GearSlot> named(BodyView body, Collection<String> names) {
         List<GearSlot> out = new ArrayList<>();
-        for (GearSlot s : NumenPlugins.gearSlots(body)) {
+        for (GearSlot s : (body.player() instanceof com.dwinovo.numen.entity.NumenPlayer np
+                ? NumenPlugins.gearSlots(np) : List.<GearSlot>of())) {
             if (names.contains(s.name())) out.add(s);
         }
         return out;
@@ -358,7 +361,8 @@ public final class Wardrobe {
     /** 她实际拥有的槽名:两只手,加上各来源给出的位置(同名只列一次)。 */
     private static List<String> slotNames(BodyView body) {
         Set<String> names = new LinkedHashSet<>(List.of(MAINHAND, OFFHAND));
-        for (GearSlot s : NumenPlugins.gearSlots(body)) {
+        for (GearSlot s : (body.player() instanceof com.dwinovo.numen.entity.NumenPlayer np
+                ? NumenPlugins.gearSlots(np) : List.<GearSlot>of())) {
             names.add(s.name());
         }
         return List.copyOf(names);

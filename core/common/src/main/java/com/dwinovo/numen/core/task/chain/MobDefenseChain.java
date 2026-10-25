@@ -186,7 +186,7 @@ public final class MobDefenseChain implements Task, Reflex {
     private List<Mob> dangersNear(BodyView companion) {
         LivingEntity attacker = companion.getLastHurtByMob();
         List<Mob> near = new ArrayList<>();
-        for (Mob m : Menace.hostilesAround(companion, SCAN_RADIUS)) {
+        for (Mob m : Menace.hostilesAround(companion.player(), SCAN_RADIUS)) {
             if (m != attacker && m.getTarget() != companion) {
                 continue;
             }
@@ -199,7 +199,7 @@ public final class MobDefenseChain implements Task, Reflex {
 
             // "够危险了没有"与站位、退避问的是<b>同一个函数</b>:它自己的危险半径。
             // 用一条固定的线时每种怪都判错——爬行者要七格,僵尸两格就够。
-            if (Menace.tooClose(m, companion)) {
+            if (Menace.tooClose(m, companion.player())) {
                 near.add(m);
             }
         }

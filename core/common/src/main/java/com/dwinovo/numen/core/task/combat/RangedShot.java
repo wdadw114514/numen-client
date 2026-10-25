@@ -147,7 +147,7 @@ final class RangedShot {
             return;
         }
         if (Ballistics.angleDegrees(player.getViewVector(1.0f), aim.direction()) <= AIM_THRESHOLD_DEGREES) {
-            player.gameMode.useItem(player, player.level(), weapon, InteractionHand.MAIN_HAND);
+            player.useItem(InteractionHand.MAIN_HAND);
             markFired(aim, target);
         }
     }
