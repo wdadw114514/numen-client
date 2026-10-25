@@ -10,7 +10,7 @@ import com.dwinovo.numen.core.nav.Terrain;
 import com.dwinovo.numen.core.route.Stop;
 import com.dwinovo.numen.core.route.Target;
 import com.dwinovo.numen.core.task.dig.DigTaskRecord;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Snapshots;
 import com.dwinovo.numen.pathing.search.Goal;
 import com.dwinovo.numen.pathing.search.Goals;
@@ -59,7 +59,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
      * @param spec 走到这里的规格:许挖许放时,站不进去、站不上去的格由寻路去挖、去垫,不算走不通
      * @param from 从哪儿去:坐标缺的那一截照它补("朝哪儿"那一格),一堆格子按离它的远近挑成员
      */
-    public static Destination of(NumenPlayer her, Stop stop, RouteSpec spec, BlockPos from) {
+    public static Destination of(BodyView her, Stop stop, RouteSpec spec, BlockPos from) {
         return switch (stop.to()) {
             case Target.Cells cells -> cells(her, stop, spec, cells.cells(), from);
             case Target.Cell cell -> cell(her, stop, spec, cell.pos());
@@ -90,7 +90,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
     }
 
     /** 一格的去处。 */
-    private static Destination cell(NumenPlayer her, Stop stop, RouteSpec spec, BlockPos cell) {
+    private static Destination cell(BodyView her, Stop stop, RouteSpec spec, BlockPos cell) {
         Terrain terrain = Terrain.of(her);
         Goal goal = switch (stop.arrive()) {
             case AT -> {
@@ -111,7 +111,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
     }
 
     /** 一堆格子:按离出发点的远近挑成员,按到达方式编成"多个取其一"(见类说明)。 */
-    private static Destination cells(NumenPlayer her, Stop stop, RouteSpec spec, List<BlockPos> all, BlockPos from) {
+    private static Destination cells(BodyView her, Stop stop, RouteSpec spec, List<BlockPos> all, BlockPos from) {
         List<BlockPos> nearest = all.stream().sorted(Comparator.comparingDouble(c -> c.distSqr(from))).toList();
         Terrain terrain = Terrain.of(her);
         List<Goal> members = new ArrayList<>();
@@ -204,7 +204,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
     }
 
     /** 用一格方块的目标;没有可点的轮廓、四面封死、够得着的地方一处也站不了,都当场提醒。 */
-    private static Goals.Use use(NumenPlayer her, Terrain terrain, BlockPos cell) {
+    private static Goals.Use use(BodyView her, Terrain terrain, BlockPos cell) {
         String block = NavText.name(terrain.state(cell));
         if (!terrain.clickable(cell)) {
             throw new IllegalArgumentException(GotoReminders.nothingToUse(cell, block));
@@ -229,12 +229,12 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
     /**
      * 往一格里放方块的目标:手够得着它、身体不占着它。{@code numen.build.place} 判"这一格够不够得着"问的也是它,走到了就放得了。
      */
-    public static Goal reach(NumenPlayer her, BlockPos cell) {
+    public static Goal reach(BodyView her, BlockPos cell) {
         return Goals.place(cell, Snapshots.stats(her));
     }
 
     /** 挖一格方块的目标;空气、流体没有可挖的,站到哪儿 {@code numen.work.dig} 都挖不成的({@link #undiggable}),都当场提醒。 */
-    private static Goal dig(NumenPlayer her, Terrain terrain, BlockPos cell) {
+    private static Goal dig(BodyView her, Terrain terrain, BlockPos cell) {
         if (!terrain.clickable(cell)) {
             throw new IllegalArgumentException(GotoReminders.nothingToDig(cell, NavText.name(terrain.state(cell))));
         }
@@ -262,7 +262,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
      * 到了之后 {@code numen.work.dig} 清得掉哪些挡着视线的格:它清遮挡用的那份规格({@link DigTaskRecord#SPEC}),按此刻的身体与许可。
      * 走路许不许挖是这一趟自己的事,与它无关。
      */
-    private static DigQuote clearing(NumenPlayer her) {
+    private static DigQuote clearing(BodyView her) {
         return DigQuote.of(her, DigTaskRecord.SPEC);
     }
 

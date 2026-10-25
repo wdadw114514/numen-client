@@ -2,7 +2,7 @@ package com.dwinovo.numen.core.act;
 
 import com.dwinovo.numen.entity.InputDriver;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.core.nav.CompanionHands;
 import com.dwinovo.numen.pathing.body.Crosshair;
@@ -104,7 +104,7 @@ public final class Interaction {
         }
     }
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final Button button;
     private final BlockPos block;     // non-null → block target
     private final Entity entity;      // non-null → entity target
@@ -133,7 +133,7 @@ public final class Interaction {
     private FailureType failType = FailureType.UNKNOWN;
     private String lastUseOutcome = "not fired";
 
-    private Interaction(NumenPlayer player, Button button, BlockPos block, Entity entity,
+    private Interaction(BodyView player, Button button, BlockPos block, Entity entity,
                         InteractionHand hand, Timing timing) {
         this.player = player;
         this.button = button;
@@ -149,7 +149,7 @@ public final class Interaction {
      * 左键按在准星落着的那一格上({@code hit}),按住直到它碎:手上是什么就用什么,不换工具、不挪步、不清别的格——一次纯按键。
      * 创造一下就碎,生存按手上的东西算时间,都是原版的手自己分。
      */
-    public static Interaction attackBlock(NumenPlayer p, BlockHitResult hit, boolean hold) {
+    public static Interaction attackBlock(BodyView p, BlockHitResult hit, boolean hold) {
         Interaction i = new Interaction(p, Button.ATTACK, hit.getBlockPos(), null, InteractionHand.MAIN_HAND,
                 hold ? Timing.hold() : Timing.once());
         i.presetHit = hit;
@@ -157,17 +157,17 @@ public final class Interaction {
     }
 
     /** Left-click an entity once (cooldown-gated native attack). */
-    public static Interaction attackEntity(NumenPlayer p, Entity target) {
+    public static Interaction attackEntity(BodyView p, Entity target) {
         return attackEntity(p, target, Timing.once());
     }
 
-    public static Interaction attackEntity(NumenPlayer p, Entity target, Timing timing) {
+    public static Interaction attackEntity(BodyView p, Entity target, Timing timing) {
         return new Interaction(p, Button.ATTACK, null, target, InteractionHand.MAIN_HAND, timing);
     }
 
     /** Right-click a pre-resolved block hit — placement / precise activation supplies
      *  the exact support face, and this presses against {@code hit}. */
-    public static Interaction useBlock(NumenPlayer p, BlockHitResult hit, InteractionHand hand) {
+    public static Interaction useBlock(BodyView p, BlockHitResult hit, InteractionHand hand) {
         Interaction i = new Interaction(p, Button.USE, hit.getBlockPos(), null, hand, Timing.once());
         i.presetHit = hit;
         return i;
@@ -191,7 +191,7 @@ public final class Interaction {
 
     /** Right-click in the air with the held item, on the given {@link Timing}
      *  ({@code hold()} eats food / {@code hold(n)} draws and looses a bow). */
-    public static Interaction useInAir(NumenPlayer p, InteractionHand hand, Timing timing) {
+    public static Interaction useInAir(BodyView p, InteractionHand hand, Timing timing) {
         return new Interaction(p, Button.USE, null, null, hand, timing);
     }
 
@@ -221,7 +221,7 @@ public final class Interaction {
      *                        手里是食物/末影珍珠时传 false,免得点了块石头把自己喂了。
      * @param sneak           按住潜行再点,见 {@link #crouched}
      */
-    public static Interaction forHit(NumenPlayer p, HitResult hit, Button button, int holdTicks,
+    public static Interaction forHit(BodyView p, HitResult hit, Button button, int holdTicks,
                                      boolean itemFallthrough, boolean sneak) {
         Interaction i = press(p, hit, button, holdTicks, itemFallthrough);
         if (i != null) {
@@ -230,7 +230,7 @@ public final class Interaction {
         return i;
     }
 
-    private static Interaction press(NumenPlayer p, HitResult hit, Button button, int holdTicks,
+    private static Interaction press(BodyView p, HitResult hit, Button button, int holdTicks,
                                      boolean itemFallthrough) {
         boolean hold = holdTicks != 0;
         switch (hit.getType()) {

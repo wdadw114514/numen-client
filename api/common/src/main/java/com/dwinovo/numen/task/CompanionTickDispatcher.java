@@ -217,7 +217,7 @@ public final class CompanionTickDispatcher {
      * 意图钉释放),原因词不同。返回被叫停的记录,null = 本来就没有异步任务在跑。
      * 收尾结果由 drainResults 以 task_finished(status=stopped) 事件送达。
      */
-    public static TaskRecord stopActive(NumenPlayer player, TaskRecord.StopCause cause) {
+    public static TaskRecord stopActive(com.dwinovo.numen.pathing.body.BodyView player, TaskRecord.StopCause cause) {
         CompanionBrain brain = BRAINS.get(player.getUUID());
         if (brain == null) return null;
         TaskRecord target = brain.current.record();

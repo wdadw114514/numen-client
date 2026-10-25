@@ -7,7 +7,7 @@ import com.dwinovo.numen.core.scan.BlockScan;
 import com.dwinovo.numen.core.scan.NearbyEntities;
 import com.dwinovo.numen.core.tools.ScanOps;
 import com.dwinovo.numen.core.tools.ToolParse;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Signals;
 import com.dwinovo.numen.platform.Services;
 import com.dwinovo.numen.sdk.BlockAt;
@@ -157,7 +157,7 @@ public final class ScanApi {
             + "restart.")
     @SeeAlso({"numen.scan.map", "numen.fight.attack", "numen.use.entity"})
     public static List<Seen> entities(ServerCall call, Entities args) {
-        NumenPlayer self = call.her();
+        BodyView self = call.her();
         double radius = Math.clamp(args.radius().orElse((double) DEFAULT_ENTITY_RADIUS), MIN_ENTITY_RADIUS,
                 MAX_ENTITY_RADIUS);
         Kind filter = args.typeFilter().orElse(Kind.ALL);
@@ -202,7 +202,7 @@ public final class ScanApi {
      * 这只是谁的:{@code you}(她自己驯服的)、{@code your owner}(她主人的)、别的玩家的名字,名字查不到就是 UUID;没有主人为 null。
      * 主人只从权限层的同一处读({@link Signals#ownerOf}),{@code self_owned} 与这里说的是同一回事。
      */
-    private static String ownerOf(Entity e, NumenPlayer self) {
+    private static String ownerOf(Entity e, BodyView self) {
         UUID owner = Signals.ownerOf(e);
         if (owner == null) {
             return null;
@@ -213,7 +213,8 @@ public final class ScanApi {
         if (self.isOwnedByPlayer(owner)) {
             return "your owner";
         }
-        String name = NumenPlayer.playerName(self.level().getServer(), owner);
+        String name = self.server() == null ? ""
+                : com.dwinovo.numen.entity.NumenPlayer.playerName(self.server(), owner);
         return name.isEmpty() ? owner.toString() : name;
     }
 
@@ -245,7 +246,7 @@ public final class ScanApi {
     @SeeAlso({"numen.scan.container", "numen.scan.blocks", "numen.scan.sight"})
     @SuppressWarnings("deprecation")  // BlockBehaviour.isSolid() 带的是 Mojang 的"别覆写"标记,不是要淘汰
     public static BlockInfo block(ServerCall call, Cell args) {
-        NumenPlayer self = call.her();
+        BodyView self = call.her();
         BlockPos pos = args.cell();
         BlockState state = self.level().getBlockState(pos);
         // 方块状态(末地门框的 has_eye/facing、楼梯朝向……):没有就不出这一项
@@ -299,7 +300,7 @@ public final class ScanApi {
             + "GUI but no storage here is opened with numen.use.block and read with numen.gui.view.")
     @SeeAlso("numen.scan.block")
     public static Storage container(ServerCall call, Cell args) {
-        NumenPlayer self = call.her();
+        BodyView self = call.her();
         BlockPos pos = args.cell();
         BlockState state = self.level().getBlockState(pos);
         if (state.isAir()) {
@@ -332,7 +333,7 @@ public final class ScanApi {
             + "empty cell: its middle) with nothing in between; an entity, when you see its eyes.")
     @SeeAlso({"numen.scan.block", "numen.scan.entities"})
     public static Sight sight(ServerCall call, Look args) {
-        NumenPlayer her = call.her();
+        BodyView her = call.her();
         ServerLevel level = her.level();
         Vec3 eye = her.getEyePosition();
         CellOrEntity target = args.target();

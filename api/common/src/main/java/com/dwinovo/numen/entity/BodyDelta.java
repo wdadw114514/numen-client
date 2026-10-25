@@ -26,7 +26,7 @@ public final class BodyDelta {
     private final Entity vehicle;
     private final long brokenMark;
 
-    private BodyDelta(NumenPlayer her) {
+    private BodyDelta(BodyView her) {
         this.carried = Belongings.of(her);
         this.health = her.getHealth();
         this.vehicle = her.getVehicle();
@@ -34,12 +34,12 @@ public final class BodyDelta {
     }
 
     /** 此刻拍一张。 */
-    public static BodyDelta open(NumenPlayer her) {
+    public static BodyDelta open(BodyView her) {
         return new BodyDelta(her);
     }
 
     /** 从拍照到现在,背包与经验、血量、骑乘各自的变化,每一条是一件真发生的事;都没变是空表。 */
-    public List<String> changes(NumenPlayer her) {
+    public List<String> changes(BodyView her) {
         List<String> facts = new ArrayList<>();
         String items = carried.itemChange(her);
         if (!items.isEmpty()) {
@@ -67,13 +67,13 @@ public final class BodyDelta {
     /**
      * 从拍照到现在用坏的装备,写成一段圆括号里的话,接在任何回执后面都读得通;没有是空串。
      */
-    public String broken(NumenPlayer her) {
-        List<NumenPlayer.BrokenGear> gone = her.brokenGearSince(brokenMark);
+    public String broken(BodyView her) {
+        List<BodyView.BrokenGear> gone = her.brokenGearSince(brokenMark);
         if (gone.isEmpty()) {
             return "";
         }
         List<String> parts = new ArrayList<>();
-        for (NumenPlayer.BrokenGear g : gone) {
+        for (BodyView.BrokenGear g : gone) {
             parts.add("your " + BuiltInRegistries.ITEM.getKey(g.item()) + " broke while it was " + where(g.slot()));
         }
         return "(" + String.join("; ", parts) + "; numen.inv.items() lists what you still carry)";

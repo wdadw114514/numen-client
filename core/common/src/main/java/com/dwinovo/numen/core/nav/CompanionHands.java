@@ -1,11 +1,11 @@
 package com.dwinovo.numen.core.nav;
 
 import com.dwinovo.numen.core.act.Interaction;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.BodyAction;
 import com.dwinovo.numen.pathing.body.Effector;
 import com.dwinovo.numen.pathing.body.Hotbar;
-import com.dwinovo.numen.pathing.body.PlayerHands;
+
 import com.dwinovo.numen.pathing.body.Snapshots;
 import com.dwinovo.numen.pathing.plan.ToolChoice;
 import com.dwinovo.numen.permission.Action;
@@ -35,16 +35,16 @@ import net.minecraft.world.phys.BlockHitResult;
  */
 public final class CompanionHands implements Effector {
 
-    private final NumenPlayer player;
-    private final PlayerHands hands;
+    private final BodyView player;
+    private final Effector hands;
 
-    private CompanionHands(NumenPlayer player) {
+    private CompanionHands(BodyView player) {
         this.player = player;
-        this.hands = new PlayerHands(player);
+        this.hands = player.hands();
     }
 
     /** 这具身体的手(首次取时建)。 */
-    public static CompanionHands of(NumenPlayer player) {
+    public static CompanionHands of(BodyView player) {
         return player.state(CompanionHands.class, () -> new CompanionHands(player));
     }
 
@@ -67,7 +67,7 @@ public final class CompanionHands implements Effector {
      * 一样快时空手优先、其次不耗耐久的)。换了就交回做了什么。
      */
     public Optional<BodyAction> takeToolFor(BlockState state) {
-        return Hotbar.hold(player, new ToolChoice(Snapshots.of(player)).best(state).slot());
+        return Hotbar.hold(player, new ToolChoice(Snapshots.of(player.player())).best(state).slot());
     }
 
     /** 左键正按在哪一格上;没按为 null。 */

@@ -4,7 +4,7 @@ import com.dwinovo.numen.core.combat.Menace;
 import com.dwinovo.numen.core.task.combat.AttackCompanionTask;
 import com.dwinovo.numen.core.task.combat.AttackTaskRecord;
 import com.dwinovo.numen.core.task.survival.SurvivalDecisions;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.Task;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.task.reflex.Reflex;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public final class MobDefenseChain implements Task, Reflex {
 
-    /** 本能名册里的 id。别处按住这条本能时用它,见 {@code NumenPlayer.pauseReflex}。 */
+    /** 本能名册里的 id。别处按住这条本能时用它,见 {@code BodyView.pauseReflex}。 */
     public static final String ID = "mob_defense";
 
     /** 看多远。超出这个半径的不算"身边"。 */
@@ -80,7 +80,7 @@ public final class MobDefenseChain implements Task, Reflex {
      * 不是等几秒再试一次,而是{@code cornered} 那一维——退不掉就打。
      */
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         long now = companion.level().getGameTime();
         // 有人正在替这条本能干活(模型派的 attack),就别抢。按住的是本能不是目标,所以会分裂的怪不会让它失效。
         // 扛不住时跑是逃跑本能的事(FleeChain,排在这条之前),跑不掉它让出身体,这里照常打。
@@ -98,7 +98,7 @@ public final class MobDefenseChain implements Task, Reflex {
     }
 
     @Override
-    public TaskState tick(NumenPlayer companion) {
+    public TaskState tick(BodyView companion) {
         if (!dangersNear(companion).isEmpty()) {
             dangerLastSeenTick = companion.level().getGameTime();
         }
@@ -122,7 +122,7 @@ public final class MobDefenseChain implements Task, Reflex {
      * <p>不设截止时间——它的终点是"没人再追我",由 {@code attack} 自己判;
      * 给一个闹钟只会在打到一半时把她扔在原地。
      */
-    private void begin(NumenPlayer companion) {
+    private void begin(BodyView companion) {
         long now = companion.level().getGameTime();
         AttackTaskRecord record = new AttackTaskRecord(
                 ID, "reflex-" + now, now + NO_DEADLINE, List.of(), true);
@@ -135,7 +135,7 @@ public final class MobDefenseChain implements Task, Reflex {
     /** 长到等同于没有截止时间;终点由"没人再追我"说了算。 */
     private static final long NO_DEADLINE = 20L * 60L * 60L * 24L;
 
-    private void end(NumenPlayer companion, TaskState state) {
+    private void end(BodyView companion, TaskState state) {
         String line = fight.result(state).message();
         fight = null;
         dangerLastSeenTick = NEVER;
@@ -148,7 +148,7 @@ public final class MobDefenseChain implements Task, Reflex {
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         if (fight != null) {
             // 被更急的链抢走(摔落、换气):只松开身体,这场仗的状态一个不动,回来接着打。
             fight.stop(companion, why);
@@ -183,7 +183,7 @@ public final class MobDefenseChain implements Task, Reflex {
      *
      * <p>模型自己派的 {@code attack} 已经认领的目标同样不算:那场仗有人管了。
      */
-    private List<Mob> dangersNear(NumenPlayer companion) {
+    private List<Mob> dangersNear(BodyView companion) {
         LivingEntity attacker = companion.getLastHurtByMob();
         List<Mob> near = new ArrayList<>();
         for (Mob m : Menace.hostilesAround(companion, SCAN_RADIUS)) {

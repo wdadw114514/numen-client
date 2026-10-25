@@ -9,7 +9,7 @@ import com.dwinovo.numen.core.route.Plans;
 import com.dwinovo.numen.core.route.RouteText;
 import com.dwinovo.numen.core.route.Stop;
 import com.dwinovo.numen.core.route.Target;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Example;
 import com.dwinovo.numen.sdk.Fn;
 import com.dwinovo.numen.sdk.Note;
@@ -57,7 +57,7 @@ public final class RouteApi {
             + "changing no cell the plan did not list.")
     @SeeAlso({"numen.move.go", "numen.move.to"})
     public static Pending<RouteText.Plan> plan(ServerCall call, Description.Directions directions) {
-        NumenPlayer her = call.her();
+        BodyView her = call.her();
         Description description = Description.of(directions);
         String program = Plans.program(call.callId());
         Plans plans = Plans.of(her);

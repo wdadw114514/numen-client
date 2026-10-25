@@ -1,7 +1,7 @@
 package com.dwinovo.numen.sdk;
 
 import com.dwinovo.numen.api.Internal;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.ConsentAnswer;
 import com.dwinovo.numen.permission.ConsentDesk;
 import com.dwinovo.numen.permission.ConsentItem;
@@ -33,14 +33,14 @@ public final class Consents {
         }
     }
 
-    private final NumenPlayer her;
+    private final BodyView her;
     private final List<Waiting> waiting = new ArrayList<>();
 
-    private Consents(NumenPlayer her) {
+    private Consents(BodyView her) {
         this.her = her;
     }
 
-    static Consents of(NumenPlayer her) {
+    static Consents of(BodyView her) {
         return her.state(Consents.class, () -> new Consents(her));
     }
 
@@ -53,7 +53,7 @@ public final class Consents {
     }
 
     /** 每服务端刻一次:有结论的收场。 */
-    public static void tick(NumenPlayer her) {
+    public static void tick(BodyView her) {
         Consents pending = of(her);
         if (pending.waiting.isEmpty()) {
             return;
@@ -76,14 +76,14 @@ public final class Consents {
     }
 
     /** 主人按了停止,或身体要离开世界:撤掉征询(主人看到是谁叫停的),这些调用说被谁叫停、没有执行。 */
-    public static void stop(NumenPlayer her, TaskRecord.StopCause cause) {
+    public static void stop(BodyView her, TaskRecord.StopCause cause) {
         for (Waiting w : of(her).drain(cause.withdrawal())) {
             w.answer.interrupt(cause.words() + " — " + w.what + " did not run");
         }
     }
 
     /** 她死了:撤掉征询,不再有结论——那条调用已由死因结算。 */
-    public static void drop(NumenPlayer her) {
+    public static void drop(BodyView her) {
         of(her).drain(ConsentDesk.Withdrawal.DIED);
     }
 

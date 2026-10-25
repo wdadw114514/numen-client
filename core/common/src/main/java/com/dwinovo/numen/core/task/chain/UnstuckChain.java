@@ -5,7 +5,7 @@ import com.dwinovo.numen.core.nav.Trip;
 import com.dwinovo.numen.pathing.body.Controls;
 import com.dwinovo.numen.task.Task;
 import com.dwinovo.numen.task.TaskState;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 /**
  * Autonomous positional-recovery survival chain. It wakes when the walk she is on says it is not
@@ -16,7 +16,7 @@ import com.dwinovo.numen.entity.NumenPlayer;
  * in the pathing module alone, this chain only reacts.
  *
  * <p>The break-out is a bounded, best-effort wander driven straight through her keys
- * ({@link NumenPlayer#controls}; no nav, no dig plan) — rough but safe: it is capped at
+ * ({@link BodyView#controls}; no nav, no dig plan) — rough but safe: it is capped at
  * {@link #WANDER_TICKS} and never travels far. After a burst it stays quiet for {@link #REARM_TICKS} so the walk
  * gets to try again from where she ended up before it is judged once more.
  */
@@ -32,7 +32,7 @@ public final class UnstuckChain implements Task, com.dwinovo.numen.task.reflex.R
     private int rearm;
 
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         if (wanderTicksLeft > 0) return true;   // finish the burst
         if (rearm > 0) {
             rearm--;
@@ -43,7 +43,7 @@ public final class UnstuckChain implements Task, com.dwinovo.numen.task.reflex.R
     }
 
     @Override
-    public TaskState tick(NumenPlayer companion) {
+    public TaskState tick(BodyView companion) {
         if (wanderTicksLeft <= 0) {
             // Begin a fresh break-out: pick a new heading (turn ~137° off current so
             // repeated attempts fan out).
@@ -59,7 +59,7 @@ public final class UnstuckChain implements Task, com.dwinovo.numen.task.reflex.R
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         companion.controls().releaseAll();
         wanderTicksLeft = 0;
     }
@@ -82,7 +82,7 @@ public final class UnstuckChain implements Task, com.dwinovo.numen.task.reflex.R
     }
 
     /** Face the chosen heading, hold forward, and hop every fifth tick to clear a lip/step. */
-    private void driveWander(NumenPlayer companion) {
+    private void driveWander(BodyView companion) {
         companion.setYRot(wanderYaw);
         companion.setYHeadRot(wanderYaw);
         Controls keys = companion.controls();

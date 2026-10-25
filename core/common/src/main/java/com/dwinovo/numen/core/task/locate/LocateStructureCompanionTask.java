@@ -7,7 +7,7 @@ import com.dwinovo.numen.core.FailureType;
 
 import com.dwinovo.numen.task.TaskState;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 
 import net.minecraft.core.BlockPos;
@@ -115,7 +115,7 @@ public final class LocateStructureCompanionTask extends AbstractCompanionTask<Lo
     private double bestDistSqr = Double.MAX_VALUE;
     private String failReason = "not on a server level";
 
-    public LocateStructureCompanionTask(NumenPlayer player, LocateStructureTaskRecord record) {
+    public LocateStructureCompanionTask(BodyView player, LocateStructureTaskRecord record) {
         super(player, record);
     }
 

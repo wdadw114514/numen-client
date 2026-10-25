@@ -10,7 +10,7 @@ import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.task.TaskRecord;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.entity.BodyDelta;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Action;
 import com.dwinovo.numen.permission.ConsentAnswer;
 import com.dwinovo.numen.permission.ConsentDesk;
@@ -73,7 +73,7 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
         implements Task {
 
     /** The body this task drives. */
-    protected final NumenPlayer player;
+    protected final BodyView player;
     /** The typed input record for this task. */
     protected final R r;
     /** 正在走的那一趟路;没有为 null。挂在这里,{@link #stopNav()} / {@link #cleanup()} 才收得了它。 */
@@ -123,7 +123,7 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
      */
     private Object consentScope;
 
-    protected AbstractCompanionTask(NumenPlayer player, R record) {
+    protected AbstractCompanionTask(BodyView player, R record) {
         this.player = player;
         this.r = record;
     }
@@ -137,7 +137,7 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
      * 开工时不再判前置条件。
      */
     @Override
-    public final Preparation prepare(NumenPlayer companion) {
+    public final Preparation prepare(BodyView companion) {
         Precondition.Failure f = firstFailure();
         if (f != null) {
             // 前提不成立时这件活还没开始,没有进度可交:只有种类、那句话与下一步
@@ -148,7 +148,7 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
     }
 
     @Override
-    public final void start(NumenPlayer companion) {
+    public final void start(BodyView companion) {
         Precondition.Failure f = prepared ? null : firstFailure();
         if (f != null) {
             fail(f.message(), f.type(), f.hint());
@@ -175,7 +175,7 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
     }
 
     @Override
-    public final TaskState tick(NumenPlayer companion) {
+    public final TaskState tick(BodyView companion) {
         if (pendingTerminal != null) return pendingTerminal;
         awaitingSearch = false;
         TaskState state;
@@ -623,7 +623,7 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
      * is what lets {@link #resume()} pick straight back up on the next tick.
      */
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         // 被抢占:只松开身体(归零移动输入、放开潜行),<b>逻辑字段一个不动</b>——
         // 尤其是寻路计划,它正是下次拿回身体时能接着走的原因。不调 nav.stop()。
         // 被换掉/身体没了不需要额外收尾:buildResult 里的 cleanup() 会跑。

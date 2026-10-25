@@ -1,6 +1,6 @@
 package com.dwinovo.numen.task;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public final class TaskSelector {
      * @param idle     空闲姿态,按注册序
      */
     public static Task select(List<Task> reflexes, Task sync, Task current,
-                              List<Task> idle, NumenPlayer companion) {
+                              List<Task> idle, BodyView companion) {
         if (reflexes != null) {
             for (Task reflex : reflexes) {
                 if (reflex != null && reflex.canRun(companion)) {

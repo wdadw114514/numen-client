@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.dwinovo.numen.sdk.Place;
 import com.dwinovo.numen.core.FailureType;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.api.Outcome;
 import com.dwinovo.numen.pathing.body.BodyAction;
 import com.dwinovo.numen.pathing.body.Hotbar;
@@ -69,7 +69,7 @@ public final class NavText {
      * @param toward    要去的那一格(给人看的方向)
      * @param materials 这一趟愿意垫的料(说"没料"时列出来)
      */
-    public static String failure(Outcome outcome, NumenPlayer player, BlockPos from, BlockPos toward, RouteSpec spec,
+    public static String failure(Outcome outcome, BodyView player, BlockPos from, BlockPos toward, RouteSpec spec,
                                  List<Item> materials) {
         String where = where(from, toward);
         return switch (outcome) {

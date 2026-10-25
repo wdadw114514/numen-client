@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dwinovo.numen.core.nav.Trip;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.network.payload.PathDebugPayload;
 import com.dwinovo.numen.network.NumenNetwork;
 import com.dwinovo.numen.pathing.plan.Edit;
@@ -34,7 +34,7 @@ public final class PathDebugRenderer {
             return;
         }
         for (ServerPlayer body : server.getPlayerList().getPlayers()) {
-            if (!(body instanceof NumenPlayer companion)) {
+            if (!(body instanceof BodyView companion)) {
                 continue;
             }
             Trip trip = Trip.current(companion);
@@ -59,7 +59,7 @@ public final class PathDebugRenderer {
     }
 
     /** 采集一趟路此刻的可视状态:还没走完的那几步与它们要动的格,朝着的那一格画成目标框。 */
-    private static PathDebugPayload snapshot(NumenPlayer companion, Trip trip) {
+    private static PathDebugPayload snapshot(BodyView companion, Trip trip) {
         List<Long> path = new ArrayList<>();
         List<Long> toBreak = new ArrayList<>();
         List<Long> toPlace = new ArrayList<>();

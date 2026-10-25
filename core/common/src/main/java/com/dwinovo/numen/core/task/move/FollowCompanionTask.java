@@ -12,7 +12,7 @@ import com.dwinovo.numen.pathing.search.Goal;
 import com.dwinovo.numen.pathing.search.Goals;
 import com.dwinovo.numen.pathing.search.Route;
 import com.dwinovo.numen.pathing.spec.RouteSpec;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.Preparation;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.core.FailureType;
@@ -69,12 +69,12 @@ public final class FollowCompanionTask extends AbstractCompanionTask<FollowTaskR
     /** 到点的那一刻(游戏刻);开工之前是 -1。 */
     private long endsAt = -1;
 
-    public FollowCompanionTask(NumenPlayer player, FollowTaskRecord record) {
+    public FollowCompanionTask(BodyView player, FollowTaskRecord record) {
         super(player, record);
     }
 
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         if (timeUp()) {
             return true;
         }
@@ -195,7 +195,7 @@ public final class FollowCompanionTask extends AbstractCompanionTask<FollowTaskR
      *
      * <p>不同维度天然落进 null:{@code ServerLevel.getEntity} 只认自己这一层。
      */
-    private Entity target(NumenPlayer companion) {
+    private Entity target(BodyView companion) {
         if (r.target == null) {
             var owner = companion.resolveOwnerPlayer();
             return owner == null || owner.level() != companion.level() ? null : owner;

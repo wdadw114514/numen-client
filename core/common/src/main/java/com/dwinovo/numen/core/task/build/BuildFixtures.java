@@ -1,7 +1,7 @@
 package com.dwinovo.numen.core.task.build;
 
 import com.dwinovo.numen.core.build.BlueprintSafety;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -17,7 +17,7 @@ import net.minecraft.world.phys.AABB;
  */
 final class BuildFixtures {
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final BuildTaskRecord r;
     private final BuildInventory inv;
 
@@ -26,7 +26,7 @@ final class BuildFixtures {
     /** 摆设生成了,但身上带的东西没付起——框空着挂上去了,同样得交代。 */
     private int skippedPayloads;
 
-    BuildFixtures(NumenPlayer player, BuildTaskRecord r, BuildInventory inv) {
+    BuildFixtures(BodyView player, BuildTaskRecord r, BuildInventory inv) {
         this.player = player;
         this.r = r;
         this.inv = inv;

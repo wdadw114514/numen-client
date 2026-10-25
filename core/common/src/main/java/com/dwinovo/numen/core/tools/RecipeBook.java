@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.tools;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
@@ -28,7 +28,7 @@ public final class RecipeBook {
     private RecipeBook() {}
 
     /** 做这样东西的每一条配方,每个工位;找不到就是空表(它靠挖或交易得来,不是做出来的)。 */
-    public static List<com.dwinovo.numen.core.tools.Recipe> recipesFor(Item target, NumenPlayer self) {
+    public static List<com.dwinovo.numen.core.tools.Recipe> recipesFor(Item target, BodyView self) {
         ServerLevel level = self.level();
         List<com.dwinovo.numen.core.tools.Recipe> out = new ArrayList<>();
         for (RecipeHolder<?> holder : level.recipeAccess().getRecipes()) {

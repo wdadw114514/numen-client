@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.tools;
 import com.dwinovo.numen.sdk.ServerCall;
 import com.dwinovo.numen.core.act.MenuOrigin;
 import com.dwinovo.numen.core.task.inventory.TransferTaskRecord;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Action;
 import com.dwinovo.numen.task.TaskRecord;
 import net.minecraft.core.BlockPos;
@@ -47,7 +47,7 @@ public final class ContainerOps {
      * 方块(工作台、切石机)开的界面里,格子里只有她自己刚放进去的东西,也不算。容器是哪一格从
      * {@link MenuOrigin} 取;右键实体开的、来历不明的,动作不带格子。
      */
-    public static Action taking(Move m, NumenPlayer self) {
+    public static Action taking(Move m, BodyView self) {
         AbstractContainerMenu menu = self.containerMenu;
         int max = menu.slots.size() - 1;
         if (menu == self.inventoryMenu || m.from() < 0 || m.from() > max
@@ -74,12 +74,12 @@ public final class ContainerOps {
         return state.hasBlockEntity() ? Action.take(block, state, taken.getItem()) : null;
     }
 
-    private static boolean mine(Slot slot, NumenPlayer self) {
+    private static boolean mine(Slot slot, BodyView self) {
         return slot.container == self.getInventory();
     }
 
     /** 执行一步,回执这一步的一行(不带序号)。 */
-    public String step(Move m, NumenPlayer self) {
+    public String step(Move m, BodyView self) {
         AbstractContainerMenu menu = self.containerMenu;
         int max = menu.slots.size() - 1;
         int from = m.from();
@@ -99,7 +99,7 @@ public final class ContainerOps {
     }
 
     /** No destination: shift the whole stack to the other section, menu-routed (deposit/take/feed). */
-    private static String route(AbstractContainerMenu menu, NumenPlayer entity, int from) {
+    private static String route(AbstractContainerMenu menu, BodyView entity, int from) {
         ItemStack before = menu.slots.get(from).getItem().copy();
         if (before.isEmpty()) {
             if (menu.slots.get(from) instanceof ResultSlot) {
@@ -125,7 +125,7 @@ public final class ContainerOps {
     }
 
     /** A destination slot: place exactly there — empty→move, same item→merge, different item→swap. */
-    private static String place(AbstractContainerMenu menu, NumenPlayer entity, int from, int to, Integer count) {
+    private static String place(AbstractContainerMenu menu, BodyView entity, int from, int to, Integer count) {
         if (from == to) {
             return "slot " + from + " → itself — nothing to do.";
         }

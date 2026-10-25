@@ -15,7 +15,7 @@ import com.dwinovo.numen.core.task.build.BuildCompanionTask;
 import com.dwinovo.numen.core.task.build.BuildOrder;
 import com.dwinovo.numen.core.task.build.BuildSurvey;
 import com.dwinovo.numen.core.task.build.BuildTaskRecord;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.Job;
 import com.dwinovo.numen.sdk.LuaCodecs;
@@ -65,7 +65,7 @@ public final class BuildOps {
      * 一份蓝图文件摆在 {@code origin}、转 {@code quarters} 个 90°:读一遍文件,交回名字、原点、度数,加上尺寸、格数与用料;生存模式下还有
      * 整份要的料她还缺多少。格子不交回,用到时 {@code numen.build.place} 与 {@code numen.build.diff} 再读文件。
      */
-    public static Blueprint blueprint(NumenPlayer her, String name, BlockPos origin, int quarters) {
+    public static Blueprint blueprint(BodyView her, String name, BlockPos origin, int quarters) {
         Layout layout = load(her.level(), name, origin, quarters);
         Map<Item, Integer> cost = BuildBill.cost(layout.targets(), layout.cellNeeds().keySet());
         Vec3i size = layout.size();
@@ -77,7 +77,7 @@ public final class BuildOps {
 
     /** 把这一处变成要盖的样子:够得着的放一遍;已经是这个样子就不派活,当场交回什么都没放。 */
     public static Job<BuildCompanionTask.Placed> place(ServerCall call, Design design) {
-        NumenPlayer her = call.her();
+        BodyView her = call.her();
         Planned plan = plan(her, design);
         if (plan.changes().none()) {
             return Job.done(BuildCompanionTask.Placed.NOTHING);
@@ -107,7 +107,7 @@ public final class BuildOps {
      * 这一处离要盖的样子还差什么,按她此刻站的地方数:还剩几格、几格够得着、几格要先挖开(给出最近的几格)、几格够不着
      * (给出最低最近的一格)。只读,当场回;数的判据与 {@link #place} 挑格的是同一个。
      */
-    public static Diff diff(NumenPlayer her, Design design) {
+    public static Diff diff(BodyView her, Design design) {
         Planned plan = plan(her, design);
         if (plan.changes().none()) {
             return new Diff(0, 0, List.of(), 0, Optional.empty(), 0, 0, 0);
@@ -134,7 +134,7 @@ public final class BuildOps {
     private record Planned(Layout layout, Changes changes, Built.Site site) {}
 
     /** 摆出施工图、比出差异。 */
-    private static Planned plan(NumenPlayer her, Design design) {
+    private static Planned plan(BodyView her, Design design) {
         ServerLevel level = her.level();
         if (design.blueprint() == null) {
             Canvas canvas = new Canvas();

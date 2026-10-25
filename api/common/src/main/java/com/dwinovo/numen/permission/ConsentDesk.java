@@ -1,7 +1,7 @@
 package com.dwinovo.numen.permission;
 
 import com.dwinovo.numen.Constants;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.network.payload.ConsentRequestPayload;
 import com.dwinovo.numen.network.NumenNetwork;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * 一只同伴的征询登记处:发起、答复、超时,和答应下来的任务期授权。
  *
- * <p>挂在身体上({@link NumenPlayer#state}):身体没了登记处跟着没,关服时没有一张静态表需要清。
+ * <p>挂在身体上({@link BodyView#state}):身体没了登记处跟着没,关服时没有一张静态表需要清。
  *
  * <h2>征询</h2>
  * 同一只同伴同时只挂一条;新的顶掉旧的,旧的按拒绝收尾({@link #SUPERSEDED})。发起那一刻主人
@@ -120,7 +120,7 @@ public final class ConsentDesk {
     }
 
     /** 这具身体的登记处(首次取时建)。主线程。 */
-    public static ConsentDesk of(NumenPlayer companion) {
+    public static ConsentDesk of(BodyView companion) {
         return companion.state(ConsentDesk.class, () -> new ConsentDesk(companion.getUUID(), new BodyLine(companion)));
     }
 
@@ -157,7 +157,7 @@ public final class ConsentDesk {
      * 答复从外面进来的唯一入口:答复框的网络载荷与 {@code /numen consent} 命令都落这里。只认主人;认下的交给
      * 这只同伴的登记处 {@link #answer}。
      */
-    public static Reply reply(ServerPlayer from, NumenPlayer companion, long requestId,
+    public static Reply reply(ServerPlayer from, BodyView companion, long requestId,
                              ConsentAnswer.Decision decision, String note) {
         if (!companion.isOwnedByPlayer(from.getUUID())) {
             return Reply.NOT_OWNER;
@@ -166,9 +166,9 @@ public final class ConsentDesk {
     }
 
     /** 挂着这个请求号的在场同伴;没有是 null。请求号全服唯一,命令只带号不带同伴。 */
-    public static NumenPlayer pendingAt(MinecraftServer server, long requestId) {
+    public static BodyView pendingAt(MinecraftServer server, long requestId) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (player instanceof NumenPlayer companion) {
+            if (player instanceof BodyView companion) {
                 ConsentRequest pending = of(companion).pending();
                 if (pending != null && pending.id() == requestId) {
                     return companion;
@@ -297,7 +297,7 @@ public final class ConsentDesk {
     }
 
     /** 真身体的接线:游戏刻、主人在线与否、载荷推给主人、记住的规则进主人的存档。 */
-    private record BodyLine(NumenPlayer body) implements Line {
+    private record BodyLine(BodyView body) implements Line {
         @Override
         public long gameTime() {
             return body.level().getGameTime();
@@ -305,7 +305,8 @@ public final class ConsentDesk {
 
         @Override
         public boolean ownerPresent() {
-            return body.resolveOwnerPlayer() != null;
+            // 客户端身体的主人就是本机玩家,永远在场
+            return body.server() == null || body.resolveOwnerPlayer() != null;
         }
 
         @Override
@@ -313,6 +314,8 @@ public final class ConsentDesk {
             ServerPlayer owner = body.resolveOwnerPlayer();
             if (owner != null) {
                 NumenNetwork.sendToPlayer(owner, ConsentRequestPayload.of(request));
+            } else if (body.server() == null) {
+                Constants.LOG.info("[numen-consent] client body asks: {}", ConsentItem.listingText(request.items()));
             }
         }
 
@@ -326,7 +329,10 @@ public final class ConsentDesk {
 
         @Override
         public void remember(List<Rule> allow) {
-            PermissionStore.of(body.level().getServer(), body.getOwnerUuid()).remember(allow);
+            MinecraftServer server = body.server();
+            if (server != null) {
+                PermissionStore.of(server, body.getOwnerUuid()).remember(allow);
+            }
         }
 
     }

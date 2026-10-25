@@ -5,7 +5,7 @@ import com.dwinovo.numen.core.combat.Haven;
 import com.dwinovo.numen.core.combat.Loadout;
 import com.dwinovo.numen.core.combat.Menace;
 import com.dwinovo.numen.core.nav.Trip;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.search.Goals;
 import com.dwinovo.numen.pathing.spec.RouteSpec;
 import com.dwinovo.numen.task.Task;
@@ -71,7 +71,7 @@ public final class FleeChain implements Task, Reflex {
     private boolean fleeing;
 
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         long now = companion.level().getGameTime();
         if (now < corneredUntil) {
             return false;
@@ -89,21 +89,21 @@ public final class FleeChain implements Task, Reflex {
     }
 
     /** 扛不住,或者赤手而有东西在追她。 */
-    private static boolean mustBreakOff(NumenPlayer companion) {
+    private static boolean mustBreakOff(BodyView companion) {
         Loadout loadout = Loadout.forTarget(companion, companion);
         return AttackPlan.breakOff(Menace.effectiveHealth(companion), loadout.hasMelee() || loadout.hasRanged(),
                 !chasers(companion).isEmpty());
     }
 
     /** 正在针对她的:锁定了她,或刚打了她。 */
-    private static List<Mob> chasers(NumenPlayer companion) {
+    private static List<Mob> chasers(BodyView companion) {
         return Menace.hostilesAround(companion, CHASE_RADIUS).stream()
                 .filter(m -> m.getTarget() == companion || m == companion.getLastHurtByMob())
                 .toList();
     }
 
     @Override
-    public TaskState tick(NumenPlayer companion) {
+    public TaskState tick(BodyView companion) {
         if (!fleeing) {
             fleeing = true;
             com.dwinovo.numen.Constants.LOG.info("[numen-flee] 扛不住了,跑 —— 身边 {} 只在追",
@@ -146,7 +146,7 @@ public final class FleeChain implements Task, Reflex {
     }
 
     /** 退不掉:让出身体一阵,背水一战;如实告诉她。 */
-    private TaskState cornered(NumenPlayer companion) {
+    private TaskState cornered(BodyView companion) {
         corneredUntil = companion.level().getGameTime() + CORNERED_TICKS;
         retreatFailures = 0;
         haven = null;
@@ -160,7 +160,7 @@ public final class FleeChain implements Task, Reflex {
     }
 
     /** 这一回跑完了:跑开了,或者血回来了。 */
-    private void done(NumenPlayer companion, boolean stillBeaten) {
+    private void done(BodyView companion, boolean stillBeaten) {
         fleeing = false;
         haven = null;
         stopNav();
@@ -178,7 +178,7 @@ public final class FleeChain implements Task, Reflex {
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         // 被更急的链抢走(摔落、换气):只松开身体,落点留着,回来接着跑
         stopNav();
         companion.controls().releaseAll();

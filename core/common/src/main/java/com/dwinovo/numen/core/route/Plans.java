@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.dwinovo.numen.agent.script.ScriptType;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.BadValue;
 import com.dwinovo.numen.sdk.Codec;
 
@@ -21,7 +21,7 @@ public final class Plans {
 
     Plans() {}
 
-    public static Plans of(NumenPlayer her) {
+    public static Plans of(BodyView her) {
         return her.state(Plans.class, Plans::new);
     }
 

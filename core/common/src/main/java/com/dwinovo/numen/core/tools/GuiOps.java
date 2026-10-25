@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.tools;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.BlockAt;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.Methods;
@@ -56,7 +56,7 @@ public final class GuiOps {
      * 她此刻打开的界面;没开别的就是她自己的背包界面(带 2x2 合成格)。合成格的格与结果格都标出来(原版的 2x2/3x3 与模组的 NxM 一样认:
      * 背着 {@code CraftingContainer} 的槽是格,{@code ResultSlot} 是结果);她自己那一边只列有东西的。
      */
-    public static Window window(NumenPlayer self) {
+    public static Window window(BodyView self) {
         AbstractContainerMenu menu = self.containerMenu;
         boolean ownInventory = menu == self.inventoryMenu;
         List<WindowSlot> slots = new ArrayList<>();
@@ -96,7 +96,7 @@ public final class GuiOps {
     }
 
     /** 关掉开着的界面,关了一个是 true;她自己的背包界面总开着,没有别的开着时什么都不做,是 false。 */
-    public static boolean close(NumenPlayer self) {
+    public static boolean close(BodyView self) {
         AbstractContainerMenu menu = self.containerMenu;
         if (menu == null || menu == self.inventoryMenu) {
             return false;

@@ -6,7 +6,7 @@ import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.entity.InputDriver;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.core.act.Interaction;
 import com.dwinovo.numen.core.task.base.InReachTask;
@@ -39,7 +39,7 @@ public final class InteractEntityCompanionTask extends InReachTask<InteractEntit
     private boolean acted = false;     // landed at least one press (death then = success, not failure)
     private String successMsg = "done";
 
-    public InteractEntityCompanionTask(NumenPlayer player, InteractEntityTaskRecord record) {
+    public InteractEntityCompanionTask(BodyView player, InteractEntityTaskRecord record) {
         super(player, record);
     }
 

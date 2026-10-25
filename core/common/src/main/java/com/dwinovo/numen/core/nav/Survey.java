@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.nav;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.api.Navigator;
 import com.dwinovo.numen.pathing.api.Outcome;
 import com.dwinovo.numen.pathing.api.PlanQuery;
@@ -58,7 +58,7 @@ public final class Survey {
     /**
      * 从她脚下起规划这几段,避开她附近此刻的敌对生物,垫路从 {@code materials} 里挑。在世界所在的线程上调:权限快照与垫路料在这一刻取。
      */
-    public static Survey of(NumenPlayer player, List<Leg> legs, List<Item> materials) {
+    public static Survey of(BodyView player, List<Leg> legs, List<Item> materials) {
         return of(CompanionPorts.navigator(player, CompanionPorts.dangers(player), materials), legs);
     }
 

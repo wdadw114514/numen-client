@@ -14,7 +14,7 @@ import com.dwinovo.numen.core.route.RouteText;
 import com.dwinovo.numen.core.route.Stop;
 import com.dwinovo.numen.core.route.Target;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.search.Goal;
 import com.dwinovo.numen.pathing.spec.RouteSpec;
 import com.dwinovo.numen.permission.ConsentItem;
@@ -86,7 +86,7 @@ public final class MoveToCompanionTask extends AbstractCompanionTask<MoveToTaskR
     private String stoppedWhy;
     private FailureType stoppedType;
 
-    public MoveToCompanionTask(NumenPlayer player, MoveToTaskRecord record) {
+    public MoveToCompanionTask(BodyView player, MoveToTaskRecord record) {
         super(player, record);
     }
 

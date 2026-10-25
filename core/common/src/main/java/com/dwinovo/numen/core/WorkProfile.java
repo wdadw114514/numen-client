@@ -1,6 +1,7 @@
 package com.dwinovo.numen.core;
 
-import net.minecraft.server.level.ServerPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 
 /**
@@ -9,7 +10,7 @@ import net.minecraft.world.level.GameType;
  *
  * <p>真源是原版 {@code ServerPlayerGameMode} 记的那一份模式:{@code /gamemode}、存档、同步给客户端的都是它,挖掉一格秒不秒破、
  * 掉不掉东西原版也按它判({@code ServerPlayerGameMode.isCreative});能力位({@code Abilities.instabuild} 等)是原版按模式派生的,
- * 不另读。
+ * 不另读。客户端身体没有 {@code gameMode} 字段,按同步过来的能力位还原。
  *
  * <p>零缓存:调用方在每个决策点现取({@link #of}),模式被外部切换时下一个决策自然用新画像,不存在幽灵状态。
  */
@@ -24,11 +25,18 @@ public record WorkProfile(
     public static final WorkProfile CREATIVE = new WorkProfile(true, false, false, true, true);
 
     /** 她此刻的游戏模式。 */
-    public static GameType mode(ServerPlayer body) {
-        return body.gameMode.getGameModeForPlayer();
+    public static GameType mode(BodyView body) {
+        Player player = body.player();
+        if (player.isCreative()) {
+            return GameType.CREATIVE;
+        }
+        if (player.isSpectator()) {
+            return GameType.SPECTATOR;
+        }
+        return GameType.SURVIVAL;
     }
 
-    public static WorkProfile of(ServerPlayer body) {
+    public static WorkProfile of(BodyView body) {
         return mode(body).isCreative() ? CREATIVE : SURVIVAL;
     }
 }

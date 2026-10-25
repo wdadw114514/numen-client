@@ -2,7 +2,7 @@ package com.dwinovo.numen.core.task.inventory;
 
 import com.dwinovo.numen.core.gear.Wardrobe;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.TaskState;
 
 
@@ -18,7 +18,7 @@ public final class EquipCompanionTask extends AbstractCompanionTask<EquipTaskRec
 
     private Wardrobe.Outcome outcome;
 
-    public EquipCompanionTask(NumenPlayer player, EquipTaskRecord record) {
+    public EquipCompanionTask(BodyView player, EquipTaskRecord record) {
         super(player, record);
     }
 

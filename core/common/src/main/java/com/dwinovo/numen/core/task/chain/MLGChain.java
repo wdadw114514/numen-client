@@ -7,7 +7,7 @@ import com.dwinovo.numen.task.Task;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.core.task.survival.SurvivalDecisions;
 import com.dwinovo.numen.entity.InputDriver;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Crosshair;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import net.minecraft.core.BlockPos;
@@ -69,7 +69,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         if (WorkProfile.of(companion).fearless()) {
             return false;
         }
@@ -80,7 +80,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
      * 正在快速下落,而且身上有能救自己的东西。在走的路线里计划好的坠落不算:落差与接住的办法寻路规划时已经算过、
      * 执行时自己接,这条链只接计划外的。
      */
-    private static boolean falling(NumenPlayer companion) {
+    private static boolean falling(BodyView companion) {
         Trip trip = Trip.current(companion);
         if (trip != null && trip.plannedFall()) {
             return false;
@@ -93,7 +93,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** 水还在那儿、手上有空桶、窗口没到点 —— 该去收。 */
-    private boolean reclaiming(NumenPlayer companion) {
+    private boolean reclaiming(BodyView companion) {
         if (placed == null || reclaimTicks <= 0) {
             return false;
         }
@@ -106,7 +106,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     @Override
-    public TaskState tick(NumenPlayer companion) {
+    public TaskState tick(BodyView companion) {
         if (falling(companion)) {
             return clutch(companion);
         }
@@ -121,7 +121,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** 摔落中:瞄住落点,够得着就倒水/垫块。 */
-    private TaskState clutch(NumenPlayer companion) {
+    private TaskState clutch(BodyView companion) {
         BlockPos ground = groundBelow(companion);
         if (ground == null) {
             companion.setXRot(90.0f);   // 底下四十格没东西:先朝下候着
@@ -155,7 +155,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** 落进自己那摊水:等沉稳了,换空桶把水收回来。 */
-    private TaskState reclaim(NumenPlayer companion) {
+    private TaskState reclaim(BodyView companion) {
         if (companion.getDeltaMovement().y < SurvivalDecisions.MLG_SETTLED_SPEED) {
             return TaskState.RUNNING;   // 还在往水里沉,等停稳再收
         }
@@ -173,14 +173,14 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** One diary line per fall episode, stamped with the height it survived. */
-    private void noteSave(NumenPlayer companion, String means) {
+    private void noteSave(BodyView companion, String means) {
         if (notedThisFall) return;
         notedThisFall = true;
         com.dwinovo.numen.event.NumenEvents.reflex(companion, this, "broke a fall with " + means);
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         if (companion.isUsingItem()) {
             companion.releaseUsingItem();
         }
@@ -208,7 +208,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** 水会落在哪一格 —— 与 {@code BucketItem.use} 同一个算法(可含水的方块就地灌,否则贴面)。 */
-    private static BlockPos waterLandsAt(NumenPlayer companion, BlockHitResult hit) {
+    private static BlockPos waterLandsAt(BodyView companion, BlockHitResult hit) {
         BlockState state = companion.level().getBlockState(hit.getBlockPos());
         return state.getBlock() instanceof LiquidBlockContainer
                 ? hit.getBlockPos() : hit.getBlockPos().relative(hit.getDirection());
@@ -218,7 +218,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
      * 她会砸到的那一格。碰撞箱中心加四角各打一条竖直射线,取最近的那个 —— 单一条会从
      * 格缝里漏下去,而擦着边掉正是最需要救的那种。
      */
-    private static BlockPos groundBelow(NumenPlayer companion) {
+    private static BlockPos groundBelow(BodyView companion) {
         AABB box = companion.getBoundingBox();
         double y = companion.getY();
         Vec3[] origins = {
@@ -245,7 +245,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** 身上(主背包或副手)带着 {@code item}。 */
-    private static boolean carries(NumenPlayer companion, net.minecraft.world.item.Item item) {
+    private static boolean carries(BodyView companion, net.minecraft.world.item.Item item) {
         Inventory inv = companion.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             if (inv.getItem(i).is(item)) return true;
@@ -254,7 +254,7 @@ public final class MLGChain implements Task, com.dwinovo.numen.task.reflex.Refle
     }
 
     /** A placeable fall-dampening block (hay / slime) she carries, or null. */
-    private static net.minecraft.world.item.Item softBlock(NumenPlayer companion) {
+    private static net.minecraft.world.item.Item softBlock(BodyView companion) {
         Inventory inv = companion.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);

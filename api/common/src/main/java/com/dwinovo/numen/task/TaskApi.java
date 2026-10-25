@@ -3,7 +3,7 @@ package com.dwinovo.numen.task;
 import com.dwinovo.numen.agent.script.ApiError;
 import com.dwinovo.numen.agent.script.ErrorKind;
 import com.dwinovo.numen.data.ModLanguageData;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Call;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.Example;
@@ -57,7 +57,7 @@ public final class TaskApi {
             + "ends with a task_finished event, and a timer fires on its own.")
     @SeeAlso("numen.task.stop")
     public static Status status(ServerCall call) {
-        NumenPlayer companion = call.her();
+        BodyView companion = call.her();
         long now = companion.level().getGameTime();
         TaskRecord rec = CompanionTickDispatcher.currentTaskFor(companion.getUUID());
         List<Timer> timers = timers(companion, now);
@@ -89,9 +89,9 @@ public final class TaskApi {
     @Note("When nothing matches it fails and lists what is pending.")
     @SeeAlso("numen.task.status")
     public static Stopped stop(ServerCall call, Stop args) {
-        NumenPlayer companion = call.her();
+        BodyView companion = call.her();
         String wanted = args.taskId().map(String::strip).filter(s -> !s.isEmpty()).orElse(null);
-        MinecraftServer server = companion.level().getServer();
+        MinecraftServer server = companion.server();
         long now = companion.level().getGameTime();
         TaskRecord active = CompanionTickDispatcher.currentTaskFor(companion.getUUID());
         // 指名道姓的表:先在表里找,找到就撤
@@ -132,7 +132,7 @@ public final class TaskApi {
             + "is paused.")
     @SeeAlso({"numen.task.status", "numen.task.stop"})
     public static Timer timer(ServerCall call, SetTimer args) {
-        NumenPlayer companion = call.her();
+        BodyView companion = call.her();
         String reason = args.reason().strip();
         if (reason.isEmpty()) {
             throw new ApiError(ErrorKind.BAD_ARGUMENT, "reason is empty: when it fires you tell from it why you set "
@@ -141,8 +141,11 @@ public final class TaskApi {
         if (reason.length() > MAX_REASON_LENGTH) {
             reason = reason.substring(0, MAX_REASON_LENGTH);
         }
-        MinecraftServer server = companion.level().getServer();
+        MinecraftServer server = companion.server();
         int seconds = TimerRegistry.clampSeconds(args.after().orElse(DEFAULT_AFTER_S));
+        if (server == null) {
+            throw new ApiError(ErrorKind.FAILED, "timers need a server-side body", null);
+        }
         TimerRegistry registry = TimerRegistry.get(server);
         long now = server.overworld().getGameTime();
         TimerRegistry.Timer timer = registry.set(companion.getUUID(), now, seconds, reason);
@@ -158,7 +161,7 @@ public final class TaskApi {
     }
 
     /** 她的日程也是主人的信息:表定在什么时候、为什么定,当场说一句;发的是语言键,主人按他自己的语言看。 */
-    private static void announceToOwner(NumenPlayer companion, int seconds, String reason) {
+    private static void announceToOwner(BodyView companion, int seconds, String reason) {
         ServerPlayer owner = companion.resolveOwnerPlayer();
         if (owner != null) {
             owner.sendSystemMessage(Component.translatable(ModLanguageData.Keys.NOTICE_TIMER,
@@ -166,8 +169,8 @@ public final class TaskApi {
         }
     }
 
-    private static List<Timer> timers(NumenPlayer companion, long now) {
-        MinecraftServer server = companion.level().getServer();
+    private static List<Timer> timers(BodyView companion, long now) {
+        MinecraftServer server = companion.server();
         if (server == null) {
             return List.of();
         }

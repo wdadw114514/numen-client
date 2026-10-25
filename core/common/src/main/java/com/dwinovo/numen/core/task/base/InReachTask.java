@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.task.base;
 import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.core.nav.Terrain;
 import com.dwinovo.numen.core.task.move.GotoReminders;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.TaskRecord;
 import com.dwinovo.numen.task.TaskState;
 
@@ -19,7 +19,7 @@ import net.minecraft.core.BlockPos;
  */
 public abstract class InReachTask<R extends TaskRecord> extends AbstractCompanionTask<R> {
 
-    protected InReachTask(NumenPlayer player, R record) {
+    protected InReachTask(BodyView player, R record) {
         super(player, record);
     }
 

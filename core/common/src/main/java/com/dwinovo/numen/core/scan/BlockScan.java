@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.scan;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -37,7 +37,7 @@ public final class BlockScan {
      *
      * @return 这次搜索的句柄,交 {@link BlockSearch#cancel} 撤掉
      */
-    public static int start(NumenPlayer self, int radius, Set<Block> targets, Consumer<Found> done) {
+    public static int start(BodyView self, int radius, Set<Block> targets, Consumer<Found> done) {
         ServerLevel level = self.level();
         BlockPos center = self.blockPosition();
         Live live = new Live(level, targets);

@@ -4,7 +4,9 @@ import com.dwinovo.numen.api.CompanionEvent;
 import com.dwinovo.numen.pathing.body.Body;
 import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Controls;
+import com.dwinovo.numen.pathing.body.Effector;
 import com.dwinovo.numen.pathing.body.Physics;
+import com.dwinovo.numen.pathing.body.PlayerHands;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
@@ -206,11 +208,8 @@ public final class NumenPlayer extends ServerPlayer implements Body, BodyView {
         }
     }
 
-    /** 一件在她身上用坏的装备:是什么、坏在哪个装备位。 */
-    public record BrokenGear(Item item, EquipmentSlot slot) {}
-
     /** 最近用坏的装备,按先后;只留最近 {@link #BROKEN_KEPT} 件。 */
-    private final java.util.ArrayList<BrokenGear> brokenGear = new java.util.ArrayList<>();
+    private final java.util.ArrayList<BodyView.BrokenGear> brokenGear = new java.util.ArrayList<>();
     /** 到现在一共用坏过几件:{@link #brokenGearMark} 读它,{@link #brokenGearSince} 拿它算新坏的是哪几件。 */
     private long brokenGearTotal;
     private static final int BROKEN_KEPT = 16;
@@ -225,7 +224,7 @@ public final class NumenPlayer extends ServerPlayer implements Body, BodyView {
         if (brokenGear.size() == BROKEN_KEPT) {
             brokenGear.remove(0);
         }
-        brokenGear.add(new BrokenGear(item, slot));
+        brokenGear.add(new BodyView.BrokenGear(item, slot));
         brokenGearTotal++;
     }
 
@@ -235,7 +234,8 @@ public final class NumenPlayer extends ServerPlayer implements Body, BodyView {
     }
 
     /** 读数 {@code mark} 以来用坏的装备,按先后。 */
-    public List<BrokenGear> brokenGearSince(long mark) {
+    @Override
+    public List<BodyView.BrokenGear> brokenGearSince(long mark) {
         int fresh = (int) Math.min(brokenGearTotal - mark, brokenGear.size());
         return List.copyOf(brokenGear.subList(brokenGear.size() - fresh, brokenGear.size()));
     }
@@ -444,6 +444,11 @@ public final class NumenPlayer extends ServerPlayer implements Body, BodyView {
     @Override
     public Controls controls() {
         return controls;
+    }
+
+    @Override
+    public Effector hands() {
+        return state(Effector.class, () -> new PlayerHands(this));
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.dwinovo.numen.agent.script.ApiError;
 import com.dwinovo.numen.agent.script.ErrorKind;
 import com.dwinovo.numen.api.NumenApi;
 import com.dwinovo.numen.core.WorkProfile;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.Example;
 import com.dwinovo.numen.sdk.Fn;
@@ -47,7 +47,7 @@ public final class CreativeApi {
     @Note("Fails in survival mode; there you mine, craft, loot or trade for items instead.")
     @Note("What doesn't fit in your inventory drops at your feet.")
     public static Took give(ServerCall call, Give args) {
-        NumenPlayer companion = call.her();
+        BodyView companion = call.her();
         Item item = args.item();
         String id = BuiltInRegistries.ITEM.getKey(item).toString();
         if (!WorkProfile.of(companion).freeMaterials()) {

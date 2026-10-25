@@ -1,6 +1,6 @@
 package com.dwinovo.numen.task;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 /**
  * 一件想占用身体的事——<b>反射、同步动作、指令、常驻行为共用这一个接口</b>。
@@ -37,7 +37,7 @@ public interface Task {
      *
      * <p>默认 {@code true}:被派下来的活默认就该干。
      */
-    default boolean canRun(NumenPlayer companion) {
+    default boolean canRun(BodyView companion) {
         return true;
     }
 
@@ -48,7 +48,7 @@ public interface Task {
      *
      * <p>默认当场就绪:没有要先判的。
      */
-    default Preparation prepare(NumenPlayer companion) {
+    default Preparation prepare(BodyView companion) {
         return Preparation.READY;
     }
 
@@ -57,14 +57,14 @@ public interface Task {
      *
      * <p>默认什么都不做:反射没有"开始"这回事,它们只有触发。
      */
-    default void start(NumenPlayer companion) {
+    default void start(BodyView companion) {
     }
 
     /** 前进一 tick。{@link TaskState#RUNNING} = 还没完;终态 = 完了(常驻的永远不返终态)。 */
-    TaskState tick(NumenPlayer companion);
+    TaskState tick(BodyView companion);
 
     /** 丢掉身体:被更高层抢占、被换掉、身体没了。{@code why} 说明是哪种。 */
-    void stop(NumenPlayer companion, StopReason why);
+    void stop(BodyView companion, StopReason why);
 
     /**
      * 交回给模型的结果信封。只有走到终态才有意义——常驻任务永远不会被调到。

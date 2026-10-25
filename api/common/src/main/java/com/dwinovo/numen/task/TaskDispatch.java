@@ -1,7 +1,7 @@
 package com.dwinovo.numen.task;
 
 import com.dwinovo.numen.agent.tool.api.ToolContext;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import java.util.function.Consumer;
 
@@ -39,7 +39,7 @@ public final class TaskDispatch {
     private TaskDispatch() {}
 
     /** 任务上下文:调用 id + 身体当前游戏刻(deadline 的起点)。 */
-    public static ToolContext ctx(String toolCallId, NumenPlayer companion) {
+    public static ToolContext ctx(String toolCallId, BodyView companion) {
         return new ToolContext(toolCallId, companion.level().getGameTime());
     }
 
@@ -51,7 +51,7 @@ public final class TaskDispatch {
      * 而队首的长活可能几分钟——让它排在后面等于把对话卡到 deadline。
      * 反过来它有界短,插队也饿不死别人。
      */
-    public static void runSync(NumenPlayer companion, TaskRecord record, Consumer<TaskResult> reply) {
+    public static void runSync(BodyView companion, TaskRecord record, Consumer<TaskResult> reply) {
         record.replyTo(reply);
         CompanionTickDispatcher.syncSlotFor(companion.getUUID()).put(companion, record,
                 TaskFactory.create(companion, record));
@@ -66,7 +66,7 @@ public final class TaskDispatch {
      *
      * @param replay 重启后再跑的那一行 Lua;没有可再跑的是 null
      */
-    public static void setTask(NumenPlayer companion, TaskRecord record, String replay, Consumer<TaskResult> refused,
+    public static void setTask(BodyView companion, TaskRecord record, String replay, Consumer<TaskResult> refused,
                                Runnable accepted) {
         Task runner = TaskFactory.create(companion, record);
         long asked = companion.level().getGameTime();
@@ -86,7 +86,7 @@ public final class TaskDispatch {
     }
 
     /** 直接交一件活(测试直接测执行器时用):它不出自哪一次调用,重启后没有可再跑的,受理与否不回。 */
-    public static void setTask(NumenPlayer companion, TaskRecord record) {
+    public static void setTask(BodyView companion, TaskRecord record) {
         setTask(companion, record, null, refused -> { }, () -> { });
     }
 }

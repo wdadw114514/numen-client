@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.nav;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Snapshots;
 import com.dwinovo.numen.pathing.drive.LiveWorld;
 import com.dwinovo.numen.pathing.plan.CostModel;
@@ -14,7 +14,6 @@ import com.dwinovo.numen.permission.Listing;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ public final class DigQuote {
     }
 
     /** 按 {@code spec} 与她此刻的身体、端口给挖掘定价。 */
-    public static DigQuote of(NumenPlayer player, RouteSpec spec) {
+    public static DigQuote of(BodyView player, RouteSpec spec) {
         return new DigQuote(CompanionPorts.model(player, spec), new LiveWorld(player.level()));
     }
 
@@ -112,9 +111,9 @@ public final class DigQuote {
      * 这一格物理上处置得了:挖得动、不贴着流体、不顶着落沙、在世界边界里——只问挖掘规则,不问规格与许可,与她怎么走过去
      * 无关。
      */
-    public static boolean physicallyDiggable(ServerPlayer player, BlockPos pos) {
+    public static boolean physicallyDiggable(BodyView player, BlockPos pos) {
         LiveWorld world = new LiveWorld(player.level());
-        return DigRules.check(world, Snapshots.of(player), pos, world.getBlockState(pos), false) == null;
+        return DigRules.check(world, Snapshots.of(player.player()), pos, world.getBlockState(pos), false) == null;
     }
 
     /**

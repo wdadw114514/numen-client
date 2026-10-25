@@ -2,7 +2,7 @@ package com.dwinovo.numen.core.tools.perception;
 
 import com.dwinovo.numen.core.nav.Feet;
 import com.dwinovo.numen.core.nav.Terrain;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.spec.RouteSpec;
 import com.dwinovo.numen.pathing.world.Semantics;
 
@@ -60,7 +60,7 @@ final class LookAround {
      * The map of the {@code (2 * radius + 1)}-wide square around her feet; {@code radius} is clamped to 4-16: the map row
      * by row (north first), the cell it is centred on, her facing and the legend.
      */
-    static ScanApi.GroundMap render(NumenPlayer self, int asked) {
+    static ScanApi.GroundMap render(BodyView self, int asked) {
         int radius = Math.clamp(asked, MIN_RADIUS, MAX_RADIUS);
         Terrain view = Terrain.of(self);
         BlockPos center = Feet.cell(self);

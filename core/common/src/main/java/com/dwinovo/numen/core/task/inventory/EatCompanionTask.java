@@ -6,7 +6,7 @@ import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.task.TaskState;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.act.Interaction;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.task.base.Precondition;
@@ -33,7 +33,7 @@ public final class EatCompanionTask extends AbstractCompanionTask<EatItemTaskRec
     private int beforeFood;
     private String doneMessage = "done";
 
-    public EatCompanionTask(NumenPlayer player, EatItemTaskRecord record) {
+    public EatCompanionTask(BodyView player, EatItemTaskRecord record) {
         super(player, record);
     }
 

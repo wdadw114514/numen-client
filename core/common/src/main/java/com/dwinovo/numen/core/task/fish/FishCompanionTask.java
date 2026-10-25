@@ -9,7 +9,7 @@ import com.dwinovo.numen.core.nav.Terrain;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.task.base.Precondition;
 import com.dwinovo.numen.entity.InputDriver;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.pathing.spec.RouteSpec;
 import com.dwinovo.numen.task.Preparation;
@@ -62,7 +62,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
     /** 收线时甩上来的东西:{@code minecraft:cod x1}。 */
     private final List<String> caught = new ArrayList<>();
 
-    public FishCompanionTask(NumenPlayer player, FishTaskRecord record) {
+    public FishCompanionTask(BodyView player, FishTaskRecord record) {
         super(player, record);
     }
 
@@ -412,7 +412,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         super.stop(companion, why);
         discardHook();
         phase = Phase.PREPARE;

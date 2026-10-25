@@ -9,7 +9,7 @@ import com.dwinovo.numen.core.task.move.FollowCompanionTask;
 import com.dwinovo.numen.core.task.move.FollowTaskRecord;
 import com.dwinovo.numen.core.task.move.MoveToCompanionTask;
 import com.dwinovo.numen.core.task.move.MoveToTaskRecord;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.EntityRef;
 import com.dwinovo.numen.sdk.Example;
@@ -135,7 +135,7 @@ public final class MoveApi {
     @Note("Instant. Riding nothing fails with kind failed. Vanilla puts you down beside it, where there is room.")
     @SeeAlso("numen.move.go")
     public static Dismounted dismount(ServerCall call) {
-        NumenPlayer her = call.her();
+        BodyView her = call.her();
         Entity vehicle = her.getVehicle();
         if (vehicle == null) {
             throw new ApiError(ErrorKind.FAILED, "I am not riding anything", null);

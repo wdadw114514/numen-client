@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.tools;
 import com.dwinovo.numen.agent.script.ApiError;
 import com.dwinovo.numen.agent.script.ErrorKind;
 import com.dwinovo.numen.core.PlayerInv;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Doc;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -66,7 +66,7 @@ public final class CraftOps {
                           @Doc("Whether what you carry crafts more of it: call again for the rest.") boolean more) {}
 
     /** {@code numen.inv.craft}:在开着的格里照 {@code id} 那条配方合一次,至多合到 {@code count} 件。 */
-    public static Crafted craft(Identifier id, int want, NumenPlayer self) {
+    public static Crafted craft(Identifier id, int want, BodyView self) {
         ServerLevel level = self.level();
         RecipeHolder<?> found = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
         if (found == null || !(found.value() instanceof CraftingRecipe recipe) || recipe.isSpecial()
@@ -157,7 +157,7 @@ public final class CraftOps {
     }
 
     /** {@code numen.inv.craftable}:她背着的料现在合得出的每一条合成配方。 */
-    public static List<Recipe> craftable(NumenPlayer self) {
+    public static List<Recipe> craftable(BodyView self) {
         ServerLevel level = self.level();
         Map<Item, Integer> pool = poolOf(self.inventoryMenu, self);
         List<Recipe> recipes = new ArrayList<>();
@@ -187,7 +187,7 @@ public final class CraftOps {
      * 一条合成配方:编号、合出几件、每格的料、装得下的最小的格,以及照她背着的合一次还缺什么(不缺时没有)。
      * {@code numen.inv.recipes} 与 {@code numen.inv.craftable} 共用这一份。
      */
-    static Recipe recipe(RecipeHolder<?> holder, CraftingRecipe recipe, ItemStack result, NumenPlayer self) {
+    static Recipe recipe(RecipeHolder<?> holder, CraftingRecipe recipe, ItemStack result, BodyView self) {
         List<Ingredient> ings = ingredientsOf(recipe);
         Map<Item, Integer> pool = poolOf(self.inventoryMenu, self);
         return new Recipe(holder.id().identifier().toString(), Recipe.Station.CRAFTING,
@@ -206,7 +206,7 @@ public final class CraftOps {
      * 按当前格局重算结果槽。容器从菜单自己的槽位上取({@code Slot.container}),所以
      * 工作台和她自己的 2×2 走同一条;拿不到原版那两种容器的(模组自定义合成台)就不动。
      */
-    private static void recompute(AbstractContainerMenu menu, Grid grid, NumenPlayer self,
+    private static void recompute(AbstractContainerMenu menu, Grid grid, BodyView self,
                                   RecipeHolder<CraftingRecipe> hint) {
         if (!(self.level() instanceof ServerLevel level)) {
             return;
@@ -367,7 +367,7 @@ public final class CraftOps {
      * The body's spendable materials as seen through {@code menu}: player-side slots only,
      * and only main inventory + hotbar (container slots 0–35) — armor and offhand stay on.
      */
-    private static Map<Item, Integer> poolOf(AbstractContainerMenu menu, NumenPlayer self) {
+    private static Map<Item, Integer> poolOf(AbstractContainerMenu menu, BodyView self) {
         Map<Item, Integer> pool = new HashMap<>();
         if (menu == null) {
             return pool;
@@ -385,7 +385,7 @@ public final class CraftOps {
     }
 
     /** Put {@code n} of {@code item} into one grid cell via clicks; returns how many landed. */
-    private static int placeIntoCell(AbstractContainerMenu menu, NumenPlayer self, int cellIdx,
+    private static int placeIntoCell(AbstractContainerMenu menu, BodyView self, int cellIdx,
                                      Item item, Ingredient ing, int n) {
         int placed = 0;
         int guard = 0;
@@ -415,7 +415,7 @@ public final class CraftOps {
     }
 
     /** Shift every non-empty grid cell back into the inventory. */
-    private static void sweepGrid(AbstractContainerMenu menu, NumenPlayer self, Grid grid) {
+    private static void sweepGrid(AbstractContainerMenu menu, BodyView self, Grid grid) {
         if (menu == null || grid == null) {
             return;
         }
@@ -427,7 +427,7 @@ public final class CraftOps {
     }
 
     /** Park a carried stack into a free main-inventory slot; false if none accepts it. */
-    private static boolean settleCarried(AbstractContainerMenu menu, NumenPlayer self) {
+    private static boolean settleCarried(AbstractContainerMenu menu, BodyView self) {
         if (menu.getCarried().isEmpty()) {
             return true;
         }

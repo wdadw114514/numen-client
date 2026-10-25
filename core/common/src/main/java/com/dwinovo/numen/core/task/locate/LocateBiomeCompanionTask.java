@@ -7,7 +7,7 @@ import com.dwinovo.numen.core.FailureType;
 
 import com.dwinovo.numen.task.TaskState;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 
 import net.minecraft.core.BlockPos;
@@ -71,7 +71,7 @@ public final class LocateBiomeCompanionTask extends AbstractCompanionTask<Locate
     private BlockPos best;
     private String failReason = "not on a server level";
 
-    public LocateBiomeCompanionTask(NumenPlayer player, LocateBiomeTaskRecord record) {
+    public LocateBiomeCompanionTask(BodyView player, LocateBiomeTaskRecord record) {
         super(player, record);
     }
 

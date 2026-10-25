@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.tools.perception;
 import com.dwinovo.numen.api.NumenApi;
 import com.dwinovo.numen.api.NumenPlugins;
 import com.dwinovo.numen.core.WorkProfile;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.Example;
 import com.dwinovo.numen.sdk.Fn;
@@ -77,7 +77,7 @@ public final class StatusApi {
             + "exact slots.")
     @SeeAlso({"numen.status.owner", "numen.status.world"})
     public static Self self(ServerCall call) {
-        NumenPlayer self = call.her();
+        BodyView self = call.her();
         List<String> structures = new ArrayList<>();
         if (self.level() instanceof ServerLevel sl) {
             Registry<Structure> reg = sl.registryAccess().lookupOrThrow(Registries.STRUCTURE);
@@ -137,7 +137,7 @@ public final class StatusApi {
     @Note("Instant and read-only. An offline owner comes back as online:false.")
     @SeeAlso("numen.status.self")
     public static Owner owner(ServerCall call) {
-        NumenPlayer self = call.her();
+        BodyView self = call.her();
         // 全服去找:原版 getOwner() 只在宠物所在的那一层世界里找,别的维度的主人会被当成不在线
         Player player = self.getOwnerUuid() == null ? null : self.resolveOwnerPlayer();
         if (player == null) {

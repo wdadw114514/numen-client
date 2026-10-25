@@ -1,7 +1,7 @@
 package com.dwinovo.numen.core.task.wait;
 
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.TaskState;
 
 
@@ -13,7 +13,7 @@ public final class WaitCompanionTask extends AbstractCompanionTask<WaitTaskRecor
 
     private long startedAt;
 
-    public WaitCompanionTask(NumenPlayer player, WaitTaskRecord record) {
+    public WaitCompanionTask(BodyView player, WaitTaskRecord record) {
         super(player, record);
     }
 

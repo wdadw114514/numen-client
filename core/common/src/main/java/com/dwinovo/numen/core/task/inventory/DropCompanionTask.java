@@ -4,7 +4,7 @@ import com.dwinovo.numen.core.FailureType;
 
 import com.dwinovo.numen.task.TaskState;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.task.base.Precondition;
 import net.minecraft.server.level.ServerLevel;
@@ -22,7 +22,7 @@ public final class DropCompanionTask extends AbstractCompanionTask<DropItemsTask
     private int dropped;
     private String doneMessage = "done";
 
-    public DropCompanionTask(NumenPlayer player, DropItemsTaskRecord record) {
+    public DropCompanionTask(BodyView player, DropItemsTaskRecord record) {
         super(player, record);
     }
 

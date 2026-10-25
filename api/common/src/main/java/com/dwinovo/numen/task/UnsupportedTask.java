@@ -16,12 +16,12 @@ public final class UnsupportedTask implements Task {
     }
 
     @Override
-    public void start(com.dwinovo.numen.entity.NumenPlayer companion) {
+    public void start(com.dwinovo.numen.entity.BodyView companion) {
         // nothing — fails on the first tick
     }
 
     @Override
-    public TaskState tick(com.dwinovo.numen.entity.NumenPlayer companion) {
+    public TaskState tick(com.dwinovo.numen.entity.BodyView companion) {
         return TaskState.FAILED;
     }
 
@@ -32,7 +32,7 @@ public final class UnsupportedTask implements Task {
     }
 
     @Override
-    public void stop(com.dwinovo.numen.entity.NumenPlayer companion, StopReason why) {
+    public void stop(com.dwinovo.numen.entity.BodyView companion, StopReason why) {
     }
 
     @Override

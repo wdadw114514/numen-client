@@ -11,7 +11,7 @@ import com.dwinovo.numen.core.task.dig.DigCompanionTask;
 import com.dwinovo.numen.core.task.dig.DigTaskRecord;
 import com.dwinovo.numen.core.task.interact.InteractAtTaskRecord;
 import com.dwinovo.numen.core.task.interact.InteractEntityTaskRecord;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
@@ -43,7 +43,7 @@ public final class BlockActionOps {
      * @param targets 点名的几格
      */
     public static DigTaskRecord dig(ServerCall src, List<Target> targets, Integer count) {
-        NumenPlayer her = src.her();
+        BodyView her = src.her();
         Level level = her.level();
         List<BlockPos> plain = new ArrayList<>();
         Map<BlockPos, BlockState> named = new LinkedHashMap<>();

@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.task.combat;
 import com.dwinovo.numen.core.Constants;
 import com.dwinovo.numen.core.act.Ballistics;
 import com.dwinovo.numen.core.combat.Loadout;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -38,14 +38,14 @@ final class RangedShot {
 
     private enum State { USING, READY_TO_FIRE, SETTLING, DONE, MISFIRE }
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final boolean crossbow;
     private State state = State.USING;
     private int held;
     private int settle;
     private boolean fired;
 
-    RangedShot(NumenPlayer player, boolean crossbow) {
+    RangedShot(BodyView player, boolean crossbow) {
         this.player = player;
         this.crossbow = crossbow;
         player.gameMode.useItem(player, player.level(), player.getMainHandItem(), InteractionHand.MAIN_HAND);

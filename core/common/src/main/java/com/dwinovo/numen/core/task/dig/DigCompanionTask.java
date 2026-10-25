@@ -11,7 +11,7 @@ import com.dwinovo.numen.core.nav.DigQuote;
 import com.dwinovo.numen.core.nav.Feet;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.task.base.Precondition;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Snapshots;
 import com.dwinovo.numen.pathing.drive.LiveWorld;
 import com.dwinovo.numen.pathing.search.Goal;
@@ -91,7 +91,7 @@ public final class DigCompanionTask extends AbstractCompanionTask<DigTaskRecord>
     /** 已经等了几刻。 */
     private int settleTicks;
 
-    public DigCompanionTask(NumenPlayer player, DigTaskRecord record) {
+    public DigCompanionTask(BodyView player, DigTaskRecord record) {
         super(player, record);
         this.digger = new BlockDigger(player);
     }

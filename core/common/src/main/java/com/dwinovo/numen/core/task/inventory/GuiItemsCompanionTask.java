@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.task.inventory;
 import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.tools.ContainerOps;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Action;
 import com.dwinovo.numen.task.TaskState;
 
@@ -27,7 +27,7 @@ public final class GuiItemsCompanionTask extends AbstractCompanionTask<GuiItemsT
     private String stopped;
     private String done = "done";
 
-    public GuiItemsCompanionTask(NumenPlayer player, GuiItemsTaskRecord record) {
+    public GuiItemsCompanionTask(BodyView player, GuiItemsTaskRecord record) {
         super(player, record);
     }
 

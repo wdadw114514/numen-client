@@ -26,6 +26,22 @@ public final class Hotbar {
 
     private Hotbar() {}
 
+    /** 身体无关的版本:服务端身体走原版按键,客户端身体交给它自己的协议实现。 */
+    public static Optional<BodyAction> hold(BodyView body, int slot) {
+        if (body.player() instanceof ServerPlayer serverPlayer) {
+            return hold(serverPlayer, slot);
+        }
+        return body.hold(slot);
+    }
+
+    /** 身体无关的版本:服务端身体走原版按键,客户端身体交给它自己的协议实现。 */
+    public static Grip grip(BodyView body, Item item) {
+        if (body.player() instanceof ServerPlayer serverPlayer) {
+            return grip(serverPlayer, item);
+        }
+        return body.grip(item);
+    }
+
     /**
      * 把主背包第 {@code slot} 格的东西拿到主手;{@code slot} 是 {@link #OFFHAND} 就交换主副手;{@code slot} 为负是空手——切到
      * 快捷栏里一个空格({@link #emptyHand}),没有空格就拿着手上的东西。已经在主手上就什么也不做。手上本来就空着、只是换到

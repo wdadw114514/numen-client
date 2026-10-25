@@ -3,7 +3,7 @@ package com.dwinovo.numen.task;
 import com.dwinovo.numen.Constants;
 import com.dwinovo.numen.agent.script.ApiReply;
 import com.dwinovo.numen.entity.CompanionRegistry;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.event.NumenEvents;
 import com.dwinovo.numen.program.CallObserver;
 import com.dwinovo.numen.program.ServerPrograms;
@@ -51,8 +51,8 @@ public final class TaskPersistence {
      * 记下她现在在做什么(换槽时调):{@code taskName} 是这件活的名字,{@code lua} 是重启后再跑的那一行。全为 null = 记为空闲;
      * 只有名字没有那一行 = 在做、但接不回来。
      */
-    public static void remember(NumenPlayer companion, String taskName, String lua) {
-        MinecraftServer server = companion.level().getServer();
+    public static void remember(BodyView companion, String taskName, String lua) {
+        MinecraftServer server = companion.server();
         if (server == null) {
             return;
         }
@@ -65,7 +65,7 @@ public final class TaskPersistence {
     }
 
     /** 她做完了 / 被换掉了 —— 清掉记录,免得重启后凭空捡回一件旧活。 */
-    public static void forget(NumenPlayer companion) {
+    public static void forget(BodyView companion) {
         remember(companion, null, null);
     }
 
@@ -77,8 +77,8 @@ public final class TaskPersistence {
     record LeftOver(String taskName, String lua, String old) {}
 
     /** 身体进世界这一刻落盘记录里的那件活;没有就是 null。只在进世界那一刻读,见类注释。 */
-    static LeftOver leftOver(NumenPlayer companion) {
-        MinecraftServer server = companion.level().getServer();
+    static LeftOver leftOver(BodyView companion) {
+        MinecraftServer server = companion.server();
         if (server == null) {
             return null;
         }
@@ -94,7 +94,7 @@ public final class TaskPersistence {
      * 已经不成立或受理之前的准备没过——都不阻断:身体照样起来,她空着手,并收到一条 task_finished 说清为什么。她的历史里还留着那件活,
      * 不给个了结她会一直干等。<b>不做兼容转接</b>:旧版本记下的一行命令不再跑,猜它的意思她可能去打错的东西。
      */
-    static void replay(NumenPlayer companion, LeftOver left) {
+    static void replay(BodyView companion, LeftOver left) {
         String taskName = left.taskName();
         if (left.lua().isBlank()) {
             Constants.LOG.warn("[numen-task] {} 重启前的活是旧版本按一行命令记下的,这一版不再跑它,丢掉:{}",
@@ -125,7 +125,7 @@ public final class TaskPersistence {
     /**
      * 这件活接不回来:记一笔,以它受理时的名字告诉她为什么,清掉记录。
      */
-    private static void abandon(NumenPlayer companion, String taskName, String why) {
+    private static void abandon(BodyView companion, String taskName, String why) {
         Constants.LOG.warn("[numen-task] 重启前她在做的 {} 没能接回来: {}", taskName, why);
         NumenEvents.taskFinished(companion, REPLAY_CALL_ID + "-" + taskName, taskName, "failed",
                 TaskResult.fail("this task could not be resumed after the restart: " + why), null);
@@ -136,7 +136,7 @@ public final class TaskPersistence {
      * 重启前那件还没接回来,新活就派下来了:新的顶替它,和槽里有活时被换掉一样告诉她一声(她的历史里还留着
      * 那件)。记录不动,新活受理时会记下它自己。
      */
-    static void superseded(NumenPlayer companion, LeftOver left) {
+    static void superseded(BodyView companion, LeftOver left) {
         Constants.LOG.info("[numen-task] {} 重启前的 {} 还没接回来就被新派的活顶替", companion.getUUID(), left.taskName());
         NumenEvents.taskFinished(companion, REPLAY_CALL_ID + "-" + left.taskName(), left.taskName(), "stopped",
                 TaskResult.cancelled("the task from before the restart was not resumed: a newer one replaced it."),

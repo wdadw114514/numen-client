@@ -8,7 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
-import net.minecraft.server.level.ServerPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -83,7 +83,7 @@ public final class ThrowawayBlocks {
      * 端口 {@link com.dwinovo.numen.pathing.plan.Materials} 的答案:下一次垫路会放下哪种方块——按 {@code list} 的先后,主背包或
      * 副手里有哪一种就是哪一种;免耗材画像(创造)下就是清单第一种(寻路拿到手上时凭空取一叠)。只看不拿;没有料可垫为空。
      */
-    public static Optional<Block> next(ServerPlayer player, List<Item> list) {
+    public static Optional<Block> next(BodyView player, List<Item> list) {
         Inventory inventory = player.getInventory();
         for (Item item : list) {
             if (item instanceof BlockItem block && (inventory.contains(new ItemStack(item))
@@ -109,7 +109,7 @@ public final class ThrowawayBlocks {
      * 每条路都要垫方块而身上一件料都没有时的那句话:这一趟能垫哪几种,背包里带着哪些别的方块——要用哪种,写进这一趟的
      * {@code materials}。背包里的方块一样不落地列:种数不会多过背包的格数。
      */
-    public static String shortageAdvice(ServerPlayer player, List<Item> list) {
+    public static String shortageAdvice(BodyView player, List<Item> list) {
         Inventory inv = player.getInventory();
         Map<String, Integer> spare = new LinkedHashMap<>();
         for (int i = 0; i < inv.getContainerSize(); i++) {

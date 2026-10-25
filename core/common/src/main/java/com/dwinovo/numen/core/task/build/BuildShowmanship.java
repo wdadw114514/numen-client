@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.task.build;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Controls;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.pathing.body.Aim;
@@ -32,14 +32,14 @@ final class BuildShowmanship {
     /** 每批最多冒几处粒子——整栋房子逐格发粒子会把客户端打垮。 */
     private static final int PARTICLE_BUDGET_PER_BATCH = 3;
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final BuildInventory inv;
 
     private int swingCooldown;
     /** 落位批次的高度要她蹲下(跨 tick 保持)。 */
     private boolean crouching;
 
-    BuildShowmanship(NumenPlayer player, BuildInventory inv) {
+    BuildShowmanship(BodyView player, BuildInventory inv) {
         this.player = player;
         this.inv = inv;
     }

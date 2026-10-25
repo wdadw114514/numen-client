@@ -2,7 +2,7 @@ package com.dwinovo.numen.core.tools;
 
 import com.dwinovo.numen.core.scan.BlockGroups;
 import com.dwinovo.numen.core.scan.BlockScan;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.BlockAt;
 import com.dwinovo.numen.sdk.Doc;
 import com.dwinovo.numen.sdk.Methods;
@@ -38,7 +38,7 @@ public final class ScanOps {
      * 看一次,看完那一刻有值:全部的团,由近及远。没看全时(没加载的区块、搜到上限)那句话随值交回,写进程序的回执:只交一串团,
      * 分不清"半径里没有铁"和"半径里大半没看",她每次都会读成前一种。
      */
-    public static Pending<List<Cluster>> scan(NumenPlayer self, int radius, Set<Block> targets) {
+    public static Pending<List<Cluster>> scan(BodyView self, int radius, Set<Block> targets) {
         Pending<List<Cluster>> out = Pending.create();
         BlockScan.start(self, Math.clamp(radius, MIN_RADIUS, BlockScan.MAX_RADIUS), targets, found -> {
             String note = coverageNote(found.coverage());

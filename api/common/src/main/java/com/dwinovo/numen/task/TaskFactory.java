@@ -1,6 +1,6 @@
 package com.dwinovo.numen.task;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +31,7 @@ public final class TaskFactory {
     /** Builds the {@link Task} that runs a record of the registered type. */
     @FunctionalInterface
     public interface Runner<R extends TaskRecord> {
-        Task create(NumenPlayer player, R record);
+        Task create(BodyView player, R record);
     }
 
     private static final Map<Class<? extends TaskRecord>, Runner<? extends TaskRecord>> RUNNERS =
@@ -50,7 +50,7 @@ public final class TaskFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public static Task create(NumenPlayer player, TaskRecord record) {
+    public static Task create(BodyView player, TaskRecord record) {
         Runner<TaskRecord> runner = (Runner<TaskRecord>) RUNNERS.get(record.getClass());
         return runner != null ? runner.create(player, record) : new UnsupportedTask(record);
     }

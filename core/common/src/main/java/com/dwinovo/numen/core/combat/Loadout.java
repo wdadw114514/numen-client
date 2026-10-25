@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.combat;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -57,7 +57,7 @@ public final class Loadout {
      * "已上弦的弩 &gt; 弓 &gt; 未上弦的弩"挑——上弦的弩省掉整个拉弓周期,
      * 而弓的蓄力比给弩上弦快。
      */
-    public static Loadout forTarget(NumenPlayer player, Entity target) {
+    public static Loadout forTarget(BodyView player, Entity target) {
         Inventory inventory = player.getInventory();
         Pick bestMelee = null;
         Pick chargedCrossbow = null;

@@ -1,6 +1,6 @@
 package com.dwinovo.numen.task;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -58,7 +58,7 @@ final class CompanionBrain {
     private TaskPersistence.LeftOver leftOver;
 
     /** 这个大脑伺候的那具身体。首次 tick 时认下，以后不换。 */
-    private NumenPlayer body;
+    private BodyView body;
 
     /** 上一刻的赢家,用来在切换的那一刻(而不是每刻)通知它丢了身体。 */
     private Task holder;
@@ -95,7 +95,7 @@ final class CompanionBrain {
      * <p>正常情况下关服就会把整表作废({@code ServerLifecycle})，轮不到这里。它是不变式本身：
      * 哪天又有哪张静态表漏了，最坏是大脑重建，不是服务端线程死锁。
      */
-    boolean boundTo(NumenPlayer companion) {
+    boolean boundTo(BodyView companion) {
         return body == null || body == companion;
     }
 
@@ -120,7 +120,7 @@ final class CompanionBrain {
      * 往当前任务槽派一件新活({@code runner} 是跑它的任务,准备过的就是准备它的那一个)——派活只有这一个入口。重启前留下、
      * 还没接回来的那件由它顶替,和槽里原有的活被换掉一样告诉她。
      */
-    void assign(NumenPlayer companion, TaskRecord record, Task runner) {
+    void assign(BodyView companion, TaskRecord record, Task runner) {
         TaskPersistence.LeftOver superseded = takeLeftOver();
         if (superseded != null) {
             TaskPersistence.superseded(companion, superseded);
@@ -128,7 +128,7 @@ final class CompanionBrain {
         current.put(companion, record, runner);
     }
 
-    void tick(NumenPlayer companion) {
+    void tick(BodyView companion) {
         body = companion;
         // 准备不占身体:先问它有没有结论,就绪的这一刻受理进槽,接着和槽里的活一样参加这一刻的选择
         preparing.tick();
@@ -196,7 +196,7 @@ final class CompanionBrain {
      * 所以这就是那件事的唯一出口:派发、重放、被顶替、干完、死亡清空,客户端看到的是
      * 同一条消息。客户端不推断,只照抄——它看不见重放起来的活。
      */
-    private void syncCurrentTask(NumenPlayer companion) {
+    private void syncCurrentTask(BodyView companion) {
         TaskRecord rec = current.record();
         String id = rec == null ? "" : rec.publicId();
         String desc = rec == null ? "" : rec.describe();
@@ -232,7 +232,7 @@ final class CompanionBrain {
     private boolean wasIdle = true;
 
     /** 死亡:丢掉在跑的任务与在准备的调用,并结束任务作用域的手部占用。 */
-    void dropActiveNoResult(NumenPlayer companion) {
+    void dropActiveNoResult(BodyView companion) {
         // 在准备的那次调用也不回结果:客户端按死因结算了在飞的调用
         preparing.drop();
         TaskSessionHooks.fireSessionEnd(companion);
@@ -249,7 +249,7 @@ final class CompanionBrain {
     }
 
     /** 身体离开世界:在准备的调用回一条没开始的结果,两个槽就地结算(它们不会再被 tick),结果照送。 */
-    void finalizeActive(NumenPlayer companion) {
+    void finalizeActive(BodyView companion) {
         preparing.withdraw(TaskRecord.StopCause.BODY_LEFT.words());
         sync.finalizeInline(companion);
         current.finalizeInline(companion);
@@ -264,7 +264,7 @@ final class CompanionBrain {
     private final Task syncProxy = new SlotProxy(() -> sync);
     private final Task currentProxy = new SlotProxy(() -> current);
 
-    private Task slotTask(TaskSlot slot, NumenPlayer companion) {
+    private Task slotTask(TaskSlot slot, BodyView companion) {
         if (slot.isEmpty()) {
             return null;
         }
@@ -284,16 +284,16 @@ final class CompanionBrain {
             this.slot = slot;
         }
 
-        @Override public boolean canRun(NumenPlayer companion) {
+        @Override public boolean canRun(BodyView companion) {
             return slot.get().canRun(companion);
         }
 
-        @Override public TaskState tick(NumenPlayer companion) {
+        @Override public TaskState tick(BodyView companion) {
             slot.get().tick(companion);
             return TaskState.RUNNING;
         }
 
-        @Override public void stop(NumenPlayer companion, StopReason why) {
+        @Override public void stop(BodyView companion, StopReason why) {
             slot.get().loseBody(companion);
         }
 
@@ -325,7 +325,7 @@ final class CompanionBrain {
      * 网络入口回给发来它的主人客户端——主人已经下线时那条调用属于一个随客户端一起消失的回合,重登后发请求时由
      * {@code ProtocolView} 给它补上失败结果;{@code /numen drive} 派的回给发令人。
      */
-    private void shipResults(NumenPlayer companion) {
+    private void shipResults(BodyView companion) {
         while (!outbox.isEmpty()) {
             TaskRecord rec = outbox.pollFirst();
             TaskResult result = rec.getResult();

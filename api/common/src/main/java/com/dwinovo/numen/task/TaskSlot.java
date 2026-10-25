@@ -1,6 +1,6 @@
 package com.dwinovo.numen.task;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import java.util.function.Consumer;
 
@@ -36,7 +36,7 @@ final class TaskSlot {
     }
 
     /** 槽里的任务此刻能不能跑;空槽返回 false。 */
-    boolean canRun(NumenPlayer companion) {
+    boolean canRun(BodyView companion) {
         return record != null && record.getState() == TaskState.RUNNING && task.canRun(companion);
     }
 
@@ -44,7 +44,7 @@ final class TaskSlot {
      * 放一个新任务进来,{@code runner} 是跑它的那个任务。槽里原来那个按<b>被换掉</b>结算并送结果——不能让它悄悄
      * 消失:模型手上握着它的 tool_call,那条调用要么有结果要么永远悬着。
      */
-    void put(NumenPlayer companion, TaskRecord rec, Task runner) {
+    void put(BodyView companion, TaskRecord rec, Task runner) {
         if (record != null) {
             task.stop(companion, Task.StopReason.REPLACED);
             record.stop(TaskRecord.StopCause.REPLACED);
@@ -61,7 +61,7 @@ final class TaskSlot {
     }
 
     /** 前进一刻:先看 deadline,再跑一刻,走到终态就结算。 */
-    void tick(NumenPlayer companion) {
+    void tick(BodyView companion) {
         if (record == null) {
             return;
         }
@@ -76,7 +76,7 @@ final class TaskSlot {
     }
 
     /** 丢掉身体但不拆掉任务——被更高层抢占时用,状态全留着,下次接着跑。 */
-    void loseBody(NumenPlayer companion) {
+    void loseBody(BodyView companion) {
         if (task != null) {
             task.stop(companion, Task.StopReason.PREEMPTED);
         }
@@ -94,7 +94,7 @@ final class TaskSlot {
      * 在带外把记录标成 CANCELLED,而客户端严格串行的工具派发器会一直卡到那一个
      * 结果送出为止,不能等这个槽下次赢了才结算。
      */
-    void settleIfTerminal(NumenPlayer companion) {
+    void settleIfTerminal(BodyView companion) {
         if (record != null && record.getState().isTerminal()) {
             settle(companion);
         }
@@ -108,7 +108,7 @@ final class TaskSlot {
     }
 
     /** 身体要离开世界了:就地结算(它不会再被 tick),让 cleanup 跑完、结果送出。 */
-    void finalizeInline(NumenPlayer companion) {
+    void finalizeInline(BodyView companion) {
         if (record == null) {
             return;
         }
@@ -121,7 +121,7 @@ final class TaskSlot {
      * 但异步任务要补一条收尾事件:派发回执写着"完成会自动收到 task_finished,
      * 不要轮询",丢掉却不发收尾等于毁约。
      */
-    void dropNoResult(NumenPlayer companion) {
+    void dropNoResult(BodyView companion) {
         if (record != null && record.isAsync()) {
             com.dwinovo.numen.event.NumenEvents.taskFinished(companion, record.publicId(),
                     record.getToolName(), "interrupted", TaskResult.cancelled("任务因她死亡而中断"), record.function());
@@ -139,7 +139,7 @@ final class TaskSlot {
      * 征询一并清掉——授权的作用域就是任务,由放开任务的这一处收口。征询撤回的原因是叫停它的那一方
      * (主人按了停止、身体离开世界……),没人叫停就是任务自己收场了。
      */
-    private void settle(NumenPlayer companion) {
+    private void settle(BodyView companion) {
         TaskResult result = task.result(record.getState());
         TaskRecord.StopCause cause = record.getStopCause();
         record.setResult(cause == null ? result : result.stoppedBy(cause));

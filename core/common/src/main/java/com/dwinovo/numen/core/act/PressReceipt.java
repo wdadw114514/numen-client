@@ -1,7 +1,7 @@
 package com.dwinovo.numen.core.act;
 
 import com.dwinovo.numen.entity.BodyDelta;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
@@ -28,7 +28,7 @@ public final class PressReceipt {
     private final BlockState aimBefore;
     private final Set<Integer> entityIdsBefore;
 
-    private PressReceipt(NumenPlayer player, BlockPos aim) {
+    private PressReceipt(BodyView player, BlockPos aim) {
         this.body = BodyDelta.open(player);
         this.aim = aim;
         this.aimBefore = aim == null ? null : player.level().getBlockState(aim);
@@ -36,7 +36,7 @@ public final class PressReceipt {
     }
 
     /** 按键之前拍快照;{@code aim} 可空(朝空气挥没有目标格)。 */
-    public static PressReceipt before(NumenPlayer player, BlockPos aim) {
+    public static PressReceipt before(BodyView player, BlockPos aim) {
         return new PressReceipt(player, aim);
     }
 
@@ -44,7 +44,7 @@ public final class PressReceipt {
      * 按键之后对账:每一条是一件真发生的事,空表 = 观察的几个面都没动静。
      * 语言面向工具回执(英文),坐标点名,方便模型下一步引用。
      */
-    public List<String> diff(NumenPlayer player) {
+    public List<String> diff(BodyView player) {
         List<String> facts = new ArrayList<>();
         facts.addAll(body.changes(player));
         if (aim != null) {
@@ -67,7 +67,7 @@ public final class PressReceipt {
         return BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
     }
 
-    private static Set<Integer> nearbyIds(NumenPlayer player) {
+    private static Set<Integer> nearbyIds(BodyView player) {
         Set<Integer> ids = new HashSet<>();
         for (Entity e : nearby(player)) {
             ids.add(e.getId());
@@ -75,7 +75,7 @@ public final class PressReceipt {
         return ids;
     }
 
-    private static List<Entity> nearby(NumenPlayer player) {
+    private static List<Entity> nearby(BodyView player) {
         return player.level().getEntities(player,
                 player.getBoundingBox().inflate(ENTITY_RADIUS));
     }

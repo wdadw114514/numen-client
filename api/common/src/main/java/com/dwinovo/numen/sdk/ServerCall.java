@@ -2,14 +2,16 @@ package com.dwinovo.numen.sdk;
 
 import com.dwinovo.numen.agent.script.ApiError;
 import com.dwinovo.numen.agent.script.ErrorKind;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Action;
+import com.dwinovo.numen.permission.ConsentItem;
 import com.dwinovo.numen.permission.Gate;
 import com.dwinovo.numen.permission.Permission;
 import com.dwinovo.numen.permission.Verdict;
 import com.dwinovo.numen.task.TaskDispatch;
 import com.dwinovo.numen.task.TaskRecord;
 import com.dwinovo.numen.task.TaskResult;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 
 import java.util.List;
@@ -26,7 +28,7 @@ public final class ServerCall {
     @FunctionalInterface
     public interface Reach {
 
-        boolean reaches(NumenPlayer her, Entity target);
+        boolean reaches(BodyView her, Entity target);
 
         /** 她伸手够得着、看得见:和玩家能交互的距离一样。 */
         static Reach hand() {
@@ -39,12 +41,12 @@ public final class ServerCall {
         }
     }
 
-    private final NumenPlayer her;
+    private final BodyView her;
     private final ApiFunction function;
     private final Record args;
     private final String callId;
 
-    ServerCall(NumenPlayer her, ApiFunction function, Record args, String callId) {
+    ServerCall(BodyView her, ApiFunction function, Record args, String callId) {
         this.her = her;
         this.function = function;
         this.args = args;
@@ -52,7 +54,7 @@ public final class ServerCall {
     }
 
     /** 这具身体。 */
-    public NumenPlayer her() {
+    public BodyView her() {
         return her;
     }
 
@@ -79,12 +81,19 @@ public final class ServerCall {
      */
     public Pending<Void> authorize(Action action) {
         Gate gate = Permission.gateFor(her);
-        Verdict verdict = gate.judgeLive(action, her.level());
+        boolean live = her.level() instanceof ServerLevel;
+        Verdict verdict = live
+                ? gate.judgeLive(action, (ServerLevel) her.level())
+                : gate.judge(action, her.level());
         return switch (verdict.kind()) {
             case ALLOW -> Pending.of(null);
             case DENY -> Pending.failed(refused(lua(), verdict.reason()));
-            case ASK -> Consents.of(her).await(lua(),
-                    List.of(gate.consentItemLive(action, verdict, her.level())));
+            case ASK -> {
+                ConsentItem item = live
+                        ? gate.consentItemLive(action, verdict, (ServerLevel) her.level())
+                        : gate.consentItem(action, verdict, her.level());
+                yield Consents.of(her).await(lua(), List.of(item));
+            }
         };
     }
 
@@ -114,7 +123,7 @@ public final class ServerCall {
     public void reach(Entity target, Reach reach) {
         if (!reach.reaches(her, target)) {
             throw new ApiError(ErrorKind.OUT_OF_REACH, target.getName().getString() + " is "
-                    + String.format(java.util.Locale.ROOT, "%.1f", her.distanceTo(target))
+                    + String.format(java.util.Locale.ROOT, "%.1f", her.player().distanceTo(target))
                     + " blocks away — out of reach from where you stand; walk to it first, then call this again",
                     Call.of("numen.move.to", target.blockPosition(), Map.of("arrive", "near", "range", 2)),
                     Map.of("pos", target.blockPosition()));
@@ -160,6 +169,10 @@ public final class ServerCall {
      * 作用对象写死为她,够不着别人。
      */
     public OnHer onHer() {
-        return new OnHer(her);
+        if (her instanceof com.dwinovo.numen.entity.NumenPlayer serverBody) {
+            return new OnHer(serverBody);
+        }
+        throw new ApiError(ErrorKind.FAILED, "onHer needs a server-side body; a client body has no command authority",
+                null);
     }
 }

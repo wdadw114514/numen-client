@@ -9,7 +9,7 @@ import com.dwinovo.numen.core.nav.Feet;
 import com.dwinovo.numen.core.nav.NavText;
 import com.dwinovo.numen.core.nav.Survey;
 import com.dwinovo.numen.core.task.move.Destination;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.api.Outcome;
 import com.dwinovo.numen.pathing.spec.PositionCosts;
 import com.dwinovo.numen.pathing.spec.RouteSpec;
@@ -27,7 +27,7 @@ import net.minecraft.world.entity.vehicle.boat.Boat;
  */
 public final class Planning {
 
-    private final NumenPlayer her;
+    private final BodyView her;
     private final String id;
     private final Description description;
     private final int first;
@@ -41,7 +41,7 @@ public final class Planning {
     /** 一段编好的样子:哪一站、去处、规格。 */
     private record Compiled(Stop stop, Destination to, RouteSpec spec) {}
 
-    private Planning(NumenPlayer her, String id, Description description, int first) {
+    private Planning(BodyView her, String id, Description description, int first) {
         this.her = her;
         this.id = id;
         this.description = description;
@@ -68,12 +68,12 @@ public final class Planning {
     }
 
     /** 从她脚下规划整趟。 */
-    public static Planning of(NumenPlayer her, String id, Description description) {
+    public static Planning of(BodyView her, String id, Description description) {
         return new Planning(her, id, description, 0);
     }
 
     /** 从她脚下规划 {@code plan} 第 {@code first} 段(从 0 数)起的剩下几段:半路停下时看"从这里接着走要什么"。 */
-    public static Planning rest(NumenPlayer her, Plan plan, int first) {
+    public static Planning rest(BodyView her, Plan plan, int first) {
         return new Planning(her, plan.id(), plan.description(), first);
     }
 
@@ -101,7 +101,7 @@ public final class Planning {
      * 只许绕开、从上面走或站在旁边够。房子是要留下来的东西,不是挡路的地形:许挖时路上挖掉一格墙,下一轮又得补上,建造就在原地
      * 来回打转。在主线程上调。
      */
-    public static RouteSpec base(NumenPlayer her) {
+    public static RouteSpec base(BodyView her) {
         LongSet built = Built.of(her.level().getServer()).standingIn(her.level());
         if (built.isEmpty()) {
             return RouteSpec.defaults();

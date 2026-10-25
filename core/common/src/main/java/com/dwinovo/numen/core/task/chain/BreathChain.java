@@ -9,7 +9,7 @@ import com.dwinovo.numen.core.nav.Trip;
 import com.dwinovo.numen.task.Task;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.core.task.survival.SurvivalDecisions;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -69,7 +69,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
     }
 
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         Trip trip = Trip.current(companion);
         if (trip != null && trip.plannedDive()) {
             // 在走的路线里计划好的一段水下:憋多久寻路规划时已按她的氧气算过,每一刻再按真实氧气判剩下的这一段撑不撑得到,
@@ -100,7 +100,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
     }
 
     @Override
-    public TaskState tick(NumenPlayer companion) {
+    public TaskState tick(BodyView companion) {
         episodeActive = true;
         worstAir = Math.min(worstAir, companion.getAirSupply());
         companion.controls().releaseAll();
@@ -132,7 +132,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
      * space? Unbroken water deeper than {@link #CEILING_PROBE} counts as open —
      * that is the deep-ocean case where rising is exactly right.
      */
-    private static boolean ceilingSealed(NumenPlayer companion) {
+    private static boolean ceilingSealed(BodyView companion) {
         Level level = companion.level();
         BlockPos p = BlockPos.containing(companion.getEyePosition());
         for (int i = 0; i < CEILING_PROBE; i++) {
@@ -163,7 +163,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
      * wall. Bounded by {@link #AIR_SEARCH_BUDGET}/{@link #AIR_SEARCH_RADIUS}:
      * ~400 block reads once per {@link #RETARGET_TICKS} during an episode.
      */
-    private static BlockPos findAirColumn(NumenPlayer companion) {
+    private static BlockPos findAirColumn(BodyView companion) {
         Level level = companion.level();
         BlockPos start = BlockPos.containing(companion.getEyePosition());
         if (!level.getFluidState(start).is(FluidTags.WATER)) {
@@ -193,7 +193,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
     }
 
     /** Diary the entrapment the moment it is diagnosed — not post-mortem. */
-    private void noteTrapped(NumenPlayer companion) {
+    private void noteTrapped(BodyView companion) {
         if (trappedNoted) return;
         trappedNoted = true;
         com.dwinovo.numen.event.NumenEvents.reflex(companion, this, "drowning under a sealed ceiling with " + Math.max(0, companion.getAirSupply() / 20)
@@ -202,7 +202,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
     }
 
     /** One diary line per near-drowning, stamped with how close it got (in seconds of air left). */
-    private void noteEpisode(NumenPlayer companion) {
+    private void noteEpisode(BodyView companion) {
         episodeActive = false;
         int worst = worstAir;
         worstAir = Integer.MAX_VALUE;
@@ -213,7 +213,7 @@ public final class BreathChain implements Task, com.dwinovo.numen.task.reflex.Re
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         // No cross-tick body state to unwind; the episode bookkeeping closes on the
         // next dormant read (or is superseded by a fresh dip).
     }

@@ -14,7 +14,7 @@ import com.dwinovo.numen.core.nav.Trip;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.task.chain.MobDefenseChain;
 import com.dwinovo.numen.entity.InputDriver;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.pathing.body.Snapshots;
 import com.dwinovo.numen.pathing.plan.Threat;
@@ -125,7 +125,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
     /** 上一刻的决定。判据靠它做迟滞与承诺,见 {@link AttackPlan#decide}。 */
     private AttackPlan.Move lastMove;
 
-    public AttackCompanionTask(NumenPlayer player, AttackTaskRecord record) {
+    public AttackCompanionTask(BodyView player, AttackTaskRecord record) {
         super(player, record);
     }
 

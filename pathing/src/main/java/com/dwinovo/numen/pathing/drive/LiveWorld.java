@@ -4,7 +4,7 @@ import com.dwinovo.numen.pathing.plan.WorldView;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,13 +22,13 @@ public final class LiveWorld implements WorldView {
 
     private static final BlockState VOID = Blocks.VOID_AIR.defaultBlockState();
 
-    private final ServerLevel level;
+    private final Level level;
 
-    public LiveWorld(ServerLevel level) {
+    public LiveWorld(Level level) {
         this.level = level;
     }
 
-    public ServerLevel level() {
+    public Level level() {
         return level;
     }
 

@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.task.inventory;
 import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.tools.ContainerOps;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Action;
 import com.dwinovo.numen.task.TaskState;
 
@@ -18,7 +18,7 @@ public final class TransferCompanionTask extends AbstractCompanionTask<TransferT
     private final ContainerOps ops = new ContainerOps();
     private String doneMessage = "done";
 
-    public TransferCompanionTask(NumenPlayer player, TransferTaskRecord record) {
+    public TransferCompanionTask(BodyView player, TransferTaskRecord record) {
         super(player, record);
     }
 

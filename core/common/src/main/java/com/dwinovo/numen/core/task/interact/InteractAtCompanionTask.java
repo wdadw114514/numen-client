@@ -6,7 +6,7 @@ import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.entity.InputDriver;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.core.FailureType;
 import com.dwinovo.numen.core.act.Interaction;
 import com.dwinovo.numen.core.act.PressReceipt;
@@ -51,7 +51,7 @@ public final class InteractAtCompanionTask extends InReachTask<InteractAtTaskRec
     /** 准星没落在瞄的那一格上、落在了别的东西上:回执里说按的是谁;落在瞄的那一格上为 null。 */
     private String landedElsewhere;
 
-    public InteractAtCompanionTask(NumenPlayer player, InteractAtTaskRecord record) {
+    public InteractAtCompanionTask(BodyView player, InteractAtTaskRecord record) {
         super(player, record);
     }
 

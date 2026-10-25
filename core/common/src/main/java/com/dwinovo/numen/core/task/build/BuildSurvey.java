@@ -4,7 +4,7 @@ import com.dwinovo.numen.core.WorkProfile;
 import com.dwinovo.numen.core.nav.Feet;
 import com.dwinovo.numen.core.task.dig.DigTaskRecord;
 import com.dwinovo.numen.core.task.move.Destination;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -50,7 +50,7 @@ public final class BuildSurvey {
         FAR
     }
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final BuildTaskRecord r;
     private final BuildCellRules rules;
     private final BuildInventory inv;
@@ -59,7 +59,7 @@ public final class BuildSurvey {
     /** 她此刻站的节点;悬在半空时为 null,什么都算够不着。 */
     private final Feet feet;
 
-    BuildSurvey(NumenPlayer player, BuildTaskRecord r, BuildCellRules rules, BuildInventory inv, BuildLedger ledger) {
+    BuildSurvey(BodyView player, BuildTaskRecord r, BuildCellRules rules, BuildInventory inv, BuildLedger ledger) {
         this.player = player;
         this.r = r;
         this.rules = rules;
@@ -70,7 +70,7 @@ public final class BuildSurvey {
     }
 
     /** 给查询用:不派活,按这一份施工图与她此刻站的地方数一遍。 */
-    public static BuildSurvey of(NumenPlayer player, BuildTaskRecord r) {
+    public static BuildSurvey of(BodyView player, BuildTaskRecord r) {
         BuildCellRules rules = new BuildCellRules(player, r);
         BuildInventory inv = new BuildInventory(player);
         BuildLedger ledger = new BuildLedger(player, r, rules, inv, new BuildFixtures(player, r, inv));

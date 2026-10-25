@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.nav;
 import java.util.List;
 
 import com.dwinovo.numen.core.combat.Menace;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.api.Navigator;
 import com.dwinovo.numen.pathing.api.Ports;
 import com.dwinovo.numen.pathing.body.Snapshots;
@@ -29,27 +29,27 @@ public final class CompanionPorts {
     private CompanionPorts() {}
 
     /** 她附近此刻要避开的敌对生物(每次派发搜索时问一次)。 */
-    public static Threats dangers(NumenPlayer player) {
+    public static Threats dangers(BodyView player) {
         return () -> Menace.dangers(player, DANGER_SCAN);
     }
 
     /** 她的寻路门面,避开 {@code threats},垫路从 {@code materials} 里挑。 */
-    public static Navigator navigator(NumenPlayer player, Threats threats, List<Item> materials) {
+    public static Navigator navigator(BodyView player, Threats threats, List<Item> materials) {
         return Navigator.of(player, new Ports(CompanionHands.of(player), terrain(player), materials(player, materials),
                 threats));
     }
 
     /** 按 {@code spec} 与她此刻的身体、端口组一份成本模型:估一格挖多久、许不许挖,与寻路用的是同一份定价。 */
-    static CostModel model(NumenPlayer player, RouteSpec spec) {
+    static CostModel model(BodyView player, RouteSpec spec) {
         return CostModel.of(spec, Snapshots.of(player), terrain(player), materials(player, ThrowawayBlocks.factory()),
                 dangers(player));
     }
 
-    private static TerrainPolicy terrain(NumenPlayer player) {
+    private static TerrainPolicy terrain(BodyView player) {
         return new GateTerrain(Permission.gateFor(player));
     }
 
-    private static Materials materials(NumenPlayer player, List<Item> materials) {
+    private static Materials materials(BodyView player, List<Item> materials) {
         return () -> ThrowawayBlocks.next(player, materials);
     }
 }

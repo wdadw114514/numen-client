@@ -1,6 +1,6 @@
 package com.dwinovo.numen.task;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,17 +14,17 @@ import java.util.function.Consumer;
  */
 public final class TaskSessionHooks {
 
-    private static final List<Consumer<NumenPlayer>> HOOKS = new ArrayList<>();
+    private static final List<Consumer<BodyView>> HOOKS = new ArrayList<>();
 
     private TaskSessionHooks() {}
 
     /** Init-time only,与其余登记口同一约定。 */
-    public static synchronized void onSessionEnd(Consumer<NumenPlayer> hook) {
+    public static synchronized void onSessionEnd(Consumer<BodyView> hook) {
         HOOKS.add(hook);
     }
 
-    static void fireSessionEnd(NumenPlayer companion) {
-        for (Consumer<NumenPlayer> h : HOOKS) {
+    static void fireSessionEnd(BodyView companion) {
+        for (Consumer<BodyView> h : HOOKS) {
             h.accept(companion);
         }
     }

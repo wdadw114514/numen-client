@@ -1,7 +1,7 @@
 package com.dwinovo.numen.core.nav;
 
 import com.dwinovo.numen.entity.InputDriver;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.world.Semantics;
 
 import net.minecraft.core.BlockPos;
@@ -73,7 +73,7 @@ public final class BoatNav {
         }
     }
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final List<BlockPos> path;
     private int wpIndex;
     private double bestWpDistSq = Double.MAX_VALUE;
@@ -81,7 +81,7 @@ public final class BoatNav {
     private String failReason = "boat navigation failed";
 
     /** 照 {@code chart} 驾船。 */
-    public BoatNav(NumenPlayer player, Chart chart) {
+    public BoatNav(BodyView player, Chart chart) {
         this.player = player;
         this.path = chart.path();
     }
@@ -151,7 +151,7 @@ public final class BoatNav {
     /**
      * 从船所在的 {@code from} 开往 {@code target} 的航线:平面 A*,key = (x<<32|z),8 邻接,对角要求两正交都可行。在世界线程上调。
      */
-    public static Chart chart(NumenPlayer player, BlockPos from, BlockPos target) {
+    public static Chart chart(BodyView player, BlockPos from, BlockPos target) {
         Terrain terrain = Terrain.of(player);
         Integer surface = waterSurfaceAt(terrain, from);
         if (surface == null) {

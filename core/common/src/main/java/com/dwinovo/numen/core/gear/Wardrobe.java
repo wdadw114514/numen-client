@@ -3,7 +3,7 @@ package com.dwinovo.numen.core.gear;
 import com.dwinovo.numen.api.NumenPlugins;
 import com.dwinovo.numen.api.gear.GearSlot;
 import com.dwinovo.numen.core.FailureType;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.sdk.Doc;
 
@@ -80,7 +80,7 @@ public final class Wardrobe {
     }
 
     /** 不点名哪只手时拿到哪只手:照原版的规矩,盾这类副手物进副手,其余进主手。 */
-    public static String handFor(NumenPlayer body, ItemStack stack) {
+    public static String handFor(BodyView body, ItemStack stack) {
         return body.getEquipmentSlotForItem(stack) == EquipmentSlot.OFFHAND ? OFFHAND : MAINHAND;
     }
 
@@ -99,7 +99,7 @@ public final class Wardrobe {
      * @param slot {@code null} = 自动选位:归某类穿戴位置管的进那类位置,不归任何来源管的不是穿的东西,如实失败;
      *             否则是 {@code mainhand}、{@code offhand}(拿到手上,见 {@link #handFor})或 {@code <worn>} 里的槽名
      */
-    public static Outcome wear(NumenPlayer body, Item item, String slot) {
+    public static Outcome wear(BodyView body, Item item, String slot) {
         Inventory inv = body.getInventory();
         String label = label(item);
         Sheet data = new Sheet();
@@ -203,7 +203,7 @@ public final class Wardrobe {
      *             按 {@code item} 找戴着它的第一格
      * @param item 只摘戴着这件的格子;{@code null} = 这些槽里有什么摘什么
      */
-    public static Outcome remove(NumenPlayer body, String slot, Item item) {
+    public static Outcome remove(BodyView body, String slot, Item item) {
         if (MAINHAND.equals(slot)) {
             return freeMainHand(body);
         }
@@ -281,7 +281,7 @@ public final class Wardrobe {
      * 腾主手是切换,不是搬运:优先换到空的快捷栏格(真实玩家按数字键,快捷栏布局一格不动),快捷栏全满
      * 才把手持挪进背包的空格。
      */
-    private static Outcome freeMainHand(NumenPlayer body) {
+    private static Outcome freeMainHand(BodyView body) {
         Inventory inv = body.getInventory();
         Sheet data = new Sheet();
         ItemStack held = inv.getItem(inv.getSelectedSlot());
@@ -316,7 +316,7 @@ public final class Wardrobe {
      * 副手。它不是穿戴位置(不进 {@code <worn>},不归任何来源),只借同一副形状,让"换上 / 摘下 / 换下来的
      * 收回背包"对它和对穿戴位置走同一段代码。
      */
-    private record OffHand(NumenPlayer body) implements GearSlot {
+    private record OffHand(BodyView body) implements GearSlot {
 
         @Override
         public String name() {
@@ -347,7 +347,7 @@ public final class Wardrobe {
     }
 
     /** 身上叫这些名字的穿戴位置,按来源给出的顺序。 */
-    private static List<GearSlot> named(NumenPlayer body, Collection<String> names) {
+    private static List<GearSlot> named(BodyView body, Collection<String> names) {
         List<GearSlot> out = new ArrayList<>();
         for (GearSlot s : NumenPlugins.gearSlots(body)) {
             if (names.contains(s.name())) out.add(s);
@@ -356,7 +356,7 @@ public final class Wardrobe {
     }
 
     /** 她实际拥有的槽名:两只手,加上各来源给出的位置(同名只列一次)。 */
-    private static List<String> slotNames(NumenPlayer body) {
+    private static List<String> slotNames(BodyView body) {
         Set<String> names = new LinkedHashSet<>(List.of(MAINHAND, OFFHAND));
         for (GearSlot s : NumenPlugins.gearSlots(body)) {
             names.add(s.name());

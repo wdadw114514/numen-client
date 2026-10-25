@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.tools;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.agent.script.ApiError;
 import com.dwinovo.numen.agent.script.ErrorKind;
 import com.mojang.datafixers.util.Either;
@@ -46,7 +46,7 @@ public final class SleepOps {
      * @param at 指定哪张床;为 null 时用手边够得着的那张
      * @throws ApiError 没有床({@code not_found});原版拒绝或没真躺下({@code failed},数据里是那张床)
      */
-    public static Slept sleep(BlockPos at, NumenPlayer self) {
+    public static Slept sleep(BlockPos at, BodyView self) {
         boolean given = at != null;
         BlockPos bedHead = given ? headOf(self.level(), at) : nearestBedHeadInReach(self);
         if (bedHead == null) {
@@ -86,7 +86,7 @@ public final class SleepOps {
     }
 
     /** 手边够得着的床(原版口径:床的任一半在 ±3/±2/±3 内),归一到床头。 */
-    private static BlockPos nearestBedHeadInReach(NumenPlayer self) {
+    private static BlockPos nearestBedHeadInReach(BodyView self) {
         Level level = self.level();
         BlockPos me = self.blockPosition();
         BlockPos best = null;
@@ -126,7 +126,7 @@ public final class SleepOps {
     }
 
     /** 没床时把下一步递到她面前——包括"你自己身上就带着一张"。 */
-    private static ApiError noBed(NumenPlayer self, boolean coordsGiven) {
+    private static ApiError noBed(BodyView self, boolean coordsGiven) {
         String carried = carriedBed(self);
         String base = coordsGiven
                 ? "there is no bed at those coordinates"
@@ -139,7 +139,7 @@ public final class SleepOps {
     }
 
     /** 背包里的第一张床;没有则 null。 */
-    private static String carriedBed(NumenPlayer self) {
+    private static String carriedBed(BodyView self) {
         var inv = self.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack stack = inv.getItem(i);

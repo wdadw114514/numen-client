@@ -2,7 +2,7 @@ package com.dwinovo.numen.core.task.build;
 
 import com.dwinovo.numen.core.PlayerInv;
 import com.dwinovo.numen.core.WorkProfile;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -19,9 +19,9 @@ import net.minecraft.world.item.ItemStack;
  */
 final class BuildInventory {
 
-    private final NumenPlayer player;
+    private final BodyView player;
 
-    BuildInventory(NumenPlayer player) {
+    BuildInventory(BodyView player) {
         this.player = player;
     }
 

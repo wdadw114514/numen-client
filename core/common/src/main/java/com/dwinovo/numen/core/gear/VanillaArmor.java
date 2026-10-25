@@ -2,7 +2,7 @@ package com.dwinovo.numen.core.gear;
 
 import com.dwinovo.numen.api.gear.GearSlot;
 import com.dwinovo.numen.api.gear.GearSource;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -35,7 +35,7 @@ public final class VanillaArmor implements GearSource {
             PIECES[0].getName(), PIECES[1].getName(), PIECES[2].getName(), PIECES[3].getName());
 
     @Override
-    public List<GearSlot> slots(NumenPlayer body) {
+    public List<GearSlot> slots(BodyView body) {
         List<GearSlot> out = new ArrayList<>(PIECES.length);
         for (int i = 0; i < PIECES.length; i++) {
             out.add(new Piece(NAMES.get(i), body.inventoryMenu.getSlot(InventoryMenu.ARMOR_SLOT_START + i), body));
@@ -45,7 +45,7 @@ public final class VanillaArmor implements GearSource {
 
     /** 哪几个部位的真实格子肯收它——与 {@link Piece#refuseWear} 是同一个判据。 */
     @Override
-    public Set<String> kindsOf(NumenPlayer body, ItemStack stack) {
+    public Set<String> kindsOf(BodyView body, ItemStack stack) {
         Set<String> kinds = new LinkedHashSet<>();
         for (int i = 0; i < PIECES.length; i++) {
             if (body.inventoryMenu.getSlot(InventoryMenu.ARMOR_SLOT_START + i).mayPlace(stack)) {
@@ -55,7 +55,7 @@ public final class VanillaArmor implements GearSource {
         return kinds;
     }
 
-    private record Piece(String name, Slot slot, NumenPlayer body) implements GearSlot {
+    private record Piece(String name, Slot slot, BodyView body) implements GearSlot {
 
         @Override
         public ItemStack worn() {

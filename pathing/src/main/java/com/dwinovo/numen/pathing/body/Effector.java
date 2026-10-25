@@ -26,6 +26,11 @@ public interface Effector {
     /** 松开左键:正在挖的那一格放下,进度清零。没在挖时什么也不做。 */
     void release();
 
+    /** 左键正按在哪一格上;没按为 null。 */
+    default BlockPos pressing() {
+        return null;
+    }
+
     /** 右键点一下准星落着的那一格({@code hit} 就是准星的拾取结果):主手先试,不成再用副手。 */
     Use use(BlockHitResult hit);
 

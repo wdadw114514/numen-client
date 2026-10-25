@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.dwinovo.numen.core.nav.CompanionHands;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.body.BodyAction;
 import com.dwinovo.numen.pathing.body.Crosshair;
 import com.dwinovo.numen.pathing.body.Effector.Strike;
@@ -34,11 +34,11 @@ public final class BlockDigger {
     /** 服务端把挖掘退回来时回执里的理由。 */
     public static final String SERVER_REFUSED = "服务器没让挖掉这一格";
 
-    private final NumenPlayer player;
+    private final BodyView player;
     /** 最近一次 {@link DigResult#REFUSED} 的理由(权限层的裁决,或服务端退回的 {@link #SERVER_REFUSED});没被拒过是 null。 */
     private Verdict refusal;
 
-    public BlockDigger(NumenPlayer player) {
+    public BlockDigger(BodyView player) {
         this.player = player;
     }
 

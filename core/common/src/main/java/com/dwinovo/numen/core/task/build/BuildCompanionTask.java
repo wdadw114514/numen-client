@@ -10,7 +10,7 @@ import com.dwinovo.numen.core.nav.Feet;
 import com.dwinovo.numen.core.nav.Terrain;
 import com.dwinovo.numen.core.task.base.AbstractCompanionTask;
 import com.dwinovo.numen.core.task.base.Precondition;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.entity.InputDriver;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import com.dwinovo.numen.permission.PlacedBlocks;
@@ -138,7 +138,7 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
     /** 开工前要问主人的清单(这一次够得着的格里裁决为要问的)。 */
     private List<com.dwinovo.numen.permission.ConsentItem> consentItems = List.of();
 
-    public BuildCompanionTask(NumenPlayer player, BuildTaskRecord record) {
+    public BuildCompanionTask(BodyView player, BuildTaskRecord record) {
         super(player, record);
         this.rules = new BuildCellRules(player, record);
         this.inv = new BuildInventory(player);
@@ -657,13 +657,7 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
         }
         InputDriver.lookAt(player, Vec3.atCenterOf(pos));
         try {
-            var result = player.gameMode.useItemOn(player, player.level(),
-                    player.getMainHandItem(), net.minecraft.world.InteractionHand.MAIN_HAND,
-                    new net.minecraft.world.phys.BlockHitResult(
-                            Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false));
-            if (result.consumesAction()) {
-                player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
-            }
+            player.useItemOn(pos, net.minecraft.world.InteractionHand.MAIN_HAND);
         } finally {
             if (restore != null) {
                 player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, restore);
@@ -673,16 +667,18 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
 
     /** 放下了一格:这件活盖的是一栋房子的话,记进那一栋——那一栋由哪些格子组成,只有这一处记着。 */
     private void recordPlaced(BlockPos pos, BlockState state) {
-        if (r.site != null) {
-            Built.of(player.level().getServer()).placed(r.site, player.getGameProfile().name(),
-                    player.level().getServer().overworld().getGameTime(), pos, state.getBlock());
+        net.minecraft.server.MinecraftServer server = player.server();
+        if (r.site != null && server != null) {
+            Built.of(server).placed(r.site, player.getName().getString(),
+                    server.overworld().getGameTime(), pos, state.getBlock());
         }
     }
 
     /** 拆掉了一格:这件活盖的是一栋房子的话,从那一栋的记录里划掉。 */
     private void recordCleared(BlockPos pos) {
-        if (r.site != null) {
-            Built.of(player.level().getServer()).cleared(r.site, player.level().getServer().overworld().getGameTime(), pos);
+        net.minecraft.server.MinecraftServer server = player.server();
+        if (r.site != null && server != null) {
+            Built.of(server).cleared(r.site, server.overworld().getGameTime(), pos);
         }
     }
 
@@ -837,7 +833,7 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
     // ------------------------------------------------------------------
 
     /** 工地包围盒:全体目标格的最小角与最大角;一格都没有时就是她脚下那一格。 */
-    private static BlockPos[] siteBox(NumenPlayer player, List<BuildTaskRecord.Target> targets) {
+    private static BlockPos[] siteBox(BodyView player, List<BuildTaskRecord.Target> targets) {
         if (targets.isEmpty()) {
             BlockPos feet = Feet.cell(player);
             return new BlockPos[]{feet, feet};
@@ -1057,7 +1053,7 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         super.stop(companion, why);
         player.controls().stop();
     }
@@ -1120,10 +1116,11 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
      * 这件活盖的那一栋叫什么({@code house#1});当场执行的原语不是一栋房子,一格都还没放下的新房子也还没有名字,是 null。
      */
     private String building() {
-        if (r.site == null) {
+        net.minecraft.server.MinecraftServer server = player.server();
+        if (r.site == null || server == null) {
             return null;
         }
-        Built.Building b = Built.of(player.level().getServer()).at(r.site);
+        Built.Building b = Built.of(server).at(r.site);
         return b == null ? null : b.name();
     }
 

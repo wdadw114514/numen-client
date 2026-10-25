@@ -1,6 +1,6 @@
 package com.dwinovo.numen.core.task.build;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -20,13 +20,13 @@ final class BuildLedger {
     /** 报缺料时最多点名几种。 */
     private static final int MISSING_ITEMS_LISTED = 8;
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final BuildTaskRecord r;
     private final BuildCellRules rules;
     private final BuildInventory inv;
     private final BuildFixtures fixtures;
 
-    BuildLedger(NumenPlayer player, BuildTaskRecord r, BuildCellRules rules,
+    BuildLedger(BodyView player, BuildTaskRecord r, BuildCellRules rules,
                 BuildInventory inv, BuildFixtures fixtures) {
         this.player = player;
         this.r = r;

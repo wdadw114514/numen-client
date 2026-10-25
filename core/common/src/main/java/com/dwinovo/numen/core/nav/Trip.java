@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.dwinovo.numen.core.FailureType;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.pathing.api.NavRequest;
 import com.dwinovo.numen.pathing.api.NavStatus;
 import com.dwinovo.numen.pathing.api.Navigation;
@@ -57,7 +57,7 @@ public final class Trip {
         Trip trip;
     }
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final RouteSpec spec;
     private Goal goal;
     private BlockPos toward;
@@ -80,7 +80,7 @@ public final class Trip {
     private String failReason = "";
     private FailureType failType = FailureType.UNKNOWN;
 
-    private Trip(NumenPlayer player, Goal goal, RouteSpec spec, BlockPos toward) {
+    private Trip(BodyView player, Goal goal, RouteSpec spec, BlockPos toward) {
         this.player = player;
         this.goal = goal;
         this.spec = spec;
@@ -93,12 +93,12 @@ public final class Trip {
      *
      * @param toward 给人说"朝哪儿"的那一格(失败回执里的方向与距离)
      */
-    public static Trip to(NumenPlayer player, Goal goal, RouteSpec spec, BlockPos toward) {
+    public static Trip to(BodyView player, Goal goal, RouteSpec spec, BlockPos toward) {
         return new Trip(player, goal, spec, toward);
     }
 
     /** 照规划好的 {@code route} 走到 {@code goal}:它只是第一段,走不下去按同样的目标与规格重搜。 */
-    public static Trip following(NumenPlayer player, Goal goal, RouteSpec spec, Route route, BlockPos toward) {
+    public static Trip following(BodyView player, Goal goal, RouteSpec spec, Route route, BlockPos toward) {
         Trip trip = new Trip(player, goal, spec, toward);
         trip.seed = route;
         return trip;
@@ -108,7 +108,7 @@ public final class Trip {
      * 照受理之前准备时规划好的 {@code seed} 走到 {@code goal}:她还站在它的起点上才照它走({@link #following});准备期间身体
      * 挪了地方(还在干上一件活),那条路从别处起,就从脚下重新搜。没有 {@code seed} 就是从脚下搜。
      */
-    public static Trip prepared(NumenPlayer player, Goal goal, RouteSpec spec, Route seed, BlockPos toward) {
+    public static Trip prepared(BodyView player, Goal goal, RouteSpec spec, Route seed, BlockPos toward) {
         Feet here = Feet.of(player);
         return seed != null && here != null && here.node().equals(seed.start())
                 ? following(player, goal, spec, seed, toward) : to(player, goal, spec, toward);
@@ -133,7 +133,7 @@ public final class Trip {
     }
 
     /** 她此刻在走的那一趟;没有为 null。 */
-    public static Trip current(NumenPlayer player) {
+    public static Trip current(BodyView player) {
         return player.state(Current.class, Current::new).trip;
     }
 

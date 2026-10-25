@@ -1,7 +1,7 @@
 package com.dwinovo.numen.core.task.build;
 
 import com.dwinovo.numen.core.nav.Terrain;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.permission.Action;
 import com.dwinovo.numen.permission.Permission;
 import com.dwinovo.numen.permission.PlacedBlocks;
@@ -21,10 +21,10 @@ import java.util.List;
  */
 final class BuildCellRules {
 
-    private final NumenPlayer player;
+    private final BodyView player;
     private final BuildTaskRecord r;
 
-    BuildCellRules(NumenPlayer player, BuildTaskRecord r) {
+    BuildCellRules(BodyView player, BuildTaskRecord r) {
         this.player = player;
         this.r = r;
     }

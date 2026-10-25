@@ -1,16 +1,23 @@
 package com.dwinovo.numen.pathing.body;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -33,9 +40,74 @@ public interface BodyView {
 
     Controls controls();
 
+    /** 这具身体的两只手:服务端是原版挖掘/交互循环,客户端是协议发包。 */
+    default Effector hands() {
+        throw new UnsupportedOperationException("this body has no hands");
+    }
+
+    /** 把主背包第 {@code slot} 格拿到主手;客户端身体由协议连接实现。 */
+    default java.util.Optional<BodyAction> hold(int slot) {
+        return java.util.Optional.empty();
+    }
+
+    /** 右键 {@code pos} 这一格(原版 {@code useItemOn} 那条路);客户端身体由协议连接实现。 */
+    default boolean useItemOn(BlockPos pos, InteractionHand hand) {
+        if (player() instanceof ServerPlayer serverPlayer) {
+            net.minecraft.world.InteractionResult result = serverPlayer.gameMode.useItemOn(serverPlayer,
+                    serverPlayer.level(), serverPlayer.getItemInHand(hand), hand,
+                    new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(pos),
+                            net.minecraft.core.Direction.UP, pos, false));
+            if (result.consumesAction()) {
+                serverPlayer.swing(hand);
+            }
+            return result.consumesAction();
+        }
+        return false;
+    }
+
+    /** 让一只手拿着 {@code item};客户端身体由协议连接实现。 */
+    default Hotbar.Grip grip(Item item) {
+        return new Hotbar.Grip(InteractionHand.MAIN_HAND, null);
+    }
+
     <T> T state(Class<T> type, Supplier<T> init);
 
     UUID getOwnerUuid();
+
+    /** 服务端身体有 server；客户端身体没有，返回 null。 */
+    default MinecraftServer server() {
+        return level() instanceof ServerLevel serverLevel ? serverLevel.getServer() : null;
+    }
+
+    /** 主人的在线玩家实体；客户端身体没有这个概念，返回 null。 */
+    default ServerPlayer resolveOwnerPlayer() {
+        return null;
+    }
+
+    default Component getName() {
+        return player().getName();
+    }
+
+    /** 一件在她身上用坏的装备:是什么、坏在哪个装备位。 */
+    record BrokenGear(Item item, EquipmentSlot slot) {}
+
+    /** 用坏的装备流水读数；客户端身体不追踪，恒为 0。 */
+    default long brokenGearMark() {
+        return 0L;
+    }
+
+    /** 读数 {@code mark} 以来用坏的装备；客户端身体不追踪，恒为空。 */
+    default List<BrokenGear> brokenGearSince(long mark) {
+        return List.of();
+    }
+
+    default boolean isRemoved() {
+        return player().isRemoved();
+    }
+
+    /** 身体闲下来时解除全部被按住的本能；客户端身体没有这一层。 */
+    default void resumeAllReflexes() {
+    }
 
     default Vec3 position() {
         return player().position();

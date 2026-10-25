@@ -14,7 +14,7 @@ import com.dwinovo.numen.pathing.world.Semantics;
 import com.dwinovo.numen.pathing.world.Sight;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -37,8 +37,8 @@ public final class Terrain {
     }
 
     /** {@code player} 此刻所在的世界,按她的身体尺寸与能力。 */
-    public static Terrain of(ServerPlayer player) {
-        return new Terrain(new LiveWorld(player.level()), Snapshots.stats(player));
+    public static Terrain of(BodyView player) {
+        return new Terrain(new LiveWorld(player.level()), Snapshots.stats(player.player()));
     }
 
     /** {@code (x, z)} 这一列所在的区块已经加载。 */
