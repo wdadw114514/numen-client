@@ -66,6 +66,7 @@ public final class BotConnection {
     private static volatile net.raphimc.minecraftauth.java.JavaAuthManager premium;
     private static volatile org.geysermc.mcprotocollib.auth.GameProfile externalProfile;
     private static volatile String externalToken;
+    private static volatile String externalSkinUrl;
 
     private volatile State state = State.IDLE;
     private volatile String lastError = "";
@@ -434,6 +435,11 @@ public final class BotConnection {
         externalToken = token;
     }
 
+    /** LittleSkin 登录时取到的皮肤直链；SkinsRestorer 服务器会自动发过去。 */
+    public static void setExternalSkinUrl(String url) {
+        externalSkinUrl = url;
+    }
+
     public synchronized void connect() {
         if (state == State.CONNECTING || state == State.PLAY) {
             return;
@@ -724,9 +730,11 @@ public final class BotConnection {
         String lower = message.toLowerCase(java.util.Locale.ROOT);
         if (lower.contains("skinsrestorer") || lower.contains("skin url") || lower.contains("skin set")) {
             skinPluginDetected = true;
-            if (!skinUrl.isBlank() && !skinApplied) {
+            String url = externalSkinUrl != null && !externalSkinUrl.isBlank()
+                    ? externalSkinUrl : skinUrl;
+            if (!url.isBlank() && !skinApplied) {
                 skinApplied = true;
-                sendCommand("skin url " + skinUrl);
+                sendCommand("skin url " + url);
             }
         }
     }

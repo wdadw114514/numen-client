@@ -28,6 +28,38 @@ public final class LittleSkinAuth {
 
     private LittleSkinAuth() {}
 
+    /** LittleSkin 的角色皮肤直链（textures property 里的 SKIN.url）；没有返回 null。 */
+    private static String fetchSkinUrl(HttpClient http, String rawId) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(
+                            API + "/sessionserver/session/minecraft/profile/" + rawId))
+                    .timeout(Duration.ofSeconds(15))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                return null;
+            }
+            JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            for (var element : json.getAsJsonArray("properties")) {
+                JsonObject property = element.getAsJsonObject();
+                if (!"textures".equals(property.get("name").getAsString())) {
+                    continue;
+                }
+                String value = property.get("value").getAsString();
+                String decoded = new String(java.util.Base64.getDecoder().decode(value),
+                        StandardCharsets.UTF_8);
+                JsonObject textures = JsonParser.parseString(decoded).getAsJsonObject()
+                        .getAsJsonObject("textures");
+                if (textures != null && textures.has("SKIN")) {
+                    return textures.getAsJsonObject("SKIN").get("url").getAsString();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
     public static void login(String email, String password) {
         if (pending) {
             return;
@@ -67,6 +99,10 @@ public final class LittleSkinAuth {
                 playerUuid = uuid.toString();
                 BotConnection.setExternal(
                         new org.geysermc.mcprotocollib.auth.GameProfile(uuid, name), token);
+                String skin = fetchSkinUrl(http, rawId);
+                if (skin != null) {
+                    BotConnection.setExternalSkinUrl(skin);
+                }
                 pending = false;
             } catch (Exception e) {
                 error = e.toString();
