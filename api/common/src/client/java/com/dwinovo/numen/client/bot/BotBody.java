@@ -58,6 +58,8 @@ public final class BotBody implements BodyView {
         shadow.setPos(connection.x(), connection.y(), connection.z());
         shadow.setYRot(connection.yaw());
         shadow.setXRot(connection.pitch());
+        shadow.setId(-2_000_000 - Math.abs(uuid.hashCode() % 100_000));
+        level.addFreshEntity(shadow);
         return new BotBody(shadow, connection, local.getUUID());
     }
 
@@ -74,7 +76,7 @@ public final class BotBody implements BodyView {
             player.getInventory().setItem(entry.getKey(), entry.getValue());
         }
         controls.apply(player);
-        player.tick();
+        // 已经加进客户端世界：物理由世界刻驱动，这里只同步位置给服务器
         connection.moveTo(player.getX(), player.getY(), player.getZ(),
                 player.getYRot(), player.getXRot(), player.onGround());
     }
