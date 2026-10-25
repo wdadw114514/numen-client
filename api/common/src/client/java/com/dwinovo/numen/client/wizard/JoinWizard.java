@@ -92,7 +92,7 @@ public final class JoinWizard {
             status = "还没连接服务器";
             return;
         }
-        minecraft.getConnection().sendChatCommand(command);
+        minecraft.getConnection().sendCommand(command);
         status = "已发送 /" + command;
     }
 
