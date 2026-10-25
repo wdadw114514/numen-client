@@ -48,7 +48,7 @@ final class RangedShot {
     RangedShot(BodyView player, boolean crossbow) {
         this.player = player;
         this.crossbow = crossbow;
-        player.gameMode.useItem(player, player.level(), player.getMainHandItem(), InteractionHand.MAIN_HAND);
+        player.useItem(InteractionHand.MAIN_HAND);
     }
 
     /** 这一发的武器还是不是手上这把——换了就得作废重来。 */
@@ -116,7 +116,7 @@ final class RangedShot {
                 tickReadyToFire(aim, target);
             } else if (!player.isUsingItem()) {
                 state = State.SETTLING;
-            } else if (++held >= CrossbowItem.getChargeDuration(weapon, player)) {
+            } else if (++held >= CrossbowItem.getChargeDuration(weapon, player.player())) {
                 player.releaseUsingItem();
                 state = State.READY_TO_FIRE;
                 settle = 0;
@@ -163,7 +163,7 @@ final class RangedShot {
         if (target != null) {
             Constants.LOG.info("[numen-attack] 射出 target={} weapon={} held={} dist={} eta={}",
                     target.getId(), crossbow ? "crossbow" : "bow", held,
-                    String.format("%.1f", player.distanceTo(target)), Math.ceil(aim.travelTicks()));
+                    String.format("%.1f", player.player().distanceTo(target)), Math.ceil(aim.travelTicks()));
         }
         state = State.DONE;
     }

@@ -268,7 +268,7 @@ public final class InteractAtCompanionTask extends InReachTask<InteractAtTaskRec
         // 点开的那个工位(与它确切的位置,比瞄的那一格准):她只记得住我们告诉过她的地方
         java.util.Optional<com.dwinovo.numen.sdk.BlockAt> station = activatedBlock == null ? java.util.Optional.empty()
                 : java.util.Optional.of(new com.dwinovo.numen.sdk.BlockAt(activatedBlockId, activatedBlock));
-        boolean opened = r.button == MouseButton.RIGHT && player.containerMenu != player.inventoryMenu;
+        boolean opened = r.button == MouseButton.RIGHT && player.containerMenu() != player.inventoryMenu();
         if (opened) {
             com.dwinovo.numen.core.tools.GuiOps.Window window = com.dwinovo.numen.core.tools.GuiOps.window(player);
             return station.map(window::openedAt).orElse(window);

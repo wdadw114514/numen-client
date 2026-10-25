@@ -89,6 +89,26 @@ public interface BodyView {
         return player().inventoryMenu;
     }
 
+    default void closeContainer() {
+        player().closeContainer();
+    }
+
+    default int getBlockX() {
+        return player().getBlockX();
+    }
+
+    default int getBlockY() {
+        return player().getBlockY();
+    }
+
+    default int getBlockZ() {
+        return player().getBlockZ();
+    }
+
+    default net.minecraft.core.BlockPos chunkPosition() {
+        return player().chunkPosition();
+    }
+
     default boolean hasLineOfSight(Entity entity) {
         return player().hasLineOfSight(entity);
     }
@@ -278,6 +298,38 @@ public interface BodyView {
         return player().hasInfiniteMaterials();
     }
 
+    default net.minecraft.world.item.ItemCooldowns getCooldowns() {
+        return player().getCooldowns();
+    }
+
+    default void startUsingItem(InteractionHand hand) {
+        player().startUsingItem(hand);
+    }
+
+    default InteractionHand getUsedItemHand() {
+        return player().getUsedItemHand();
+    }
+
+    default void setItemSlot(EquipmentSlot slot, ItemStack stack) {
+        player().setItemSlot(slot, stack);
+    }
+
+    default int tickCount() {
+        return player().tickCount;
+    }
+
+    default net.minecraft.world.entity.LivingEntity getLastHurtByMob() {
+        return player().getLastHurtByMob();
+    }
+
+    default void stopUsingItem() {
+        player().stopUsingItem();
+    }
+
+    default ItemStack getProjectile(ItemStack weapon) {
+        return player().getProjectile(weapon);
+    }
+
     /** 转头看 {@code point}；客户端身体由协议连接同步朝向。 */
     default void lookAt(Vec3 point) {
         if (player() instanceof ServerPlayer serverPlayer) {
@@ -318,6 +370,14 @@ public interface BodyView {
 
     /** 身体闲下来时解除全部被按住的本能；客户端身体没有这一层。 */
     default void resumeAllReflexes() {
+    }
+
+    /** 按住一条本能；客户端身体没有这一层。 */
+    default void pauseReflex(String reflexId) {
+    }
+
+    default boolean isDeadOrDying() {
+        return player().isDeadOrDying();
     }
 
     default Vec3 position() {

@@ -85,7 +85,7 @@ public final class Loadout {
                 }
                 continue;
             }
-            double score = WeaponDamage.against(player, target, stack);
+            double score = WeaponDamage.against(player.player(), target, stack);
             if (score > 0.0 && (bestMelee == null || score > bestMelee.score())) {
                 bestMelee = new Pick(slot, stack, score);
             }

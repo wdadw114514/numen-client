@@ -145,7 +145,8 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
             if (e == null) {
                 continue;   // 找不到的照旧交给任务记成丢失
             }
-            Verdict verdict = gate.judgeLive(Action.attack(e), player.level());
+            Verdict verdict = player.level() instanceof net.minecraft.server.level.ServerLevel sl
+                    ? gate.judgeLive(Action.attack(e), sl) : gate.judge(Action.attack(e), player.level());
             if (verdict.kind() != Verdict.Kind.DENY) {
                 return Preparation.READY;
             }
@@ -175,12 +176,12 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
         settleFinishedTargets();
         // 扛不住的时候跑是逃跑本能的事(FleeChain):它抢过身体跑开,跑开了把身体交还这里。回来时她还扛不住、也没有谁
         // 在追她,就不再回去打——收工说清楚,下一步是程序的事
-        if (Menace.outmatched(player) && field.foes().stream().noneMatch(Battlefield.Foe::engaging)
+        if (Menace.outmatched(player.player()) && field.foes().stream().noneMatch(Battlefield.Foe::engaging)
                 && field.foes().stream().anyMatch(Battlefield.Foe::authorized)) {
             stopNav();
             abortShot();
             fail("too hurt to go back to the fight (effective health "
-                    + Math.round(Menace.effectiveHealth(player)) + "); heal first (numen.inv.eat), then attack again",
+                    + Math.round(Menace.effectiveHealth(player.player())) + "); heal first (numen.inv.eat), then attack again",
                     FailureType.HAZARD);
             return TaskState.FAILED;
         }
@@ -231,10 +232,10 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
      * 为什么。自卫换目标时新冒出来的要问的,同样再问。
      */
     private Battlefield surveyField() {
-        hostiles = Menace.hostilesAround(player, FIELD_RADIUS);
+        hostiles = Menace.hostilesAround(player.player(), FIELD_RADIUS);
         List<Entity> candidates = new ArrayList<>();
         for (var mob : hostiles) {
-            boolean engaging = mob.getTarget() == player || mob == player.getLastHurtByMob();
+            boolean engaging = mob.getTarget() == player.player() || mob == player.getLastHurtByMob();
             boolean authorized = r.indiscriminate ? engaging : r.entityIds.contains(mob.getId());
             if (authorized && !r.terminal(mob.getId())) {
                 candidates.add(mob);
@@ -256,7 +257,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
             if (!r.indiscriminate && !r.entityIds.contains(mob.getId())) {
                 continue;
             }
-            boolean engaging = mob.getTarget() == player || mob == player.getLastHurtByMob();
+            boolean engaging = mob.getTarget() == player.player() || mob == player.getLastHurtByMob();
             boolean authorized = r.indiscriminate ? engaging : r.entityIds.contains(mob.getId());
             if (authorized && !r.terminal(mob.getId()) && !cleared.contains(mob.getId())) {
                 authorized = false;   // 在等主人点头:在场,但这一刻不是目标
@@ -269,7 +270,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
             }
             foes.add(new Battlefield.Foe(
                     mob.getId(),
-                    player.distanceTo(mob),
+                    player.player().distanceTo(mob),
                     Menace.explodes(mob),
                     Menace.armed(mob),
                     engaging,
@@ -284,7 +285,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
                 }
                 Entity e = liveEntity(id);
                 if (e != null && cleared.contains(id)) {
-                    foes.add(new Battlefield.Foe(id, player.distanceTo(e),
+                    foes.add(new Battlefield.Foe(id, player.player().distanceTo(e),
                             Menace.explodes(e), Menace.armed(e),
                             false, reachable(id), true));
                 }
@@ -292,7 +293,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
         }
         Loadout loadout = Loadout.forTarget(player, player);
         return new Battlefield(
-                Menace.effectiveHealth(player),
+                Menace.effectiveHealth(player.player()),
                 reachToTarget(),
                 loadout.hasMelee(), loadout.hasRanged(), foes);
     }
@@ -337,7 +338,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
     }
 
     private Entity liveEntity(int id) {
-        Entity e = ((ServerLevel) player.level()).getEntity(id);
+        Entity e = (player.level() instanceof ServerLevel sl ? sl.getEntity(id) : player.level().getEntity(id));
         return e == null || e.isRemoved() || e == player ? null : e;
     }
 
@@ -347,7 +348,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
             if (r.terminal(id)) {
                 continue;
             }
-            Entity e = ((ServerLevel) player.level()).getEntity(id);
+            Entity e = (player.level() instanceof ServerLevel sl ? sl.getEntity(id) : player.level().getEntity(id));
             if (e == null || e.isRemoved()) {
                 if (r.strikes(id) > 0) {
                     r.defeated(id);
@@ -383,7 +384,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
 
     /** 这一刻算不算得出一条能打到它的箭道。射不到的角落里的怪就是无解。 */
     private boolean shotExistsTo(Entity foe) {
-        return Ballistics.findArrowShot(player.level(), player, foe,
+        return Ballistics.findArrowShot(player.level(), player.player(), foe,
                 BOW_FULL_SPEED * RangedShot.bowPowerForTicks(15), ARROW_GRAVITY, ARROW_DRAG,
                 ARROW_HITBOX_RADIUS, MAX_FIRING_RANGE, true) != null;
     }
@@ -419,9 +420,9 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
     }
 
     private void logMove(AttackPlan.Move move, Battlefield field) {
-        if (move.action() == lastLoggedAction && player.tickCount - lastPlanLogTick < 40) return;
+        if (move.action() == lastLoggedAction && player.tickCount() - lastPlanLogTick < 40) return;
         lastLoggedAction = move.action();
-        lastPlanLogTick = player.tickCount;
+        lastPlanLogTick = player.tickCount();
         Constants.LOG.info("[numen-attack] {} foe={} dist={} melee={} ranged={} hp_eff={} 场上={}",
                 move.action(),
                 move.foeId() == AttackPlan.NO_FOE ? "全场" : move.foeId(),
@@ -462,7 +463,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
         boolean raised = shieldRaised();
         boolean threatened = false;
         for (var mob : hostiles) {
-            if (Menace.tooClose(mob, player)) {
+            if (Menace.tooClose(mob, player.player())) {
                 threatened = true;
                 break;
             }
@@ -505,7 +506,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
             if (stack.is(Items.SHIELD)) {
                 ItemStack shield = stack.split(1);
                 player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, shield);
-                player.inventoryMenu.broadcastChanges();
+                player.inventoryMenu().broadcastChanges();
                 return shield;
             }
         }
@@ -667,7 +668,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
      */
     private double skirmishInner() {
         double inner = bowFighting ? BOW_MIN_DISTANCE
-                : target == null ? 0.0 : Menace.rawDangerRadius(target, player);
+                : target == null ? 0.0 : Menace.rawDangerRadius(target, player.player());
         return inner < skirmishOuter() ? inner : 0.0;
     }
 
@@ -724,7 +725,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
         // 两份材料都引用本刻的判断:目标是判据选的那一只,怪是 surveyField 扫的那一份。
         var field = hostiles;
         // 威胁场只收此刻还活着的:"场上有没有怪"与"远离谁"问的是同一份名单,不然扫到的那只这一刻刚死,名单就空了
-        List<Threat> threats = Menace.field(player, field);
+        List<Threat> threats = Menace.field(player.player(), field);
         boolean haveTarget = target != null && !target.isRemoved();
         if (!haveTarget && threats.isEmpty()) {
             return null;
@@ -749,7 +750,7 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
                 : swordRing();
         // 要打的这一只离多远由环管(内沿就是它够不着她的距离),躲避场只收别的怪:再把它放进去,它够得比她还远时
         // "够得着它"与"出了它的危险半径"两头都要,就没有一格站得下
-        List<Threat> others = Menace.field(player, field.stream().filter(mob -> mob != target).toList());
+        List<Threat> others = Menace.field(player.player(), field.stream().filter(mob -> mob != target).toList());
         if (others.isEmpty()) {
             return ring;
         }
@@ -766,14 +767,14 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
     private void logStandoff(List<Mob> field) {
         int tooClose = 0;
         for (var mob : field) {
-            if (Menace.tooClose(mob, player)) {
+            if (Menace.tooClose(mob, player.player())) {
                 tooClose++;
             }
         }
         String line = target == null || target.isRemoved()
                 ? String.format("无目标(只拉开) 太近=%d 场上=%d", tooClose, field.size())
                 : String.format("%s 目标=%d 距离=%.1f 带=[%.2f, %.2f] 太近=%d 场上=%d",
-                        bowFighting ? "弓" : "剑", target.getId(), player.distanceTo(target),
+                        bowFighting ? "弓" : "剑", target.getId(), player.player().distanceTo(target),
                         skirmishInner(), skirmishOuter(), tooClose, field.size());
         if (!line.equals(lastStandoffLog)) {
             lastStandoffLog = line;
@@ -793,11 +794,11 @@ public final class AttackCompanionTask extends AbstractCompanionTask<AttackTaskR
         // 这里曾经"近于内沿就 abortShot":僵尸一走进八格,拉到一半的弓当场取消;她退开、
         // 重新起手、僵尸又跟进来 —— 一箭都放不出去。距离是走位的判据,混进攻击层就成了
         // 一个把自己打断的开关。
-        if (player.distanceTo(target) > BOW_MAX_DISTANCE) {
+        if (player.player().distanceTo(target) > BOW_MAX_DISTANCE) {
             return TaskState.RUNNING;   // 射程外:不放,但<b>也不取消</b>,弓接着拉
         }
         boolean crossbow = RangedShot.isCrossbow(weapon);
-        Ballistics.Aim aim = Ballistics.findArrowShot(player.level(), player, target,
+        Ballistics.Aim aim = Ballistics.findArrowShot(player.level(), player.player(), target,
                 shotVelocity(crossbow), ARROW_GRAVITY, ARROW_DRAG, ARROW_HITBOX_RADIUS,
                 MAX_FIRING_RANGE, !crossbow);
         if (aim == null) {
