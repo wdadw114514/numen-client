@@ -99,6 +99,28 @@ public final class BotBody implements BodyView {
                 case SHULKER_BOX -> openShulker(open.id());
                 case HOPPER -> openHopper(open.id());
                 case FURNACE, BLAST_FURNACE, SMOKER -> openFurnace(open.id(), open.type());
+                case ANVIL -> openAccess(open.id(), "anvil");
+                case ENCHANTMENT -> openAccess(open.id(), "enchantment");
+                case GRINDSTONE -> openAccess(open.id(), "grindstone");
+                case LOOM -> openAccess(open.id(), "loom");
+                case SMITHING -> openAccess(open.id(), "smithing");
+                case CARTOGRAPHY -> openAccess(open.id(), "cartography");
+                case STONECUTTER -> {
+                    player.containerMenu = new net.minecraft.world.inventory.StonecutterMenu(open.id(),
+                            player.getInventory());
+                    connection.setMenuId(open.id());
+                }
+                case BREWING_STAND -> openBrewing(open.id());
+                case BEACON -> openBeacon(open.id());
+                case GENERIC_3X3 -> {
+                    player.containerMenu = new net.minecraft.world.inventory.DispenserMenu(open.id(),
+                            player.getInventory(), new net.minecraft.world.SimpleContainer(9));
+                    connection.setMenuId(open.id());
+                }
+                case LECTERN -> {
+                    player.containerMenu = new net.minecraft.world.inventory.LecternMenu(open.id());
+                    connection.setMenuId(open.id());
+                }
                 default -> {
                 }
             }
@@ -174,6 +196,33 @@ public final class BotBody implements BodyView {
                     .ServerboundSetCarriedItemPacket(slot));
         }
         return Optional.empty();
+    }
+
+    private void openAccess(int id, String kind) {
+        var access = net.minecraft.world.inventory.ContainerLevelAccess.NULL;
+        player.containerMenu = switch (kind) {
+            case "anvil" -> new net.minecraft.world.inventory.AnvilMenu(id, player.getInventory(), access);
+            case "enchantment" -> new net.minecraft.world.inventory.EnchantmentMenu(id, player.getInventory(), access);
+            case "grindstone" -> new net.minecraft.world.inventory.GrindstoneMenu(id, player.getInventory(), access);
+            case "loom" -> new net.minecraft.world.inventory.LoomMenu(id, player.getInventory(), access);
+            case "smithing" -> new net.minecraft.world.inventory.SmithingMenu(id, player.getInventory(), access);
+            default -> new net.minecraft.world.inventory.CartographyTableMenu(id, player.getInventory(), access);
+        };
+        connection.setMenuId(id);
+    }
+
+    private void openBrewing(int id) {
+        player.containerMenu = new net.minecraft.world.inventory.BrewingStandMenu(id, player.getInventory(),
+                new net.minecraft.world.SimpleContainer(5),
+                new net.minecraft.world.inventory.SimpleContainerData(2));
+        connection.setMenuId(id);
+    }
+
+    private void openBeacon(int id) {
+        player.containerMenu = new net.minecraft.world.inventory.BeaconMenu(id, player.getInventory(),
+                new net.minecraft.world.SimpleContainer(1),
+                new net.minecraft.world.inventory.SimpleContainerData(3));
+        connection.setMenuId(id);
     }
 
     private void openShulker(int id) {
