@@ -92,7 +92,7 @@ public final class SummonPanel extends ModalCard {
     /** 头部(名字)+ 五行选择。 */
     @Override
     int height() {
-        return heightFor(COVER_H + 5 * ROW_H);
+        return heightFor(COVER_H + 6 * ROW_H);
     }
 
     @Override
