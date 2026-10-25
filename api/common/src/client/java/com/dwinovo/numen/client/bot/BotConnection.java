@@ -47,6 +47,9 @@ public final class BotConnection {
     private final List<String> messages = new CopyOnWriteArrayList<>();
     /** 服务器同步来的玩家背包：Inventory 槽位 → 物品。 */
     private final Map<Integer, net.minecraft.world.item.ItemStack> inventory = new ConcurrentHashMap<>();
+    /** 玩家物品栏菜单的原始槽位（0-45）：合成格、盔甲、背包、快捷栏、副手。 */
+    private final Map<Integer, net.minecraft.world.item.ItemStack> menuItems = new ConcurrentHashMap<>();
+    private volatile int menuStateId;
     private volatile ClientNetworkSession session;
     private volatile int entityId = -1;
     private volatile double x;
@@ -133,6 +136,33 @@ public final class BotConnection {
         return inventory;
     }
 
+    public Map<Integer, net.minecraft.world.item.ItemStack> menuItems() {
+        return menuItems;
+    }
+
+    /** 发一次物品栏点击（合成、搬运都走这里）。 */
+    public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
+        org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerActionType actionType;
+        org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerAction action;
+        switch (type) {
+            case PICKUP -> {
+                actionType = org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerActionType.CLICK_ITEM;
+                action = button == 0
+                        ? org.geysermc.mcprotocollib.protocol.data.game.inventory.ClickItemAction.LEFT_CLICK
+                        : org.geysermc.mcprotocollib.protocol.data.game.inventory.ClickItemAction.RIGHT_CLICK;
+            }
+            case QUICK_MOVE -> {
+                actionType = org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerActionType.SHIFT_CLICK_ITEM;
+                action = org.geysermc.mcprotocollib.protocol.data.game.inventory.ShiftClickItemAction.LEFT_CLICK;
+            }
+            default -> {
+                return;
+            }
+        }
+        send(new org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundContainerClickPacket(
+                0, menuStateId, slot, actionType, action, null, java.util.Map.of()));
+    }
+
     private void applyMenuContent(org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack[] items) {
         for (int i = 0; i < items.length; i++) {
             applyMenuSlot(i, items[i]);
@@ -142,6 +172,9 @@ public final class BotConnection {
     /** 玩家物品栏菜单：5-8 甲、9-35 主背包、36-44 快捷栏、45 副手。 */
     private void applyMenuSlot(int slot, org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack item) {
         net.minecraft.world.item.ItemStack stack = toMc(item);
+        if (slot >= 0 && slot <= 45) {
+            menuItems.put(slot, stack);
+        }
         if (slot >= 5 && slot <= 8) {
             inventory.put(39 - (slot - 5), stack);
         } else if (slot >= 9 && slot <= 35) {
@@ -203,6 +236,7 @@ public final class BotConnection {
                     inventory.put(slot.getSlot(), toMc(slot.getContents()));
                 } else if (packet instanceof ClientboundContainerSetContentPacket content) {
                     if (content.getContainerId() == 0) {
+                        menuStateId = content.getStateId();
                         applyMenuContent(content.getItems());
                     }
                 } else if (packet instanceof ClientboundContainerSetSlotPacket slot) {

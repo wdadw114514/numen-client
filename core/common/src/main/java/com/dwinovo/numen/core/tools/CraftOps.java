@@ -132,7 +132,7 @@ public final class CraftOps {
                     + "this grid?)", null);
         }
         int have0 = PlayerInv.count(self.getInventory(), target);
-        menu.clicked(grid.result(), 0, ClickType.QUICK_MOVE, self.player());   // vanilla mass-craft + onTake
+        self.clickSlot(grid.result(), 0, ClickType.QUICK_MOVE);   // vanilla mass-craft + onTake
         self.swing(InteractionHand.MAIN_HAND);
         sweepGrid(menu, self, grid);
         int crafted = PlayerInv.count(self.getInventory(), target) - have0;
@@ -425,7 +425,7 @@ public final class CraftOps {
         }
         for (int idx : grid.cells()) {
             if (idx >= 0 && idx < menu.slots.size() && !menu.slots.get(idx).getItem().isEmpty()) {
-                menu.clicked(idx, 0, ClickType.QUICK_MOVE, self.player());
+                self.clickSlot(idx, 0, ClickType.QUICK_MOVE);
             }
         }
     }
@@ -440,7 +440,7 @@ public final class CraftOps {
                 continue;
             }
             if (slot.getItem().isEmpty()) {
-                menu.clicked(slot.index, 0, ClickType.PICKUP, self.player());
+                self.clickSlot(slot.index, 0, ClickType.PICKUP);
                 return menu.getCarried().isEmpty();
             }
         }

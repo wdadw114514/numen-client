@@ -89,6 +89,11 @@ public interface BodyView {
         return player().inventoryMenu;
     }
 
+    /** 点一下物品栏菜单的槽位：服务端身体走原版菜单，客户端假人发点击包。 */
+    default void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
+        player().containerMenu.clicked(slot, button, type, player());
+    }
+
     default void closeContainer() {
     }
 

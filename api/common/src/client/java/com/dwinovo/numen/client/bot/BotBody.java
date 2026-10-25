@@ -75,6 +75,10 @@ public final class BotBody implements BodyView {
         for (Map.Entry<Integer, net.minecraft.world.item.ItemStack> entry : connection.inventory().entrySet()) {
             player.getInventory().setItem(entry.getKey(), entry.getValue());
         }
+        for (Map.Entry<Integer, net.minecraft.world.item.ItemStack> entry : connection.menuItems().entrySet()) {
+            var slot = player.inventoryMenu.getSlot(entry.getKey());
+            slot.container.setItem(slot.getContainerSlot(), entry.getValue());
+        }
         controls.apply(player);
         // 已经加进客户端世界：物理由世界刻驱动，这里只同步位置给服务器
         connection.moveTo(player.getX(), player.getY(), player.getZ(),
@@ -119,6 +123,11 @@ public final class BotBody implements BodyView {
                     .ServerboundSetCarriedItemPacket(slot));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
+        connection.clickSlot(slot, button, type);
     }
 
     @Override
