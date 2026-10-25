@@ -1,5 +1,6 @@
 package com.dwinovo.numen.entity;
 
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -27,7 +28,7 @@ public final class BodyDelta {
     private final long brokenMark;
 
     private BodyDelta(BodyView her) {
-        this.carried = Belongings.of(her);
+        this.carried = Belongings.of(her.player());
         this.health = her.getHealth();
         this.vehicle = her.getVehicle();
         this.brokenMark = her.brokenGearMark();
@@ -41,11 +42,11 @@ public final class BodyDelta {
     /** 从拍照到现在,背包与经验、血量、骑乘各自的变化,每一条是一件真发生的事;都没变是空表。 */
     public List<String> changes(BodyView her) {
         List<String> facts = new ArrayList<>();
-        String items = carried.itemChange(her);
+        String items = carried.itemChange(her.player());
         if (!items.isEmpty()) {
             facts.add("inventory: " + items);
         }
-        String xp = carried.experienceChange(her);
+        String xp = carried.experienceChange(her.player());
         if (!xp.isEmpty()) {
             facts.add(xp);
         }

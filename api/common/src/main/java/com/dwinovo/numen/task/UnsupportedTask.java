@@ -1,4 +1,5 @@
 package com.dwinovo.numen.task;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.TaskResult;
 
 /**
@@ -16,12 +17,12 @@ public final class UnsupportedTask implements Task {
     }
 
     @Override
-    public void start(com.dwinovo.numen.entity.BodyView companion) {
+    public void start(BodyView companion) {
         // nothing — fails on the first tick
     }
 
     @Override
-    public TaskState tick(com.dwinovo.numen.entity.BodyView companion) {
+    public TaskState tick(BodyView companion) {
         return TaskState.FAILED;
     }
 
@@ -32,7 +33,7 @@ public final class UnsupportedTask implements Task {
     }
 
     @Override
-    public void stop(com.dwinovo.numen.entity.BodyView companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
     }
 
     @Override
