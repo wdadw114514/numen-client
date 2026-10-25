@@ -51,6 +51,7 @@ public final class SummonPanel extends ModalCard {
     private static final String PERSONA_NONE = "__default__";
     private static final String VOICE_NONE = "__none__";
     private static final String SKIN_DEFAULT = "__default__";
+    private static final String SKIN_CUSTOM = "__custom__";
 
     private final Host host;
     private final Draft draft = new Draft();
@@ -115,10 +116,7 @@ public final class SummonPanel extends ModalCard {
         seedField = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, "世界种子（找结构/找矿物用，可留空）",
                 new TextField(JoinWizard.seed(), JoinWizard::seed).placeholder("可留空"));
         ry += FIELD_H;
-        skinField = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, "皮肤链接（支持皮肤网站，可留空）",
-                new TextField(JoinWizard.skinUrl(), JoinWizard::skinUrl)
-                        .placeholder("minecraftskins.com / namemc.com / SkinsRestorer 链接"));
-        ry += FIELD_H;
+
         select(ry, "大厅模式", List.of("关", "开"), JoinWizard.lobbyEnabled() ? 1 : 0,
                 i -> JoinWizard.lobbyEnabled(i == 1));
         ry += ROW_H;
@@ -188,6 +186,8 @@ public final class SummonPanel extends ModalCard {
         List<String> sIds = new ArrayList<>();
         sIds.add(SKIN_DEFAULT);
         skinNames.add("默认（按名字）");
+        sIds.add(SKIN_CUSTOM);
+        skinNames.add("自定义（填下载链接）");
         for (var e : SkinLibrary.instance().list()) {
             if (e.signed()) {
                 sIds.add(e.id());
@@ -197,7 +197,19 @@ public final class SummonPanel extends ModalCard {
         skinIds = sIds;
         select(ry, "皮肤", skinNames,
                 Math.max(0, skinIds.indexOf(draft.skinId == null ? SKIN_DEFAULT : draft.skinId)),
-                i -> draft.skinId = skinIds.get(i));
+                i -> {
+                    draft.skinId = skinIds.get(i);
+                    if (SKIN_CUSTOM.equals(draft.skinId)) {
+                        rebuild();
+                    }
+                });
+        if (SKIN_CUSTOM.equals(draft.skinId)) {
+            ry += ROW_H;
+            skinField = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2,
+                    "皮肤下载链接（png 直链）",
+                    new TextField(JoinWizard.skinUrl(), JoinWizard::skinUrl)
+                            .placeholder("https://.../skin.png"));
+        }
 
         alert = ui.add(new InlineAlert());
         alert.setBounds(x + DialogBox.PAD_X, y + 2, w - DialogBox.PAD_X * 2, DialogBox.TITLE_H);
