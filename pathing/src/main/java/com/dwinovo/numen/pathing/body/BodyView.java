@@ -334,6 +334,14 @@ public interface BodyView {
         return player().getProjectile(weapon);
     }
 
+    /** 半径内的实体（按距离），不含自己；客户端假人用自己的实体表。 */
+    default <T extends Entity> java.util.List<T> nearbyEntities(double radius, Class<T> type,
+                                                                java.util.function.Predicate<? super T> filter) {
+        double radiusSqr = radius * radius;
+        return player().level().getEntitiesOfClass(type, player().getBoundingBox().inflate(radius),
+                e -> e != player() && player().distanceToSqr(e) <= radiusSqr && filter.test(e));
+    }
+
     default boolean isWithinBlockInteractionRange(BlockPos pos, double extra) {
         return player().isWithinBlockInteractionRange(pos, extra);
     }

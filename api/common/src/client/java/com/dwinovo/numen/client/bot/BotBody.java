@@ -159,6 +159,20 @@ public final class BotBody implements BodyView {
     }
 
     @Override
+    public <T extends net.minecraft.world.entity.Entity> java.util.List<T> nearbyEntities(double radius,
+            Class<T> type, java.util.function.Predicate<? super T> filter) {
+        double radiusSqr = radius * radius;
+        java.util.List<T> out = new java.util.ArrayList<>();
+        for (net.minecraft.world.entity.Entity entity : connection.entities().values()) {
+            if (type.isInstance(entity) && entity != player
+                    && player.distanceToSqr(entity) <= radiusSqr && filter.test(type.cast(entity))) {
+                out.add(type.cast(entity));
+            }
+        }
+        return out;
+    }
+
+    @Override
     public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
         connection.clickSlot(slot, button, type);
     }

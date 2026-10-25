@@ -1,5 +1,6 @@
 package com.dwinovo.numen.core.scan;
 
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.world.entity.Entity;
 
 import java.util.List;
@@ -17,10 +18,8 @@ public final class NearbyEntities {
     private NearbyEntities() {}
 
     /** {@code self} 半径 {@code radius} 格以内(按两者位置的距离)、类型为 {@code type} 且满足 {@code filter} 的实体,不含她自己。 */
-    public static <T extends Entity> List<T> within(Entity self, double radius, Class<T> type,
+    public static <T extends Entity> List<T> within(BodyView self, double radius, Class<T> type,
                                                     Predicate<? super T> filter) {
-        double radiusSqr = radius * radius;
-        return self.level().getEntitiesOfClass(type, self.getBoundingBox().inflate(radius),
-                e -> e != self && self.distanceToSqr(e) <= radiusSqr && filter.test(e));
+        return self.nearbyEntities(radius, type, filter);
     }
 }

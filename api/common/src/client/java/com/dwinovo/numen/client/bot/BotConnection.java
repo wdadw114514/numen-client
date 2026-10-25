@@ -18,6 +18,13 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.Serverbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientCommandPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundRespawnPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundAddEntityPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundEntityPositionSyncPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityPosPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityPosRotPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityRotPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundRemoveEntitiesPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundTeleportEntityPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerCombatKillPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundSetHealthPacket;
@@ -91,6 +98,8 @@ public final class BotConnection {
     private volatile OpenMenu pendingMenu;
     private volatile boolean pendingClose;
     private volatile int currentMenuId = 0;
+    /** 假人自己连接看到的实体（服务器给它的 entityId → 实体）；供扫描用。 */
+    private final Map<Integer, net.minecraft.world.entity.Entity> entities = new ConcurrentHashMap<>();
     private volatile float healthValue = 20.0F;
     private volatile int foodValue = 20;
 
@@ -185,6 +194,36 @@ public final class BotConnection {
 
     public List<String> messages() {
         return List.copyOf(messages);
+    }
+
+    public Map<Integer, net.minecraft.world.entity.Entity> entities() {
+        return entities;
+    }
+
+    private void addEntity(ClientboundAddEntityPacket packet) {
+        net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
+        minecraft.execute(() -> {
+            net.minecraft.client.multiplayer.ClientLevel level = minecraft.level;
+            if (level == null) {
+                return;
+            }
+            net.minecraft.world.entity.EntityType<?> type = net.minecraft.core.registries.BuiltInRegistries
+                    .ENTITY_TYPE.byId(packet.getType().ordinal());
+            if (type == null) {
+                return;
+            }
+            net.minecraft.world.entity.Entity entity = type.create(level,
+                    net.minecraft.world.entity.EntitySpawnReason.LOAD);
+            if (entity == null) {
+                return;
+            }
+            entity.setId(packet.getEntityId());
+            entity.setUUID(packet.getUuid());
+            entity.setPosRaw(packet.getX(), packet.getY(), packet.getZ());
+            entity.setYRot(packet.getYaw());
+            entity.setXRot(packet.getPitch());
+            entities.put(packet.getEntityId(), entity);
+        });
     }
 
     public Map<Integer, net.minecraft.world.item.ItemStack> inventory() {
@@ -358,6 +397,48 @@ public final class BotConnection {
                                 }
                             }
                         }
+                    }
+                } else if (packet instanceof ClientboundAddEntityPacket add) {
+                    addEntity(add);
+                } else if (packet instanceof ClientboundRemoveEntitiesPacket remove) {
+                    for (int id : remove.getEntityIds()) {
+                        entities.remove(id);
+                    }
+                } else if (packet instanceof ClientboundMoveEntityPosPacket move) {
+                    net.minecraft.world.entity.Entity entity = entities.get(move.getEntityId());
+                    if (entity != null) {
+                        entity.setPosRaw(entity.getX() + move.getMoveX() / 4096.0,
+                                entity.getY() + move.getMoveY() / 4096.0,
+                                entity.getZ() + move.getMoveZ() / 4096.0);
+                    }
+                } else if (packet instanceof ClientboundMoveEntityRotPacket rot) {
+                    net.minecraft.world.entity.Entity entity = entities.get(rot.getEntityId());
+                    if (entity != null) {
+                        entity.setYRot(entity.getYRot() + rot.getYaw());
+                        entity.setXRot(entity.getXRot() + rot.getPitch());
+                    }
+                } else if (packet instanceof ClientboundMoveEntityPosRotPacket move) {
+                    net.minecraft.world.entity.Entity entity = entities.get(move.getEntityId());
+                    if (entity != null) {
+                        entity.setPosRaw(entity.getX() + move.getMoveX() / 4096.0,
+                                entity.getY() + move.getMoveY() / 4096.0,
+                                entity.getZ() + move.getMoveZ() / 4096.0);
+                        entity.setYRot(entity.getYRot() + move.getYaw());
+                        entity.setXRot(entity.getXRot() + move.getPitch());
+                    }
+                } else if (packet instanceof ClientboundTeleportEntityPacket teleport) {
+                    net.minecraft.world.entity.Entity entity = entities.get(teleport.getEntityId());
+                    if (entity != null) {
+                        entity.setPosRaw(teleport.getPosition().getX(), teleport.getPosition().getY(),
+                                teleport.getPosition().getZ());
+                        entity.setYRot(teleport.getYaw());
+                        entity.setXRot(teleport.getPitch());
+                    }
+                } else if (packet instanceof ClientboundEntityPositionSyncPacket sync) {
+                    net.minecraft.world.entity.Entity entity = entities.get(sync.getId());
+                    if (entity != null) {
+                        entity.setPosRaw(sync.getPosition().getX(), sync.getPosition().getY(),
+                                sync.getPosition().getZ());
                     }
                 } else if (packet instanceof ClientboundLevelChunkWithLightPacket chunk) {
                     applyChunk(chunk);

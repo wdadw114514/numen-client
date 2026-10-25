@@ -162,7 +162,7 @@ public final class ScanApi {
         double radius = Math.clamp(args.radius().orElse((double) DEFAULT_ENTITY_RADIUS), MIN_ENTITY_RADIUS,
                 MAX_ENTITY_RADIUS);
         Kind filter = args.typeFilter().orElse(Kind.ALL);
-        List<Entity> raw = NearbyEntities.within(self.player(), radius, Entity.class, Entity::isAlive);
+        List<Entity> raw = NearbyEntities.within(self, radius, Entity.class, Entity::isAlive);
         raw = new ArrayList<>(raw);
         raw.sort(Comparator.comparingDouble(self.player()::distanceTo));
         List<Seen> out = new ArrayList<>();
