@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   fabric:
     runs-on: ubuntu-latest
@@ -23,3 +26,12 @@ jobs:
           name: numen-fabric
           path: core/fabric/build/libs/*.jar
           if-no-files-found: error
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Numen Client (latest)
+          files: core/fabric/build/libs/*.jar
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
