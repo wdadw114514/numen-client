@@ -22,9 +22,12 @@ dependencies {
     // both mods — exactly like including a library mod such as GeckoLib.
     include project(':api:fabric')
     implementation files(project(':core:common').file('libs/seedfinding.jar'))
-    include files(project(':core:common').file('libs/seedfinding.jar'))
     implementation 'net.java.dev.jna:jna:5.14.0'
     include 'net.java.dev.jna:jna:5.14.0'
+}
+
+jar {
+    from(zipTree(project(':core:common').file('libs/seedfinding.jar')))
 }
 
 loom {
