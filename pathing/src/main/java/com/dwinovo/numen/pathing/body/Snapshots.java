@@ -11,13 +11,13 @@ import com.dwinovo.numen.pathing.world.BodyStats;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,6 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.PowderSnowBlock;
 
 /**
@@ -43,7 +44,7 @@ public final class Snapshots {
 
     private Snapshots() {}
 
-    public static BodySnapshot of(ServerPlayer body) {
+    public static BodySnapshot of(Player body) {
         BodyStats stats = stats(body);
         BodySnapshot.Mining mining = new BodySnapshot.Mining(efficiencyBesidesHand(body),
                 body.getAttributeValue(Attributes.BLOCK_BREAK_SPEED),
@@ -51,17 +52,28 @@ public final class Snapshots {
                 MobEffectUtil.hasDigSpeed(body) ? MobEffectUtil.getDigSpeedAmplification(body) : -1,
                 body.hasEffect(MobEffects.MINING_FATIGUE) ? body.getEffect(MobEffects.MINING_FATIGUE).getAmplifier() : -1);
         List<ItemStack> inventory = List.copyOf(body.getInventory().getNonEquipmentItems());
-        return new BodySnapshot(stats, body.gameMode.getGameModeForPlayer(), body.getHealth(),
+        return new BodySnapshot(stats, gameModeOf(body), body.getHealth(),
                 body.getAttributeValue(Attributes.SAFE_FALL_DISTANCE),
                 body.getAttributeValue(Attributes.FALL_DAMAGE_MULTIPLIER), body.getFoodData().getFoodLevel(),
                 body.getAttributeValue(Attributes.WATER_MOVEMENT_EFFICIENCY), inventory, mining, breath(body));
+    }
+
+    /** 客户端玩家没有 {@code ServerPlayer.gameMode},按能力位还原。 */
+    private static GameType gameModeOf(Player body) {
+        if (body.isCreative()) {
+            return GameType.CREATIVE;
+        }
+        if (body.isSpectator()) {
+            return GameType.SPECTATOR;
+        }
+        return GameType.SURVIVAL;
     }
 
     /**
      * 憋气的本钱。水下呼吸类效果照原版 {@code MobEffectUtil.hasWaterBreathing} 认水下呼吸与潮涌能量两种,取剩得久的;
      * 能在水下呼吸的实体({@code canBreatheUnderwater})与无敌的玩家原版不扣氧({@code LivingEntity.baseTick}),记成无穷。
      */
-    private static Breath breath(ServerPlayer body) {
+    private static Breath breath(Player body) {
         double shield = body.canBreatheUnderwater() || body.getAbilities().invulnerable ? Double.POSITIVE_INFINITY
                 : Math.max(remaining(body, MobEffects.WATER_BREATHING), remaining(body, MobEffects.CONDUIT_POWER));
         return new Breath(body.getAirSupply(), body.getMaxAirSupply(), body.getAttributeValue(Attributes.OXYGEN_BONUS),
@@ -69,7 +81,7 @@ public final class Snapshots {
     }
 
     /** 这个效果还剩几刻;没有为 0,不限时为无穷。 */
-    private static double remaining(ServerPlayer body, Holder<MobEffect> effect) {
+    private static double remaining(Player body, Holder<MobEffect> effect) {
         MobEffectInstance instance = body.getEffect(effect);
         if (instance == null) {
             return 0;
@@ -78,21 +90,21 @@ public final class Snapshots {
     }
 
     /** 第 0 层要的那几项物理量:尺寸、迈步、起跳、重力、交互距离、细雪与冰霜行者。 */
-    public static BodyStats stats(ServerPlayer body) {
+    public static BodyStats stats(Player body) {
         return new BodyStats(body.getDimensions(Pose.STANDING), body.getDimensions(Pose.CROUCHING),
                 body.maxUpStep(), body.getAttributeValue(Attributes.JUMP_STRENGTH), body.getGravity(),
                 body.blockInteractionRange(), PowderSnowBlock.canEntityWalkOnPowderSnow(body), frostWalker(body));
     }
 
     /** 脚上的靴子带冰霜行者。 */
-    private static boolean frostWalker(ServerPlayer body) {
+    private static boolean frostWalker(Player body) {
         Holder<Enchantment> frost = body.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
                 .getOrThrow(Enchantments.FROST_WALKER);
         return EnchantmentHelper.getItemEnchantmentLevel(frost, body.getItemBySlot(EquipmentSlot.FEET)) > 0;
     }
 
     /** 挖掘效率属性去掉手上那件自己的修饰符之后的值。 */
-    private static double efficiencyBesidesHand(ServerPlayer body) {
+    private static double efficiencyBesidesHand(Player body) {
         AttributeInstance live = body.getAttribute(Attributes.MINING_EFFICIENCY);
         Set<Identifier> ofHand = new HashSet<>();
         body.getMainHandItem().forEachModifier(EquipmentSlot.MAINHAND, (holder, modifier) -> {
