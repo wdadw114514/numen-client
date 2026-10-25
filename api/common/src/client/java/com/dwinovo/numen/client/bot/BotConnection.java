@@ -15,7 +15,11 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundSystemChatPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientCommandPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundRespawnPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerCombatKillPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundSetHealthPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerClosePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetContentPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundOpenScreenPacket;
@@ -85,6 +89,8 @@ public final class BotConnection {
     private volatile OpenMenu pendingMenu;
     private volatile boolean pendingClose;
     private volatile int currentMenuId = 0;
+    private volatile float healthValue = 20.0F;
+    private volatile int foodValue = 20;
 
     public BotConnection(String host, int port, String username) {
         this(host, port, username, "");
@@ -203,6 +209,14 @@ public final class BotConnection {
         return currentMenuId;
     }
 
+    public float health() {
+        return healthValue;
+    }
+
+    public int food() {
+        return foodValue;
+    }
+
     public void setMenuId(int id) {
         currentMenuId = id;
         menuItems.clear();
@@ -306,6 +320,15 @@ public final class BotConnection {
                 } else if (packet instanceof ClientboundPlayerChatPacket chat) {
                     Component content = chat.getUnsignedContent();
                     add(content != null ? plain(content) : chat.getContent());
+                } else if (packet instanceof ClientboundPlayerCombatKillPacket) {
+                    add("假人死亡，自动重生");
+                    send(new ServerboundClientCommandPacket(
+                            org.geysermc.mcprotocollib.protocol.data.game.ClientCommand.RESPAWN));
+                } else if (packet instanceof ClientboundRespawnPacket) {
+                    positionKnown = false;
+                } else if (packet instanceof ClientboundSetHealthPacket health) {
+                    healthValue = health.getHealth();
+                    foodValue = health.getFood();
                 } else if (packet instanceof ClientboundOpenScreenPacket open) {
                     pendingMenu = new OpenMenu(open.getContainerId(), open.getType());
                     menuItems.clear();

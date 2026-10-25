@@ -92,6 +92,8 @@ public final class BotBody implements BodyView {
                 slot.container.setItem(slot.getContainerSlot(), entry.getValue());
             }
         }
+        player.setHealth(connection.health());
+        player.getFoodData().setFoodLevel(connection.food());
         controls.apply(player);
         // 物理由客户端世界刻驱动；这里按原版 sendPosition 的规则发包
         connection.sendPosition(player);
