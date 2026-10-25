@@ -1,4 +1,4 @@
-package com.dwinovo.numen.client.bot;
+package com.dwinovo.numen.client.wizard;
 
 import com.dwinovo.numen.client.bot.BotConnection;
 import com.dwinovo.numen.client.bot.BotManager;
