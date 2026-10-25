@@ -50,6 +50,49 @@ public interface BodyView {
         return java.util.Optional.empty();
     }
 
+    /** 右键一个拾取结果(原版 {@code useItemOn} 那条路);客户端身体由协议连接实现。 */
+    default net.minecraft.world.InteractionResult useItemOn(
+            net.minecraft.world.phys.BlockHitResult hit, InteractionHand hand) {
+        if (player() instanceof ServerPlayer serverPlayer) {
+            return serverPlayer.gameMode.useItemOn(serverPlayer, serverPlayer.level(),
+                    serverPlayer.getItemInHand(hand), hand, hit);
+        }
+        return net.minecraft.world.InteractionResult.PASS;
+    }
+
+    /** 对着空气用一次手上的东西;客户端身体由协议连接实现。 */
+    default net.minecraft.world.InteractionResult useItem(InteractionHand hand) {
+        if (player() instanceof ServerPlayer serverPlayer) {
+            return serverPlayer.gameMode.useItem(serverPlayer, serverPlayer.level(),
+                    serverPlayer.getItemInHand(hand), hand);
+        }
+        return net.minecraft.world.InteractionResult.PASS;
+    }
+
+    default void releaseUsingItem() {
+        player().releaseUsingItem();
+    }
+
+    default float getAttackStrengthScale(float partialTick) {
+        return player().getAttackStrengthScale(partialTick);
+    }
+
+    default void attack(Entity target) {
+        player().attack(target);
+    }
+
+    default net.minecraft.world.inventory.AbstractContainerMenu containerMenu() {
+        return player().containerMenu;
+    }
+
+    default net.minecraft.world.inventory.AbstractContainerMenu inventoryMenu() {
+        return player().inventoryMenu;
+    }
+
+    default boolean hasLineOfSight(Entity entity) {
+        return player().hasLineOfSight(entity);
+    }
+
     /** 右键 {@code pos} 这一格(原版 {@code useItemOn} 那条路);客户端身体由协议连接实现。 */
     default boolean useItemOn(BlockPos pos, InteractionHand hand) {
         if (player() instanceof ServerPlayer serverPlayer) {
@@ -76,6 +119,163 @@ public interface BodyView {
 
     default boolean isOwnedByPlayer(UUID playerUuid) {
         return playerUuid != null && playerUuid.equals(getOwnerUuid());
+    }
+
+    default void setYRot(float value) {
+        player().setYRot(value);
+    }
+
+    default void setYHeadRot(float value) {
+        player().setYHeadRot(value);
+    }
+
+    default void setYBodyRot(float value) {
+        player().setYBodyRot(value);
+    }
+
+    default void setXRot(float value) {
+        player().setXRot(value);
+    }
+
+    default double entityInteractionRange() {
+        return player().entityInteractionRange();
+    }
+
+    default Vec3 getViewVector(float partialTick) {
+        return player().getViewVector(partialTick);
+    }
+
+    default Vec3 calculateViewVector(float pitch, float yaw) {
+        return player().calculateViewVector(pitch, yaw);
+    }
+
+    default net.minecraft.world.phys.HitResult pick(double range, float partialTick, boolean hitFluids) {
+        return player().pick(range, partialTick, hitFluids);
+    }
+
+    default boolean isPassenger() {
+        return player().isPassenger();
+    }
+
+    default boolean isAlive() {
+        return player().isAlive();
+    }
+
+    default boolean isSleeping() {
+        return player().isSleeping();
+    }
+
+    default double distanceToSqr(double x, double y, double z) {
+        return player().distanceToSqr(x, y, z);
+    }
+
+    default double distanceToSqr(Entity entity) {
+        return player().distanceToSqr(entity);
+    }
+
+    default ItemStack getItemInHand(InteractionHand hand) {
+        return player().getItemInHand(hand);
+    }
+
+    default void setItemInHand(InteractionHand hand, ItemStack stack) {
+        player().setItemInHand(hand, stack);
+    }
+
+    default ItemStack getItemBySlot(EquipmentSlot slot) {
+        return player().getItemBySlot(slot);
+    }
+
+    default ItemStack getUseItem() {
+        return player().getUseItem();
+    }
+
+    default int getUseItemRemainingTicks() {
+        return player().getUseItemRemainingTicks();
+    }
+
+    default boolean isCrouching() {
+        return player().isCrouching();
+    }
+
+    default boolean isShiftKeyDown() {
+        return player().isShiftKeyDown();
+    }
+
+    default void setShiftKeyDown(boolean value) {
+        player().setShiftKeyDown(value);
+    }
+
+    default boolean isSprinting() {
+        return player().isSprinting();
+    }
+
+    default void setSprinting(boolean value) {
+        player().setSprinting(value);
+    }
+
+    default net.minecraft.world.entity.player.Abilities getAbilities() {
+        return player().getAbilities();
+    }
+
+    default boolean canBreatheUnderwater() {
+        return player().canBreatheUnderwater();
+    }
+
+    default double getAttributeValue(net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attribute) {
+        return player().getAttributeValue(attribute);
+    }
+
+    default net.minecraft.world.effect.MobEffectInstance getEffect(
+            net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        return player().getEffect(effect);
+    }
+
+    default boolean hasEffect(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        return player().hasEffect(effect);
+    }
+
+    default net.minecraft.world.entity.EntityDimensions getDimensions(net.minecraft.world.entity.Pose pose) {
+        return player().getDimensions(pose);
+    }
+
+    default float maxUpStep() {
+        return player().maxUpStep();
+    }
+
+    default double getGravity() {
+        return player().getGravity();
+    }
+
+    default boolean isCreative() {
+        return player().isCreative();
+    }
+
+    default boolean isSpectator() {
+        return player().isSpectator();
+    }
+
+    default boolean isFallFlying() {
+        return player().isFallFlying();
+    }
+
+    default boolean isSwimming() {
+        return player().isSwimming();
+    }
+
+    default boolean isVisuallyCrawling() {
+        return player().isVisuallyCrawling();
+    }
+
+    default boolean isUnderWater() {
+        return player().isUnderWater();
+    }
+
+    default boolean isAffectedByFluids() {
+        return player().isAffectedByFluids();
+    }
+
+    default boolean hasInfiniteMaterials() {
+        return player().hasInfiniteMaterials();
     }
 
     /** 转头看 {@code point}；客户端身体由协议连接同步朝向。 */

@@ -76,7 +76,7 @@ public final class PressReceipt {
     }
 
     private static List<Entity> nearby(BodyView player) {
-        return player.level().getEntities(player,
+        return player.level().getEntities(player.player(),
                 player.getBoundingBox().inflate(ENTITY_RADIUS));
     }
 }

@@ -57,8 +57,8 @@ public final class GuiOps {
      * 背着 {@code CraftingContainer} 的槽是格,{@code ResultSlot} 是结果);她自己那一边只列有东西的。
      */
     public static Window window(BodyView self) {
-        AbstractContainerMenu menu = self.containerMenu;
-        boolean ownInventory = menu == self.inventoryMenu;
+        AbstractContainerMenu menu = self.containerMenu();
+        boolean ownInventory = menu == self.inventoryMenu();
         List<WindowSlot> slots = new ArrayList<>();
         for (int i = 0; i < menu.slots.size(); i++) {
             Slot slot = menu.slots.get(i);
@@ -97,8 +97,8 @@ public final class GuiOps {
 
     /** 关掉开着的界面,关了一个是 true;她自己的背包界面总开着,没有别的开着时什么都不做,是 false。 */
     public static boolean close(BodyView self) {
-        AbstractContainerMenu menu = self.containerMenu;
-        if (menu == null || menu == self.inventoryMenu) {
+        AbstractContainerMenu menu = self.containerMenu();
+        if (menu == null || menu == self.inventoryMenu()) {
             return false;
         }
         self.closeContainer();

@@ -179,6 +179,13 @@ public final class Drops {
         return drops;
     }
 
+    /** 客户端身体:没有服务端掉落追踪,给一本空账。 */
+    public static Drops none() {
+        return NONE;
+    }
+
+    private static final Drops NONE = new Drops(null);
+
     private Track claim(ItemEntity item, int ours) {
         Track track = new Track(this, item, ours);
         TRACKED.put(item, track);

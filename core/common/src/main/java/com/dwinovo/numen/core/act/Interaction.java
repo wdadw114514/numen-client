@@ -349,7 +349,7 @@ public final class Interaction {
         player.controls().stop();
         if (!started) {
             started = true;
-            player.gameMode.useItem(player, player.level(), player.getItemInHand(hand), hand);
+            player.useItem(hand);
             if (!timing.hold) return Status.DONE;      // single tap (throw / instant use)
         }
         if (!player.isUsingItem()) return Status.DONE; // e.g. food finished eating
@@ -406,13 +406,12 @@ public final class Interaction {
 
     private boolean fireUseBlock() {
         player.controls().stop();
-        net.minecraft.world.inventory.AbstractContainerMenu menuBefore = player.containerMenu;
+        net.minecraft.world.inventory.AbstractContainerMenu menuBefore = player.containerMenu();
         BlockHitResult hit = presetHit;
         InputDriver.lookAt(player, hit.getLocation());
         StringBuilder outcome = new StringBuilder();
         for (InteractionHand h : HANDS) {
-            InteractionResult res = player.gameMode.useItemOn(
-                    player, player.level(), player.getItemInHand(h), h, hit);
+            InteractionResult res = player.useItemOn(hit, h);
             String handName = h == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand";
             if (res.consumesAction()) {
                 player.swing(h);
@@ -444,8 +443,7 @@ public final class Interaction {
             return false;
         }
         for (InteractionHand h : HANDS) {
-            if (player.gameMode.useItem(player, player.level(),
-                    player.getItemInHand(h), h).consumesAction()) {
+            if (player.useItem(h).consumesAction()) {
                 player.swing(h);
                 lastUseOutcome = "consumed (item self-use, "
                         + (h == InteractionHand.MAIN_HAND ? "main_hand" : "off_hand") + ")";
@@ -475,13 +473,13 @@ public final class Interaction {
         }
         player.controls().stop();
         InputDriver.lookAt(player, entity.getEyePosition());
-        net.minecraft.world.inventory.AbstractContainerMenu menuBefore = player.containerMenu;
+        net.minecraft.world.inventory.AbstractContainerMenu menuBefore = player.containerMenu();
         for (InteractionHand h : HANDS) {
-            if (entity.interact(player, h).consumesAction()) {       // animals / villagers
+            if (entity.interact(player.player(), h).consumesAction()) {       // animals / villagers
                 MenuOrigin.pressed(player, menuBefore, null);
                 return true;
             }
-            if (player.interactOn(entity, h).consumesAction()) {     // item frames / leads
+            if (player.player().interactOn(entity, h).consumesAction()) {     // item frames / leads
                 MenuOrigin.pressed(player, menuBefore, null);
                 return true;
             }

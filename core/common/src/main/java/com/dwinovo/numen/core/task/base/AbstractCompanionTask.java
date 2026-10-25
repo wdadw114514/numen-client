@@ -294,14 +294,20 @@ public abstract class AbstractCompanionTask<R extends TaskRecord>
         List<Permit> out = new ArrayList<>(actions.size());
         List<ConsentItem> asks = new ArrayList<>();
         List<Integer> askedAt = new ArrayList<>();
+        boolean live = player.level() instanceof net.minecraft.server.level.ServerLevel;
         for (Action action : actions) {
-            Verdict verdict = gate.judgeLive(action, player.level());
+            Verdict verdict = live
+                    ? gate.judgeLive(action, (net.minecraft.server.level.ServerLevel) player.level())
+                    : gate.judge(action, player.level());
             switch (verdict.kind()) {
                 case ALLOW -> out.add(Permit.ALLOWED);
                 case DENY -> out.add(Permit.refused(verdict.reason()));
                 case ASK -> {
                     askedAt.add(out.size());
-                    asks.add(gate.consentItemLive(action, verdict, player.level()));
+                    asks.add(live
+                            ? gate.consentItemLive(action, verdict,
+                                    (net.minecraft.server.level.ServerLevel) player.level())
+                            : gate.consentItem(action, verdict, player.level()));
                     out.add(Permit.WAITING);
                 }
             }

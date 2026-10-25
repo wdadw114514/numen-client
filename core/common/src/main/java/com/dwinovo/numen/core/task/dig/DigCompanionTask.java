@@ -156,7 +156,8 @@ public final class DigCompanionTask extends AbstractCompanionTask<DigTaskRecord>
     protected void onStart() {
         com.dwinovo.numen.core.Constants.LOG.info("[numen-task] dig start targets={} count={} what={} feet={}",
                 r.label, r.count, r.what, player.blockPosition().toShortString());
-        drops = Drops.open(player);
+        drops = player.player() instanceof net.minecraft.server.level.ServerPlayer serverBody
+                ? Drops.open(serverBody) : Drops.none();
     }
 
     @Override
