@@ -37,11 +37,11 @@ public final class BotHands implements Effector {
         if (!pos.equals(digging)) {
             digging = pos.immutable();
             ticks = 0;
-            connection.send(new ServerboundPlayerActionPacket(PlayerAction.START_DESTROY_BLOCK,
+            connection.send(new ServerboundPlayerActionPacket(PlayerAction.START_DIGGING,
                     Vector3i.from(pos.getX(), pos.getY(), pos.getZ()), face, sequence++));
         }
         if (++ticks >= DIG_TICKS) {
-            connection.send(new ServerboundPlayerActionPacket(PlayerAction.STOP_DESTROY_BLOCK,
+            connection.send(new ServerboundPlayerActionPacket(PlayerAction.FINISH_DIGGING,
                     Vector3i.from(pos.getX(), pos.getY(), pos.getZ()), face, sequence++));
             digging = null;
             return new Strike.Broke(pos.immutable(), player.level().getBlockState(pos));
@@ -54,7 +54,7 @@ public final class BotHands implements Effector {
         if (digging == null) {
             return;
         }
-        connection.send(new ServerboundPlayerActionPacket(PlayerAction.ABORT_DESTROY_BLOCK,
+        connection.send(new ServerboundPlayerActionPacket(PlayerAction.CANCEL_DIGGING,
                 Vector3i.from(digging.getX(), digging.getY(), digging.getZ()), Direction.UP, sequence++));
         digging = null;
         ticks = 0;

@@ -75,7 +75,7 @@ public final class Controls {
             Key.SPRINT);
 
     /** 鎶婃寜鐫€鐨勯敭钀藉埌韬綋涓娿€傚彧鐢?{@link Physics#step} 璋?姣忓埢涓€娆°€?*/
-    void apply(Player body) {
+    public void apply(Player body) {
         pushOutOfBlocks(body);
         float forward = impulse(Key.FORWARD, Key.BACK);
         float left = impulse(Key.LEFT, Key.RIGHT);
