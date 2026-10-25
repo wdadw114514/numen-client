@@ -2,7 +2,7 @@ package com.dwinovo.numen.task.chain;
 
 import com.dwinovo.numen.entity.CompanionSpeech;
 import com.dwinovo.numen.entity.InputDriver;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.Task;
 import com.dwinovo.numen.task.TaskState;
 import com.dwinovo.numen.task.reflex.Reflex;
@@ -19,7 +19,7 @@ public final class SpeakingLookChain implements Task, Reflex {
     private static final int LOOK_RANGE = 16;
 
     @Override
-    public boolean canRun(NumenPlayer companion) {
+    public boolean canRun(BodyView companion) {
         if (!CompanionSpeech.isSpeaking(companion.getUUID())) return false;
         ServerPlayer owner = companion.resolveOwnerPlayer();
         return owner != null && owner.level() == companion.level()
@@ -27,7 +27,7 @@ public final class SpeakingLookChain implements Task, Reflex {
     }
 
     @Override
-    public TaskState tick(NumenPlayer companion) {
+    public TaskState tick(BodyView companion) {
         ServerPlayer owner = companion.resolveOwnerPlayer();
         if (owner == null) return TaskState.RUNNING;
         companion.controls().stop();
@@ -36,7 +36,7 @@ public final class SpeakingLookChain implements Task, Reflex {
     }
 
     @Override
-    public void stop(NumenPlayer companion, StopReason why) {
+    public void stop(BodyView companion, StopReason why) {
         companion.controls().stop();
     }
 

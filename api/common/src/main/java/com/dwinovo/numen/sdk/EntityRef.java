@@ -3,6 +3,7 @@ package com.dwinovo.numen.sdk;
 import com.dwinovo.numen.agent.script.ScriptType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import java.util.Map;
 import java.util.UUID;
@@ -41,6 +42,15 @@ public record EntityRef(Integer id, UUID uuid) {
     /** 它在这一层世界里的那只;不在、已被移除都是 null。 */
     public Entity in(ServerLevel level) {
         Entity found = id != null ? level.getEntity(id) : level.getEntity(uuid);
+        return found == null || found.isRemoved() ? null : found;
+    }
+
+    /** 客户端世界只有按编号查找;按 UUID 点名在客户端返回 null。 */
+    public Entity in(Level level) {
+        if (level instanceof ServerLevel serverLevel) {
+            return in(serverLevel);
+        }
+        Entity found = id != null ? level.getEntity(id) : null;
         return found == null || found.isRemoved() ? null : found;
     }
 

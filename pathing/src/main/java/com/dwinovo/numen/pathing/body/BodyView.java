@@ -74,6 +74,17 @@ public interface BodyView {
 
     UUID getOwnerUuid();
 
+    default boolean isOwnedByPlayer(UUID playerUuid) {
+        return playerUuid != null && playerUuid.equals(getOwnerUuid());
+    }
+
+    /** 转头看 {@code point}；客户端身体由协议连接同步朝向。 */
+    default void lookAt(Vec3 point) {
+        if (player() instanceof ServerPlayer serverPlayer) {
+            serverPlayer.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, point);
+        }
+    }
+
     /** 服务端身体有 server；客户端身体没有，返回 null。 */
     default MinecraftServer server() {
         return level() instanceof ServerLevel serverLevel ? serverLevel.getServer() : null;

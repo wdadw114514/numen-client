@@ -71,12 +71,12 @@ public final class CompanionTickDispatcher {
     }
 
     /** 换掉她现在在做的事(首次使用时建脑),见 {@link CompanionBrain#assign}。 */
-    static void assign(NumenPlayer companion, TaskRecord record, Task runner) {
+    static void assign(com.dwinovo.numen.pathing.body.BodyView companion, TaskRecord record, Task runner) {
         brainFor(companion.getUUID()).assign(companion, record, runner);
     }
 
     /** 开始准备一次调用(首次使用时建脑):她原来在准备的那一件被它顶替,见 {@link Preparing}。 */
-    static void prepare(NumenPlayer companion, Preparing.Call call) {
+    static void prepare(com.dwinovo.numen.pathing.body.BodyView companion, Preparing.Call call) {
         brainFor(companion.getUUID()).preparing.begin(call);
     }
 

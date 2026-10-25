@@ -4,6 +4,7 @@ import com.dwinovo.numen.mixin.BoatAccessor;
 import com.dwinovo.numen.pathing.body.Controls;
 
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -20,8 +21,8 @@ public final class InputDriver {
     private InputDriver() {}
 
     /** Aim the eyes at a point (yaw + pitch) — e.g. the eyes of whoever she talks to or hits. */
-    public static void lookAt(ServerPlayer p, Vec3 point) {
-        p.lookAt(EntityAnchorArgument.Anchor.EYES, point);
+    public static void lookAt(BodyView p, Vec3 point) {
+        p.lookAt(point);
     }
 
     /** 船的转向死区(度):差角小于它就不压舵。太小会和转向动量打架来回摆头。 */

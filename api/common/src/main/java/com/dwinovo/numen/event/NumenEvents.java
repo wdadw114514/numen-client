@@ -6,6 +6,7 @@ import com.dwinovo.numen.agent.inbox.EventQueue;
 import com.dwinovo.numen.agent.inbox.EventTypes;
 import com.dwinovo.numen.agent.script.ScriptCall;
 import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.network.payload.NumenEventPayload;
 import com.dwinovo.numen.task.reflex.Reflex;
 import com.dwinovo.numen.network.NumenNetwork;
@@ -142,7 +143,7 @@ public final class NumenEvents {
      *  <p>她读到的是它的实际账;整份结果(值、失败的种类与下一步)随条目一起到,给等这件活的程序。
      *
      *  @param fn 派它的 API 函数,值按它的返回类型写;不出自 API 函数的是 null */
-    public static void taskFinished(NumenPlayer companion, String taskId, String tool,
+    public static void taskFinished(BodyView companion, String taskId, String tool,
                                     String status, TaskResult result, com.dwinovo.numen.sdk.ApiFunction fn) {
         Map<String, String> attrs = new LinkedHashMap<>();
         attrs.put(TASK_ID, taskId);
@@ -227,16 +228,17 @@ public final class NumenEvents {
      * @param urgent 她不知道就会做错事 → 立刻开一轮;否则攒着搭车。类型表说恒为急件的种类不看它
      * @throws IllegalArgumentException 种类没登记,或者登记的不是世界的事
      */
-    public static void emit(NumenPlayer companion, String type, Map<String, String> attrs,
+    public static void emit(BodyView companion, String type, Map<String, String> attrs,
                             String text, boolean urgent) {
         emit(companion, type, attrs, text, urgent, null);
     }
 
     /** 同上,条目另带一件身体活的结果({@link EventQueue.Entry#result})。 */
-    private static void emit(NumenPlayer companion, String type, Map<String, String> attrs,
+    private static void emit(BodyView companion, String type, Map<String, String> attrs,
                              String text, boolean urgent, com.google.gson.JsonObject result) {
-        MinecraftServer server = companion.level().getServer();
-        EventQueue.Entry plain = entry(server.overworld().getDayTime(), type, attrs, text,
+        MinecraftServer server = companion.server();
+        long dayTime = server != null ? server.overworld().getDayTime() : companion.level().getDayTime();
+        EventQueue.Entry plain = entry(dayTime, type, attrs, text,
                 System.currentTimeMillis(), urgent);
         EventQueue.Entry entry = new EventQueue.Entry(plain.type(), plain.text(), plain.ts(), plain.urgent(), result);
         UUID uuid = companion.getUUID();
@@ -252,8 +254,12 @@ public final class NumenEvents {
     /**
      * 一条造好的事件送给主人的大脑:主人在线直接送达,离线进出箱等他回来。归了在跑的程序、之后程序却没能用上的收尾也经这里。
      */
-    public static void deliver(NumenPlayer companion, EventQueue.Entry entry) {
-        MinecraftServer server = companion.level().getServer();
+    public static void deliver(BodyView companion, EventQueue.Entry entry) {
+        MinecraftServer server = companion.server();
+        if (server == null) {
+            Constants.LOG.info("[numen-event] client body {} kind={} {}", companion.getUUID(), entry.type(), entry.text());
+            return;
+        }
         UUID uuid = companion.getUUID();
         String type = entry.type();
         boolean urgent = entry.urgent();

@@ -103,11 +103,15 @@ public final class TaskPersistence {
                     + left.old() + "), which this version no longer runs. Start it again if it is still wanted.");
             return;
         }
+        if (!(companion instanceof com.dwinovo.numen.entity.NumenPlayer serverBody)) {
+            abandon(companion, taskName, "client bodies do not replay server programs");
+            return;
+        }
         Constants.LOG.info("[numen-task] {} 接回重启前的活:{}", companion.getUUID(), left.lua());
         // 再跑,和她写的程序走同一个入口。受理了,它干完时的 task_finished 照常送到她手里;没受理(读不通、调用被拒、准备没过)就是
         // 这件活没接回来,程序的回执说为什么
         boolean[] accepted = {false};
-        ServerPrograms.launch(companion, REPLAY_CALL_ID + "-" + taskName, left.lua(), new CallObserver() {
+        ServerPrograms.launch(serverBody, REPLAY_CALL_ID + "-" + taskName, left.lua(), new CallObserver() {
             @Override
             public void replied(String callId, String reply) {
                 ApiReply.Parsed parsed = ApiReply.parse(reply);

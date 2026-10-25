@@ -361,7 +361,7 @@ public final class NumenCommands {
             throws CommandSyntaxException {
         ServerPlayer owner = ctx.getSource().getPlayerOrException();
         long id = LongArgumentType.getLong(ctx, "id");
-        NumenPlayer companion = ConsentDesk.pendingAt(owner.level().getServer(), id);
+        com.dwinovo.numen.pathing.body.BodyView companion = ConsentDesk.pendingAt(owner.level().getServer(), id);
         ConsentDesk.Reply reply = companion == null ? ConsentDesk.Reply.NOT_PENDING
                 : ConsentDesk.reply(owner, companion, id, decision, note);
         switch (reply) {

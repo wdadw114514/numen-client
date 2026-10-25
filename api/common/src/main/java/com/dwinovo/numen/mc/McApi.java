@@ -70,7 +70,9 @@ public final class McApi {
         if (line.isEmpty()) {
             throw new ApiError(ErrorKind.BAD_ARGUMENT, "there is no command to run.", Call.of("numen.mc.run", HELP));
         }
-        NumenPlayer her = call.her();
+        if (!(call.her() instanceof NumenPlayer her)) {
+            throw new ApiError(ErrorKind.FAILED, "numen.mc.run needs a server-side body", null);
+        }
         CommandDispatcher<CommandSourceStack> dispatcher = her.level().getServer().getCommands().getDispatcher();
         String problem = problem(dispatcher, line, her.createCommandSourceStack());
         if (problem != null) {
