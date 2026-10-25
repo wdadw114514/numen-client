@@ -24,6 +24,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.Clie
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityPosRotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityRotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundRemoveEntitiesPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEntityDataPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEquipmentPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundTeleportEntityPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket;
@@ -492,6 +493,22 @@ public final class BotConnection {
                     }
                 } else if (packet instanceof ClientboundAddEntityPacket add) {
                     addEntity(add);
+                } else if (packet instanceof ClientboundSetEntityDataPacket data) {
+                    net.minecraft.world.entity.Entity entity = entities.get(data.getEntityId());
+                    if (entity != null) {
+                        for (var meta : data.getMetadata()) {
+                            Object value = meta.getValue();
+                            if (entity instanceof net.minecraft.world.entity.LivingEntity living
+                                    && meta.getId() == 9 && value instanceof Number number) {
+                                living.setHealth(number.floatValue());
+                            } else if (meta.getId() == 2
+                                    && value instanceof net.kyori.adventure.text.Component component) {
+                                entity.setCustomName(net.minecraft.network.chat.Component.literal(
+                                        net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+                                                .plainText().serialize(component)));
+                            }
+                        }
+                    }
                 } else if (packet instanceof ClientboundSetEquipmentPacket equipment) {
                     net.minecraft.world.entity.Entity entity = entities.get(equipment.getEntityId());
                     if (entity instanceof net.minecraft.world.entity.LivingEntity living) {

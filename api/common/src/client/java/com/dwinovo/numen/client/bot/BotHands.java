@@ -37,6 +37,9 @@ public final class BotHands implements Effector {
             digging = pos.immutable();
             ticks = 0;
             net.minecraft.world.level.block.state.BlockState state = player.level().getBlockState(pos);
+            player.level().playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                    state.getSoundType().getHitSound(), net.minecraft.sounds.SoundSource.BLOCKS,
+                    0.25F, 0.5F, false);
             need = Math.max(1, com.dwinovo.numen.pathing.plan.DigTime.ticks(
                     com.dwinovo.numen.pathing.body.Snapshots.of(player), player.getMainHandItem(), state,
                     player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER), player.onGround()));

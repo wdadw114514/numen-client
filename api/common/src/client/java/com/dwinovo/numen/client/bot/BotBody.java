@@ -138,6 +138,9 @@ public final class BotBody implements BodyView {
         }
         if (connection.health() < player.getHealth()) {
             player.hurtTime = 10;
+            player.level().playLocalSound(player.getX(), player.getY(), player.getZ(),
+                    net.minecraft.sounds.SoundEvents.PLAYER_HURT, net.minecraft.sounds.SoundSource.PLAYERS,
+                    0.5F, 1.0F, false);
         }
         player.setHealth(connection.health());
         player.getFoodData().setFoodLevel(connection.food());
