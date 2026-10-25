@@ -154,7 +154,7 @@ public final class BotBody implements BodyView {
     private void openChest(int id, int rows) {
         net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(rows * 9);
         player.containerMenu = new net.minecraft.world.inventory.ChestMenu(
-                net.minecraft.world.inventory.MenuType.GENERIC_9X3, id, player.getInventory(), container, rows);
+                net.minecraft.world.inventory.MenuType.GENERIC_9x3, id, player.getInventory(), container, rows);
         connection.setMenuId(id);
     }
 
