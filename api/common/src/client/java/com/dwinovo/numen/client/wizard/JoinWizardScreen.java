@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 public class JoinWizardScreen extends Screen {
 
     private EditBox passwordBox;
+    private EditBox seedBox;
 
     public JoinWizardScreen() {
         super(Component.literal("加入服务器"));
@@ -22,10 +23,18 @@ public class JoinWizardScreen extends Screen {
         int y = this.height / 4 + 30;
 
         switch (JoinWizard.step()) {
-            case INTRO -> this.addRenderableWidget(Button.builder(Component.literal("开始"), button -> {
-                JoinWizard.step(JoinWizard.Step.ACCOUNT);
-                this.rebuildWidgets();
-            }).bounds(left, y, 200, 20).build());
+            case INTRO -> {
+                this.seedBox = new EditBox(this.font, left, y, 200, 20, Component.literal("世界种子"));
+                this.seedBox.setMaxLength(32);
+                this.seedBox.setValue(JoinWizard.seed());
+                this.seedBox.setResponder(JoinWizard::seed);
+                this.addRenderableWidget(this.seedBox);
+                this.addRenderableWidget(Button.builder(Component.literal("开始"), button -> {
+                    JoinWizard.seed(this.seedBox.getValue());
+                    JoinWizard.step(JoinWizard.Step.ACCOUNT);
+                    this.rebuildWidgets();
+                }).bounds(left, y + 26, 200, 20).build());
+            }
             case ACCOUNT -> {
                 this.passwordBox = new EditBox(this.font, left, y, 200, 20, Component.literal("密码"));
                 this.passwordBox.setMaxLength(32);
@@ -83,6 +92,8 @@ public class JoinWizardScreen extends Screen {
                     cx, this.height / 4 - 6, 0xD0D0D0);
                 graphics.drawCenteredString(this.font, Component.literal("不会生成假人，服务器看不到额外的玩家。"),
                     cx, this.height / 4 + 8, 0xD0D0D0);
+                graphics.drawCenteredString(this.font, Component.literal("填当前服务器的世界种子（找结构/找矿物用）"),
+                    cx, this.height / 4 + 22, 0x80C080);
             }
             case ACCOUNT -> graphics.drawCenteredString(this.font,
                 Component.literal("输入登录密码；没注册过就点「注册」。"),

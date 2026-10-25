@@ -1,5 +1,6 @@
 package com.dwinovo.numen.client.wizard;
 
+import com.dwinovo.numen.sdk.WorldSeed;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayDeque;
@@ -32,6 +33,7 @@ public final class JoinWizard {
 
     private static Step step = Step.INTRO;
     private static String password = "";
+    private static String seed = "";
     private static String code = "";
     private static String status = "";
 
@@ -52,6 +54,15 @@ public final class JoinWizard {
 
     public static void password(String value) {
         password = value == null ? "" : value;
+    }
+
+    public static String seed() {
+        return seed;
+    }
+
+    public static void seed(String value) {
+        seed = value == null ? "" : value.strip();
+        WorldSeed.set(seed);
     }
 
     public static String code() {

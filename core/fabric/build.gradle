@@ -21,6 +21,10 @@ dependencies {
     // Bundle it into core's jar (Jar-in-Jar) so players install one file and get
     // both mods — exactly like including a library mod such as GeckoLib.
     include project(':api:fabric')
+    implementation files(project(':core:common').file('libs/seedfinding.jar'))
+    include files(project(':core:common').file('libs/seedfinding.jar'))
+    implementation 'net.java.dev.jna:jna:5.14.0'
+    include 'net.java.dev.jna:jna:5.14.0'
 }
 
 loom {

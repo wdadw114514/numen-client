@@ -115,6 +115,8 @@ public final class NumenCore {
             com.dwinovo.numen.core.tools.inventory.GearApi.install(numen);
             com.dwinovo.numen.core.tools.inventory.CreativeApi.install(numen);
             com.dwinovo.numen.core.tools.time.TimeApi.install(numen);
+        com.dwinovo.numen.core.tools.web.WebApi.install(numen);
+        com.dwinovo.numen.core.tools.wiki.WikiApi.install(numen);
         });
     }
 

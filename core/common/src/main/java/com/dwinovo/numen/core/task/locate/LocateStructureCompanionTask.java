@@ -1,5 +1,8 @@
 package com.dwinovo.numen.core.task.locate;
 import com.dwinovo.numen.core.task.IdSuggest;
+import com.dwinovo.numen.core.locate.Cubiomes;
+import com.dwinovo.numen.core.locate.EndCityFinder;
+import com.dwinovo.numen.sdk.WorldSeed;
 import com.dwinovo.numen.core.task.CompassUtil;
 import com.dwinovo.numen.core.scan.SearchBudget;
 import com.dwinovo.numen.core.scan.RingSpiral;
@@ -114,6 +117,10 @@ public final class LocateStructureCompanionTask extends AbstractCompanionTask<Lo
     private BlockPos best;
     private double bestDistSqr = Double.MAX_VALUE;
     private String failReason = "not on a server level";
+    /** 离线找结构（Cubiomes / seedfinding）已经出结论：onTick 直接收工。 */
+    private boolean offlineDone;
+    /** 离线搜索覆盖的半径（格），回执里报给模型。 */
+    private static final int OFFLINE_RADIUS = 12000;
 
     public LocateStructureCompanionTask(BodyView player, LocateStructureTaskRecord record) {
         super(player, record);
@@ -126,9 +133,18 @@ public final class LocateStructureCompanionTask extends AbstractCompanionTask<Lo
         pendingCandidate = null;
         best = null;
         bestDistSqr = Double.MAX_VALUE;
+        offlineDone = false;
 
+        Long seed = WorldSeed.asLong();
+        if (seed != null) {
+            if (locateOffline(seed)) {
+                offlineDone = true;
+            }
+            return;
+        }
         if (!(player.level() instanceof ServerLevel sl)) {
-            fail("not on a server level", FailureType.UNKNOWN);
+            fail("no world seed: fill the seed in the join wizard (step 1) so offline structure search can run",
+                    FailureType.UNKNOWN);
             return;
         }
         List<Holder<Structure>> holders = resolveStructures(sl, r.structure.trim());
@@ -230,6 +246,9 @@ public final class LocateStructureCompanionTask extends AbstractCompanionTask<Lo
 
     @Override
     protected TaskState onTick() {
+        if (offlineDone) {
+            return TaskState.SUCCESS;
+        }
         if (!(player.level() instanceof ServerLevel sl)) {
             fail("not on a server level", FailureType.UNKNOWN);
             return TaskState.FAILED;
@@ -343,8 +362,53 @@ public final class LocateStructureCompanionTask extends AbstractCompanionTask<Lo
         return r.getToolName() + " interrupted";
     }
 
+    /** 离线查找：Cubiomes 管其它结构，末地城/末地船走 seedfinding。 */
+    private boolean locateOffline(long seed) {
+        String type = normalizeStructure(r.structure);
+        int centerX = player.getBlockX();
+        int centerZ = player.getBlockZ();
+        if (type.equals("end_city")) {
+            List<EndCityFinder.City> cities = EndCityFinder.find(seed, centerX, centerZ, OFFLINE_RADIUS, 20);
+            EndCityFinder.City city = cities.stream().filter(EndCityFinder.City::ship).findFirst()
+                    .orElse(cities.isEmpty() ? null : cities.getFirst());
+            if (city != null) {
+                consider(city.ship()
+                        ? new BlockPos(city.headX(), city.headY(), city.headZ())
+                        : new BlockPos(city.x(), 64, city.z()));
+            }
+            return true;
+        }
+        List<int[]> found = Cubiomes.find(type, "1.21.11", seed, centerX, centerZ, OFFLINE_RADIUS, 20);
+        if (found == null) {
+            fail("structure " + r.structure + " is not supported by the offline finder"
+                    + (Cubiomes.isAvailable() ? "" : " (" + Cubiomes.error() + ")"), FailureType.UNKNOWN);
+            return false;
+        }
+        for (int[] xz : found) {
+            consider(new BlockPos(xz[0], 64, xz[1]));
+        }
+        return true;
+    }
+
+    private static String normalizeStructure(String raw) {
+        String type = raw == null ? "" : raw.strip().toLowerCase(java.util.Locale.ROOT);
+        if (type.startsWith("#")) {
+            type = type.substring(1);
+        }
+        if (type.startsWith("minecraft:")) {
+            type = type.substring("minecraft:".length());
+        }
+        return switch (type) {
+            case "end_ship" -> "end_city";
+            default -> type;
+        };
+    }
+
     /** How far outward (blocks) the random-spread spirals have covered so far. */
     private int searchedRadiusBlocks() {
+        if (offlineDone) {
+            return OFFLINE_RADIUS;
+        }
         int max = 0;
         for (Job job : jobs) {
             if (job.spread == null) continue;
