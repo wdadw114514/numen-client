@@ -1,11 +1,12 @@
 package com.dwinovo.numen.client.bot;
 
 /**
- * 当前这一只客户端假人的连接。同一时间只留一只；重新连接会先断开旧的。
+ * 当前这一只客户端假人的连接与身体。同一时间只留一只；重新连接会先断开旧的。
  */
 public final class BotManager {
 
     private static volatile BotConnection bot;
+    private static volatile BotBody body;
 
     private BotManager() {}
 
@@ -21,6 +22,22 @@ public final class BotManager {
         return bot;
     }
 
+    /** 假人的身体；连接还没进入 PLAY 或世界还没加载时 null（下一刻会再建）。 */
+    public static BotBody body() {
+        BotConnection current = bot;
+        if (current == null) {
+            body = null;
+            return null;
+        }
+        BotBody existing = body;
+        if (existing != null && existing.connection() == current) {
+            return existing;
+        }
+        BotBody created = BotBody.create(current);
+        body = created;
+        return created;
+    }
+
     public static boolean playing() {
         BotConnection current = bot;
         return current != null && current.state() == BotConnection.State.PLAY;
@@ -29,6 +46,7 @@ public final class BotManager {
     public static void disconnect() {
         BotConnection current = bot;
         bot = null;
+        body = null;
         if (current != null) {
             current.disconnect();
         }
@@ -36,8 +54,13 @@ public final class BotManager {
 
     public static void tick() {
         BotConnection current = bot;
-        if (current != null) {
-            current.tick();
+        if (current == null) {
+            return;
+        }
+        current.tick();
+        BotBody currentBody = body();
+        if (currentBody != null) {
+            currentBody.tick();
         }
     }
 }

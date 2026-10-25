@@ -6,7 +6,7 @@ import com.dwinovo.numen.agent.script.Program;
 import com.dwinovo.numen.agent.script.ScriptCall;
 import com.dwinovo.numen.agent.script.ScriptCatalog;
 import com.dwinovo.numen.agent.script.ScriptRun;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.event.NumenEvents;
 import com.dwinovo.numen.sdk.ApiRegistry;
 import com.dwinovo.numen.sdk.Dispatcher;
@@ -19,12 +19,12 @@ import java.util.function.Consumer;
  */
 final class ProgramPort implements Program.Port {
 
-    private final NumenPlayer her;
+    private final BodyView her;
     private final RunModules modules;
     private final ProgramCalls calls;
 
     /** @param her 她的身体;没有世界的单测是 null */
-    ProgramPort(NumenPlayer her, RunModules modules, ProgramCalls calls) {
+    ProgramPort(BodyView her, RunModules modules, ProgramCalls calls) {
         this.her = her;
         this.modules = modules;
         this.calls = calls;
@@ -53,7 +53,12 @@ final class ProgramPort implements Program.Port {
     /** 程序已经结束,它等的那件活的收尾才到:送给主人的大脑,在服务端主线程上。 */
     @Override
     public void forward(EventQueue.Entry entry) {
-        her.level().getServer().execute(() -> NumenEvents.deliver(her, entry));
+        net.minecraft.server.MinecraftServer server = her.server();
+        if (server != null) {
+            server.execute(() -> NumenEvents.deliver(her, entry));
+        } else {
+            NumenEvents.deliver(her, entry);
+        }
     }
 
     @Override

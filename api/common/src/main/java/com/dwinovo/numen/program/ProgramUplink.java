@@ -34,6 +34,15 @@ public final class ProgramUplink {
     public static final ProgramUplink CONNECTION = new ProgramUplink(new ModuleSync(), payload -> wire.accept(payload),
             Modules::of);
 
+    /** 客户端假人模式：本地执行器接管，返回 true 表示这段程序不送服务端。 */
+    @FunctionalInterface
+    public interface LocalRunner {
+        boolean run(UUID companion, String programId, String code, Consumer<RunResult> done);
+    }
+
+    /** 设了它、且它接下这段程序时，Lua 在本机跑，不经过网络。 */
+    public static volatile LocalRunner localRunner;
+
     private record Waiting(UUID companion, String code, Consumer<RunResult> done, boolean retried) {}
 
     private final ModuleSync sync;
@@ -60,6 +69,10 @@ public final class ProgramUplink {
      * @param programId 这段程序的编号,调用方保证不重
      */
     public void run(UUID companion, String programId, String code, Consumer<RunResult> done) {
+        LocalRunner local = localRunner;
+        if (local != null && local.run(companion, programId, code, done)) {
+            return;
+        }
         send(companion, programId, new Waiting(companion, code, done, false));
     }
 

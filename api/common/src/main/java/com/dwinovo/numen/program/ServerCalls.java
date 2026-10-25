@@ -3,7 +3,7 @@ package com.dwinovo.numen.program;
 import com.dwinovo.numen.agent.script.ApiReply;
 import com.dwinovo.numen.agent.script.Invocation;
 import com.dwinovo.numen.agent.script.ScriptCatalog;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.sdk.ApiFunction;
 import com.dwinovo.numen.sdk.ApiRegistry;
 import com.dwinovo.numen.sdk.Dispatcher;
@@ -16,12 +16,12 @@ import java.util.function.Consumer;
  */
 final class ServerCalls implements ProgramCalls {
 
-    private final NumenPlayer her;
+    private final BodyView her;
     private final MainQueue.Lane lane;
     /** 受理了一件占身体的活,收到它的编号:程序要等的这件活的收尾归程序({@link ServerPrograms})。 */
     private final Consumer<String> accepted;
 
-    ServerCalls(NumenPlayer her, MainQueue.Lane lane, Consumer<String> accepted) {
+    ServerCalls(BodyView her, MainQueue.Lane lane, Consumer<String> accepted) {
         this.her = her;
         this.lane = lane;
         this.accepted = accepted;

@@ -1,6 +1,6 @@
 package com.dwinovo.numen.program;
 
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.network.Fragments;
 import com.dwinovo.numen.network.Wire;
 import com.dwinovo.numen.network.payload.ClientCallPayload;
@@ -32,7 +32,7 @@ public final class LoopbackTransport implements ClientTransport {
     }
 
     @Override
-    public void request(NumenPlayer her, ClientCallPayload request, Consumer<Answer> done) {
+    public void request(BodyView her, ClientCallPayload request, Consumer<Answer> done) {
         table.expect(request.callId(), request.entityUuid(), done);
         endpoint.handle(Fragments.crossed(Wire.TO_CLIENT, ClientCallPayload.STREAM_CODEC, request));
     }

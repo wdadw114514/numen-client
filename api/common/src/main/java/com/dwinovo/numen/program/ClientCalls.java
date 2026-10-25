@@ -3,7 +3,7 @@ package com.dwinovo.numen.program;
 import com.dwinovo.numen.agent.script.ApiReply;
 import com.dwinovo.numen.agent.script.ErrorKind;
 import com.dwinovo.numen.agent.script.Invocation;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.network.payload.ClientCallPayload;
 import com.dwinovo.numen.sdk.Dispatcher;
 
@@ -28,7 +28,7 @@ final class ClientCalls implements ProgramCalls {
     /** 一个在等的反向请求:什么时候算超时、是哪次调用、结果交给谁。 */
     private record Pending(long deadline, Invocation invocation, Consumer<String> done) {}
 
-    private final NumenPlayer her;
+    private final BodyView her;
     private final UUID companion;
     private final MainQueue.Lane lane;
     private final ClientTransport transport;
@@ -40,7 +40,7 @@ final class ClientCalls implements ProgramCalls {
     private final Map<String, Pending> pending = new LinkedHashMap<>();
     private boolean closed;
 
-    ClientCalls(NumenPlayer her, UUID companion, MainQueue.Lane lane, ClientTransport transport, RunModules modules,
+    ClientCalls(BodyView her, UUID companion, MainQueue.Lane lane, ClientTransport transport, RunModules modules,
                 LongSupplier ticks) {
         this.her = her;
         this.companion = companion;

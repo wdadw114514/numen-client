@@ -182,6 +182,14 @@ public final class BotConnection {
         }
     }
 
+    /** 直接发一个协议包（移动、挖掘、右键都由身体层走这里）。 */
+    public void send(Packet packet) {
+        ClientNetworkSession current = session;
+        if (current != null && state == State.PLAY) {
+            current.send(packet);
+        }
+    }
+
     public void sendCommand(String command) {
         ClientNetworkSession current = session;
         if (current != null && state == State.PLAY && command != null && !command.isBlank()) {

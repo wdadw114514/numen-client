@@ -18,6 +18,20 @@ public class NumenFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // 客户端假人：Lua 在本机跑，工具落在 BotBody 上，不送服务端
+        com.dwinovo.numen.program.ProgramUplink.localRunner = (companion, programId, code, done) -> {
+            if (!com.dwinovo.numen.client.bot.BotManager.playing()) {
+                return false;
+            }
+            com.dwinovo.numen.client.bot.BotBody body = com.dwinovo.numen.client.bot.BotManager.body();
+            if (body == null) {
+                return false;
+            }
+            com.dwinovo.numen.program.LocalPrograms.run(body, companion, body.getOwnerUuid(), programId, code,
+                    com.dwinovo.numen.program.CallObserver.NONE, done);
+            return true;
+        };
+
         // 离线算法（Cubiomes）把 native 解压到游戏根目录下的 numen/native
         System.setProperty("numen.game.dir", FabricLoader.getInstance().getGameDir().toString());
         // 下行 payload 的处理体住在客户端源码集,先挂进主源码集的挂点
@@ -112,6 +126,7 @@ public class NumenFabricClient implements ClientModInitializer {
                 .register(client -> {
                     com.dwinovo.numen.client.NumenKeys.tick();
                     com.dwinovo.numen.client.bot.BotManager.tick();
+                    com.dwinovo.numen.program.LocalPrograms.tick();
                     com.dwinovo.numen.client.agent.AgentLoopRegistry.tickAll();
                     com.dwinovo.numen.mcp.server.McpMode.instance().clientTick();
                 });

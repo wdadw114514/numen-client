@@ -9,7 +9,7 @@ import com.dwinovo.numen.agent.script.JsonValues;
 import com.dwinovo.numen.agent.script.ScriptCatalog;
 import com.dwinovo.numen.agent.script.ScriptEngine;
 import com.dwinovo.numen.agent.script.ScriptRun;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.task.TaskDispatch;
 import com.dwinovo.numen.task.TaskRecord;
 import com.dwinovo.numen.task.TaskResult;
@@ -123,7 +123,7 @@ public final class Dispatcher {
      * 服务端执行一次调用:{@code function} 是函数的全名,{@code args} 是读好的参数。没有这个服务端函数、参数读不成,都是一条失败。结果经
      * {@code reply} 恰好回一次。
      */
-    public static void serve(String function, JsonObject args, NumenPlayer her, String callId, Consumer<String> reply) {
+    public static void serve(String function, JsonObject args, BodyView her, String callId, Consumer<String> reply) {
         ApiFunction fn = ApiRegistry.function(function);
         if (fn == null || fn.side() != ApiFunction.Side.SERVER) {
             reply.accept(ApiReply.error(ErrorKind.NO_FUNCTION, "there is no API function " + function
@@ -169,7 +169,7 @@ public final class Dispatcher {
         Object run();
     }
 
-    private static void run(ApiFunction fn, Body body, NumenPlayer her, Record args, String callId,
+    private static void run(ApiFunction fn, Body body, BodyView her, Record args, String callId,
                             Consumer<String> reply) {
         Object result;
         try {
@@ -202,7 +202,7 @@ public final class Dispatcher {
      * 受理一件占身体的活:准备过了才受理、才顶掉手上那件,回它的编号;准备不过当场失败。重启后再跑的是这次调用写成的那一行 Lua
      * (活换过参数的,是换过的那一份)。
      */
-    private static void accept(ApiFunction fn, Job<?> job, NumenPlayer her, Record args, Consumer<String> reply) {
+    private static void accept(ApiFunction fn, Job<?> job, BodyView her, Record args, Consumer<String> reply) {
         TaskRecord record = job.record();
         if (record == null) {
             reply.accept(value(fn, job.done()).toString());

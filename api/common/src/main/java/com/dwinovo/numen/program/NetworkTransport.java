@@ -2,7 +2,7 @@ package com.dwinovo.numen.program;
 
 import com.dwinovo.numen.agent.script.ApiReply;
 import com.dwinovo.numen.agent.script.ErrorKind;
-import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.network.NumenNetwork;
 import com.dwinovo.numen.network.Wire;
 import com.dwinovo.numen.network.payload.ClientCallPayload;
@@ -25,7 +25,7 @@ public final class NetworkTransport implements ClientTransport {
     private NetworkTransport() {}
 
     @Override
-    public void request(NumenPlayer her, ClientCallPayload request, Consumer<Answer> done) {
+    public void request(BodyView her, ClientCallPayload request, Consumer<Answer> done) {
         ServerPlayer owner = her == null ? null : her.resolveOwnerPlayer();
         if (owner == null) {
             done.accept(failure(request.function(), "its owner is not connected"));
