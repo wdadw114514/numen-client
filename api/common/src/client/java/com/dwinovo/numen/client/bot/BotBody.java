@@ -219,9 +219,10 @@ public final class BotBody implements BodyView {
     }
 
     private void openBeacon(int id) {
-        player.containerMenu = new net.minecraft.world.inventory.BeaconMenu(id, player.getInventory(),
+        player.containerMenu = new net.minecraft.world.inventory.BeaconMenu(id,
                 new net.minecraft.world.SimpleContainer(1),
-                new net.minecraft.world.inventory.SimpleContainerData(3));
+                new net.minecraft.world.inventory.SimpleContainerData(3),
+                net.minecraft.world.inventory.ContainerLevelAccess.NULL);
         connection.setMenuId(id);
     }
 
