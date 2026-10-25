@@ -7,7 +7,7 @@ import com.dwinovo.numen.pathing.body.Effector;
 import com.dwinovo.numen.pathing.body.Hotbar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -28,14 +28,14 @@ import java.util.function.Supplier;
  */
 public final class BotBody implements BodyView {
 
-    private final RemotePlayer player;
+    private final BotPlayer player;
     private final BotConnection connection;
     private final Controls controls = new Controls();
     private final Map<Class<?>, Object> state = new HashMap<>();
     private final BotHands hands;
     private final UUID owner;
 
-    private BotBody(RemotePlayer player, BotConnection connection, UUID owner) {
+    private BotBody(BotPlayer player, BotConnection connection, UUID owner) {
         this.player = player;
         this.connection = connection;
         this.owner = owner;
@@ -54,7 +54,7 @@ public final class BotBody implements BodyView {
         }
         UUID uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.username())
                 .getBytes(StandardCharsets.UTF_8));
-        RemotePlayer shadow = new RemotePlayer(level, new com.mojang.authlib.GameProfile(uuid, connection.username()));
+        BotPlayer shadow = new BotPlayer(level, new com.mojang.authlib.GameProfile(uuid, connection.username()));
         shadow.setPos(connection.x(), connection.y(), connection.z());
         shadow.setYRot(connection.yaw());
         shadow.setXRot(connection.pitch());
@@ -80,9 +80,8 @@ public final class BotBody implements BodyView {
             slot.container.setItem(slot.getContainerSlot(), entry.getValue());
         }
         controls.apply(player);
-        // 已经加进客户端世界：物理由世界刻驱动，这里只同步位置给服务器
-        connection.moveTo(player.getX(), player.getY(), player.getZ(),
-                player.getYRot(), player.getXRot(), player.onGround());
+        // 物理由客户端世界刻驱动；这里按原版 sendPosition 的规则发包
+        connection.sendPosition(player);
     }
 
     @Override

@@ -20,7 +20,12 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.C
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetSlotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundSetPlayerInventoryPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundPlayerInputPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosRotPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerRotPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerStatusOnlyPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundPlayerCommandPacket;
 
 import java.util.BitSet;
 import java.util.List;
@@ -59,6 +64,16 @@ public final class BotConnection {
     private volatile float pitch;
     private volatile boolean onGround;
     private volatile boolean positionKnown;
+    private double lastX;
+    private double lastY;
+    private double lastZ;
+    private float lastYaw;
+    private float lastPitch;
+    private boolean lastOnGround;
+    private boolean lastHorizontalCollision;
+    private boolean wasSprinting;
+    private byte lastInputFlags = -1;
+    private int positionReminder;
 
     public BotConnection(String host, int port, String username) {
         this.host = host;
@@ -126,6 +141,14 @@ public final class BotConnection {
         this.pitch = pitch;
         this.onGround = onGround;
         this.positionKnown = true;
+        this.lastX = x;
+        this.lastY = y;
+        this.lastZ = z;
+        this.lastYaw = yaw;
+        this.lastPitch = pitch;
+        this.lastOnGround = onGround;
+        this.lastHorizontalCollision = false;
+        this.positionReminder = 0;
     }
 
     public List<String> messages() {
@@ -292,13 +315,70 @@ public final class BotConnection {
         }
     }
 
-    /** 每个客户端刻发一次位置；服务器按它校正假人的位置。 */
-    public void tick() {
+    /** 原版 LocalPlayer.sendPosition 的同一套规则：位移/朝向/落地状态各发各的包，输入变了再发输入包。 */
+    public void sendPosition(net.minecraft.world.entity.player.Player player) {
         ClientNetworkSession current = session;
         if (current == null || state != State.PLAY || !positionKnown) {
             return;
         }
-        current.send(new ServerboundMovePlayerPosRotPacket(onGround, false, x, y, z, yaw, pitch));
+        boolean sprinting = player.isSprinting();
+        if (sprinting != wasSprinting) {
+            current.send(new ServerboundPlayerCommandPacket(entityId,
+                    sprinting ? org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerState.START_SPRINTING
+                            : org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerState.STOP_SPRINTING));
+            wasSprinting = sprinting;
+        }
+
+        double dx = player.getX() - lastX;
+        double dy = player.getY() - lastY;
+        double dz = player.getZ() - lastZ;
+        float dyaw = player.getYRot() - lastYaw;
+        float dpitch = player.getXRot() - lastPitch;
+        positionReminder++;
+        boolean moved = dx * dx + dy * dy + dz * dz > 2.0E-4 || positionReminder >= 20;
+        boolean rotated = dyaw != 0.0F || dpitch != 0.0F;
+        boolean grounded = player.onGround();
+        boolean collision = player.horizontalCollision;
+
+        if (moved && rotated) {
+            current.send(new ServerboundMovePlayerPosRotPacket(grounded, collision,
+                    player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot()));
+        } else if (moved) {
+            current.send(new ServerboundMovePlayerPosPacket(grounded, collision,
+                    player.getX(), player.getY(), player.getZ()));
+        } else if (rotated) {
+            current.send(new ServerboundMovePlayerRotPacket(grounded, collision,
+                    player.getYRot(), player.getXRot()));
+        } else if (lastOnGround != grounded || lastHorizontalCollision != collision) {
+            current.send(new ServerboundMovePlayerStatusOnlyPacket(grounded, collision));
+        }
+        if (moved) {
+            lastX = player.getX();
+            lastY = player.getY();
+            lastZ = player.getZ();
+            positionReminder = 0;
+        }
+        if (rotated) {
+            lastYaw = player.getYRot();
+            lastPitch = player.getXRot();
+        }
+        lastOnGround = grounded;
+        lastHorizontalCollision = collision;
+
+        byte flags = 0;
+        if (player.zza > 0.0F) flags |= 0x01;
+        if (player.zza < 0.0F) flags |= 0x02;
+        if (player.xxa > 0.0F) flags |= 0x04;
+        if (player.xxa < 0.0F) flags |= 0x08;
+        if (player.jumping) flags |= 0x10;
+        if (player.isShiftKeyDown()) flags |= 0x20;
+        if (sprinting) flags |= 0x40;
+        if (flags != lastInputFlags) {
+            current.send(new ServerboundPlayerInputPacket(
+                    (flags & 0x01) != 0, (flags & 0x02) != 0, (flags & 0x04) != 0, (flags & 0x08) != 0,
+                    (flags & 0x10) != 0, (flags & 0x20) != 0, (flags & 0x40) != 0));
+            lastInputFlags = flags;
+        }
     }
 
     private void add(String message) {
