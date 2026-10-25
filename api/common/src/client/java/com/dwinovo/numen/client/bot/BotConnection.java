@@ -160,7 +160,9 @@ public final class BotConnection {
             }
         }
         send(new org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundContainerClickPacket(
-                0, menuStateId, slot, actionType, action, null, java.util.Map.of()));
+                0, menuStateId, slot, actionType, action,
+                new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(0, 0, java.util.Map.of(),
+                        java.util.Set.of()), java.util.Map.of()));
     }
 
     private void applyMenuContent(org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack[] items) {
