@@ -16,7 +16,9 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerClosePacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetContentPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundOpenScreenPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetSlotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundSetPlayerInventoryPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket;
@@ -78,6 +80,11 @@ public final class BotConnection {
     private volatile boolean skinProbeSent;
     private volatile boolean skinApplied;
     private volatile boolean skinPluginDetected;
+    /** 服务器打开/关闭菜单的待处理事件；客户端主线程取走。 */
+    public record OpenMenu(int id, org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerType type) {}
+    private volatile OpenMenu pendingMenu;
+    private volatile boolean pendingClose;
+    private volatile int currentMenuId = 0;
 
     public BotConnection(String host, int port, String username) {
         this(host, port, username, "");
@@ -180,6 +187,27 @@ public final class BotConnection {
         return menuItems;
     }
 
+    public OpenMenu takePendingMenu() {
+        OpenMenu menu = pendingMenu;
+        pendingMenu = null;
+        return menu;
+    }
+
+    public boolean takePendingClose() {
+        boolean close = pendingClose;
+        pendingClose = false;
+        return close;
+    }
+
+    public int currentMenuId() {
+        return currentMenuId;
+    }
+
+    public void setMenuId(int id) {
+        currentMenuId = id;
+        menuItems.clear();
+    }
+
     /** 发一次物品栏点击（合成、搬运都走这里）。 */
     public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
         org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerActionType actionType;
@@ -200,7 +228,7 @@ public final class BotConnection {
             }
         }
         send(new org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundContainerClickPacket(
-                0, menuStateId, slot, actionType, action,
+                currentMenuId, menuStateId, slot, actionType, action,
                 new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(0, 0, java.util.Map.of(),
                         java.util.Set.of()), java.util.Map.of()));
     }
@@ -278,15 +306,21 @@ public final class BotConnection {
                 } else if (packet instanceof ClientboundPlayerChatPacket chat) {
                     Component content = chat.getUnsignedContent();
                     add(content != null ? plain(content) : chat.getContent());
+                } else if (packet instanceof ClientboundOpenScreenPacket open) {
+                    pendingMenu = new OpenMenu(open.getContainerId(), open.getType());
+                    menuItems.clear();
+                } else if (packet instanceof ClientboundContainerClosePacket close) {
+                    pendingClose = true;
+                    menuItems.clear();
                 } else if (packet instanceof ClientboundSetPlayerInventoryPacket slot) {
                     inventory.put(slot.getSlot(), toMc(slot.getContents()));
                 } else if (packet instanceof ClientboundContainerSetContentPacket content) {
-                    if (content.getContainerId() == 0) {
+                    if (content.getContainerId() == currentMenuId) {
                         menuStateId = content.getStateId();
                         applyMenuContent(content.getItems());
                     }
                 } else if (packet instanceof ClientboundContainerSetSlotPacket slot) {
-                    if (slot.getContainerId() == 0) {
+                    if (slot.getContainerId() == currentMenuId) {
                         applyMenuSlot(slot.getSlot(), slot.getItem());
                     }
                 } else if (packet instanceof ClientboundDisconnectPacket disconnect) {

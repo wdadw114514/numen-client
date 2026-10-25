@@ -75,9 +75,22 @@ public final class BotBody implements BodyView {
         for (Map.Entry<Integer, net.minecraft.world.item.ItemStack> entry : connection.inventory().entrySet()) {
             player.getInventory().setItem(entry.getKey(), entry.getValue());
         }
+        BotConnection.OpenMenu open = connection.takePendingMenu();
+        if (open != null && open.type()
+                == org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerType.CRAFTING) {
+            player.containerMenu = new net.minecraft.world.inventory.CraftingMenu(open.id(), player.getInventory());
+            connection.setMenuId(open.id());
+        }
+        if (connection.takePendingClose()) {
+            player.containerMenu = player.inventoryMenu;
+            connection.setMenuId(0);
+        }
+        net.minecraft.world.inventory.AbstractContainerMenu menu = player.containerMenu;
         for (Map.Entry<Integer, net.minecraft.world.item.ItemStack> entry : connection.menuItems().entrySet()) {
-            var slot = player.inventoryMenu.getSlot(entry.getKey());
-            slot.container.setItem(slot.getContainerSlot(), entry.getValue());
+            if (entry.getKey() >= 0 && entry.getKey() < menu.slots.size()) {
+                var slot = menu.getSlot(entry.getKey());
+                slot.container.setItem(slot.getContainerSlot(), entry.getValue());
+            }
         }
         controls.apply(player);
         // 物理由客户端世界刻驱动；这里按原版 sendPosition 的规则发包
