@@ -1,5 +1,7 @@
 package com.dwinovo.numen.pathing.body;
 
+import net.minecraft.world.entity.player.Player;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,16 +37,16 @@ public final class Aim {
     // ==================== 转头 ====================
 
     /** 转过去看 {@code point}。 */
-    public static void look(BodyView body, Vec3 point) {
+    public static void look(Player body, Vec3 point) {
         rotate(body, toward(body, body.getEyePosition(), point));
     }
 
     /** 转到朝 {@code yaw}、俯仰 {@code pitch}(按鼠标像素取整)。 */
-    public static void turn(BodyView body, float yaw, float pitch) {
+    public static void turn(Player body, float yaw, float pitch) {
         rotate(body, turned(body.getYRot(), body.getXRot(), yaw, pitch));
     }
 
-    private static void rotate(BodyView body, Rotation to) {
+    private static void rotate(Player body, Rotation to) {
         body.setYRot(to.yaw());
         body.setYHeadRot(to.yaw());
         body.setYBodyRot(to.yaw());
@@ -52,7 +54,7 @@ public final class Aim {
     }
 
     /** 从 {@code eye} 转向 {@code point} 之后身体的朝向(按鼠标像素取整)。 */
-    private static Rotation toward(BodyView body, Vec3 eye, Vec3 point) {
+    private static Rotation toward(Player body, Vec3 eye, Vec3 point) {
         double dx = point.x - eye.x;
         double dy = point.y - eye.y;
         double dz = point.z - eye.z;
@@ -65,7 +67,7 @@ public final class Aim {
      * 转向 {@code point} 之后视线真正落在的那一点(与 {@code point} 离眼睛一样远):转头取整到鼠标像素,这条线与到 {@code point}
      * 的直线差不到半个像素。视线擦着挡路方块的棱而过时,碰没碰上就由差的这一点点决定,所以判看不看得见要照这条线。
      */
-    private static Vec3 landing(BodyView body, Vec3 eye, Vec3 point) {
+    private static Vec3 landing(Player body, Vec3 eye, Vec3 point) {
         Rotation to = toward(body, eye, point);
         return eye.add(Vec3.directionFromRotation(to.pitch(), to.yaw()).scale(point.distanceTo(eye)));
     }
@@ -85,7 +87,7 @@ public final class Aim {
     }
 
     /** 走路时朝 {@code (x, z)} 看去,俯仰留在平视。 */
-    public static void faceToward(BodyView body, double x, double z) {
+    public static void faceToward(Player body, double x, double z) {
         float yaw = (float) (Math.toDegrees(Math.atan2(z - body.getZ(), x - body.getX())) - 90.0);
         turn(body, yaw, 0);
     }
@@ -102,7 +104,7 @@ public final class Aim {
      * ——眼睛到方块最近的一点——所以 {@code Reach} 说够得着、那一点又没被挡着,这里就交得出瞄点。有没有被挡着照转过去之后视线
      * 实际落的那条线判({@link #landing})。
      */
-    public static Vec3 point(BodyView body, BlockPos pos) {
+    public static Vec3 point(Player body, BlockPos pos) {
         Vec3 eye = body.getEyePosition();
         for (Vec3 candidate : digPoints(body, pos)) {
             if (hits(body, eye, landing(body, eye, candidate), pos, null)) {
@@ -116,7 +118,7 @@ public final class Aim {
      * 挖 {@code pos} 时够得着的瞄点,先后照 {@link #point} 说的那三档,不管中间有没有东西挡着。看不见它时从这几点里挑隔着的格都
      * 清得掉的那一条视线({@link Sight#dig}),朝那一点看过去,准星落着的就是先要挖开的那一格。
      */
-    public static List<Vec3> digPoints(BodyView body, BlockPos pos) {
+    public static List<Vec3> digPoints(Player body, BlockPos pos) {
         Vec3 eye = body.getEyePosition();
         double range = body.blockInteractionRange();
         List<Vec3> out = new ArrayList<>();
@@ -129,7 +131,7 @@ public final class Aim {
     }
 
     /** 挖 {@code pos} 时的候选瞄点,先后照 {@link #point} 说的那三档。 */
-    private static List<Vec3> candidates(BodyView body, BlockPos pos) {
+    private static List<Vec3> candidates(Player body, BlockPos pos) {
         Level level = body.level();
         VoxelShape shape = level.getBlockState(pos).getShape(level, pos);
         List<AABB> boxes = shape.isEmpty() ? List.of(new AABB(0, 0, 0, 1, 1, 1)) : shape.toAabbs();
@@ -159,7 +161,7 @@ public final class Aim {
      * 从眼睛此刻的位置用 {@code pos} 这一格:它哪一面用得上(第 0 层 {@link Sight#use}——面朝着眼睛、在交互距离内、视线上没有
      * 硬遮挡),交出那一次视线;没隔着软遮挡的面优先。一面都用不上为 null。与导航"用一格方块"的到达是同一个视线函数。
      */
-    public static Sight.Trace use(BodyView body, BlockPos pos) {
+    public static Sight.Trace use(Player body, BlockPos pos) {
         Level level = body.level();
         Vec3 eye = body.getEyePosition();
         double range = body.blockInteractionRange();
@@ -185,14 +187,14 @@ public final class Aim {
      * 往 {@code target} 放 {@code placing} 时,从眼睛此刻的位置点得中的那个面(第 0 层 {@link Faces#inSight},规划判放不放得下
      * 问的是同一个);看不见任何一个为 null。
      */
-    public static Faces.Face face(BodyView body, BlockPos target, Block placing) {
+    public static Faces.Face face(Player body, BlockPos target, Block placing) {
         return Faces.inSight(body.level(), body.getEyePosition(), body.blockInteractionRange(), target, placing);
     }
 
     // ==================== 射线 ====================
 
     /** 从眼睛朝 {@code point} 的视线第一下碰上的是 {@code pos}(给了 {@code side} 时还得是那一面):第 0 层 {@link Sight}。 */
-    private static boolean hits(BodyView body, Vec3 eye, Vec3 point, BlockPos pos, Direction side) {
+    private static boolean hits(Player body, Vec3 eye, Vec3 point, BlockPos pos, Direction side) {
         return Sight.trace(body.level(), eye, point, pos).clear(side);
     }
 

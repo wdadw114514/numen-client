@@ -87,10 +87,10 @@ public final class InteractAtCompanionTask extends InReachTask<InteractAtTaskRec
             boolean clickable = r.aim != null && Terrain.of(player).clickable(r.aim);
             if (r.aim != null) {
                 com.dwinovo.numen.pathing.world.Sight.Trace seen =
-                        button() == Interaction.Button.USE && clickable ? Aim.use(player, r.aim) : null;
+                        button() == Interaction.Button.USE && clickable ? Aim.use(player.player(), r.aim) : null;
                 InputDriver.lookAt(player, seen != null ? seen.point() : Vec3.atCenterOf(r.aim));
             }
-            HitResult hit = Crosshair.pick(player);
+            HitResult hit = Crosshair.pick(player.player());
             if (r.aim != null && (button() == Interaction.Button.ATTACK || clickable)) {
                 landedElsewhere = elsewhere(hit);
             }

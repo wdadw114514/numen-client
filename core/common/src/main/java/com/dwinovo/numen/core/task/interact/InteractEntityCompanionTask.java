@@ -114,7 +114,7 @@ public final class InteractEntityCompanionTask extends InReachTask<InteractEntit
         // In reach + LOS: aim at the entity and confirm the crosshair actually resolves to IT
         // (e.g. not another entity wandered into the exact line) before pressing.
         InputDriver.lookAt(player, entity.getEyePosition());
-        HitResult hit = Crosshair.pick(player);
+        HitResult hit = Crosshair.pick(player.player());
         boolean onTarget = hit.getType() == HitResult.Type.ENTITY
                 && ((EntityHitResult) hit).getEntity() == entity;
         if (!onTarget) {

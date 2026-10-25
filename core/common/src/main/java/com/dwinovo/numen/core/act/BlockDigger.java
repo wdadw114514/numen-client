@@ -97,24 +97,24 @@ public final class BlockDigger {
     public DigResult digStep(BlockPos target, Predicate<BlockPos> mayClear, Consumer<BodyAction> told) {
         player.controls().stop();
         BlockPos effective = target;
-        Vec3 point = Aim.point(player, target);
+        Vec3 point = Aim.point(player.player(), target);
         if (point != null) {
-            Aim.look(player, point);
+            Aim.look(player.player(), point);
         } else {
             Sight.Trace line = Sight.dig(player.level(), player.getEyePosition(), target,
-                    Aim.digPoints(player, target), mayClear);
+                    Aim.digPoints(player.player(), target), mayClear);
             if (line == null) {
                 return DigResult.NO_SHOT;
             }
-            Aim.look(player, line.point());
-            BlockPos blocker = Crosshair.pick(player) instanceof BlockHitResult hit
+            Aim.look(player.player(), line.point());
+            BlockPos blocker = Crosshair.pick(player.player()) instanceof BlockHitResult hit
                     && hit.getType() == HitResult.Type.BLOCK ? hit.getBlockPos() : null;
             if (blocker == null || blocker.equals(target) || !mayClear.test(blocker)) {
                 return DigResult.NO_SHOT;
             }
             effective = blocker;
         }
-        BlockHitResult hit = Crosshair.on(player, effective);
+        BlockHitResult hit = Crosshair.on(player.player(), effective);
         if (hit == null) {
             return DigResult.NO_SHOT;
         }

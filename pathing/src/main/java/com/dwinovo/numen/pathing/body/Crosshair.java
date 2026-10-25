@@ -1,5 +1,7 @@
 package com.dwinovo.numen.pathing.body;
 
+import net.minecraft.world.entity.player.Player;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
@@ -22,7 +24,7 @@ public final class Crosshair {
     private Crosshair() {}
 
     /** 准星落着的东西:方块、实体,或什么也没有({@link HitResult.Type#MISS})。 */
-    public static HitResult pick(BodyView body) {
+    public static HitResult pick(Player body) {
         double blockRange = body.blockInteractionRange();
         double entityRange = body.entityInteractionRange();
         double range = Math.max(blockRange, entityRange);
@@ -45,7 +47,7 @@ public final class Crosshair {
     }
 
     /** 准星正落在 {@code pos} 这一格上时交出那一下;否则为 null。 */
-    public static BlockHitResult on(BodyView body, BlockPos pos) {
+    public static BlockHitResult on(Player body, BlockPos pos) {
         return pick(body) instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK
                 && hit.getBlockPos().equals(pos) ? hit : null;
     }
@@ -54,10 +56,10 @@ public final class Crosshair {
      * 手里的东西在空中右键时自己沿视线打的那一条,照原版 {@code Item.getPlayerPOVHitResult}(桶倒水、舀水就用它):从眼睛沿视线
      * 打方块交互距离,按方块轮廓,液体按 {@code fluid} 的规矩算不算;不看实体。和准星那一次拾取不是同一条:桶瞄的是它自己这条。
      */
-    public static BlockHitResult itemRay(BodyView body, ClipContext.Fluid fluid) {
+    public static BlockHitResult itemRay(Player body, ClipContext.Fluid fluid) {
         Vec3 eye = body.getEyePosition();
         Vec3 end = eye.add(body.calculateViewVector(body.getXRot(), body.getYRot()).scale(body.blockInteractionRange()));
-        return body.level().clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, fluid, body.player()));
+        return body.level().clip(new ClipContext(eye, end, ClipContext.Block.OUTLINE, fluid, body));
     }
 
     private static HitResult within(HitResult hit, Vec3 eye, double range) {

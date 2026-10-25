@@ -128,6 +128,6 @@ final class BuildShowmanship {
 
     /** 视角按鼠标像素取整转向目标点(和寻路同一套转头,{@link Aim#look})。 */
     private void applySteppedAim(Vec3 point) {
-        Aim.look(player, point);
+        Aim.look(player.player(), point);
     }
 }

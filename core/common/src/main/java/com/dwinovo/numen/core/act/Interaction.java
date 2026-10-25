@@ -324,7 +324,7 @@ public final class Interaction {
         if (player.level().getBlockState(block).isAir()) return Status.DONE;
         player.controls().stop();
         InputDriver.lookAt(player, presetHit.getLocation());
-        BlockHitResult hit = Crosshair.on(player, block);
+        BlockHitResult hit = Crosshair.on(player.player(), block);
         if (hit == null) {
             return Status.RUNNING;
         }
