@@ -18,6 +18,8 @@ public class NumenFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // 离线算法（Cubiomes）把 native 解压到游戏根目录下的 numen/native
+        System.setProperty("numen.game.dir", FabricLoader.getInstance().getGameDir().toString());
         // 下行 payload 的处理体住在客户端源码集,先挂进主源码集的挂点
         com.dwinovo.numen.client.ClientPayloadHandlers.install();
         // 早先用 MOD_ID 当配置根,技能与 mcp_clients 落在了 config/numen_api/。
