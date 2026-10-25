@@ -54,6 +54,7 @@ public final class BotConnection {
     private final int port;
     private final String username;
     private final String skinUrl;
+    private static volatile net.raphimc.minecraftauth.java.JavaAuthManager premium;
 
     private volatile State state = State.IDLE;
     private volatile String lastError = "";
@@ -285,6 +286,15 @@ public final class BotConnection {
         messages.clear();
     }
 
+    /** 正版登录成功：之后新建的连接用正版身份。 */
+    public static void setPremium(net.raphimc.minecraftauth.java.JavaAuthManager auth) {
+        premium = auth;
+    }
+
+    public static net.raphimc.minecraftauth.java.JavaAuthManager premium() {
+        return premium;
+    }
+
     public synchronized void connect() {
         if (state == State.CONNECTING || state == State.PLAY) {
             return;
@@ -293,7 +303,17 @@ public final class BotConnection {
         lastError = "";
         messages.clear();
         positionKnown = false;
-        MinecraftProtocol protocol = new MinecraftProtocol(username);
+        MinecraftProtocol protocol;
+        net.raphimc.minecraftauth.java.JavaAuthManager auth = premium;
+        if (auth != null) {
+            var profile = auth.getMinecraftProfile().getValue();
+            var token = auth.getMinecraftToken().getValue();
+            protocol = new MinecraftProtocol(
+                    new com.mojang.authlib.GameProfile(java.util.UUID.fromString(profile.getId()), profile.getName()),
+                    token.getToken());
+        } else {
+            protocol = new MinecraftProtocol(username);
+        }
         ClientNetworkSession created = ClientNetworkSessionFactory.factory()
                 .setAddress(host, port)
                 .setProtocol(protocol)

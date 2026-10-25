@@ -133,10 +133,12 @@ public class JoinWizardScreen extends Screen {
                 }).bounds(left, y + 26, 200, 20).build());
             }
             case PREMIUM -> {
-                this.addRenderableWidget(Button.builder(Component.literal("开始正版验证"), button -> {
-                    JoinWizard.status("退出到主菜单 →「账户」登录正版账号，再重新连接");
-                    this.rebuildWidgets();
-                }).bounds(left, y, 200, 20).build());
+                this.addRenderableWidget(Button.builder(
+                        Component.literal(com.dwinovo.numen.client.bot.PremiumAuth.pending
+                                ? "正版登录中…" : "开始正版登录"), button -> {
+                            com.dwinovo.numen.client.bot.PremiumAuth.login();
+                            this.rebuildWidgets();
+                        }).bounds(left, y, 200, 20).build());
                 this.addRenderableWidget(Button.builder(Component.literal("检测错了？点我直接继续"), button -> {
                     JoinWizard.status("已跳过正版验证");
                     this.rebuildWidgets();
@@ -190,8 +192,23 @@ public class JoinWizardScreen extends Screen {
             case PREMIUM -> {
                 graphics.drawCenteredString(this.font, Component.literal("如果进服被踢并提示正版验证，说明服务器开了正版模式。"),
                     cx, this.height / 4 - 6, 0xD0D0D0);
-                graphics.drawCenteredString(this.font, Component.literal("离线假人进不去；换成正版账号或让服主关掉正版验证。"),
+                graphics.drawCenteredString(this.font, Component.literal("点「开始正版登录」，按提示在浏览器里输入设备码。"),
                     cx, this.height / 4 + 8, 0xD0D0D0);
+                if (com.dwinovo.numen.client.bot.PremiumAuth.pending) {
+                    String code = com.dwinovo.numen.client.bot.PremiumAuth.userCode;
+                    if (!code.isBlank()) {
+                        graphics.drawCenteredString(this.font,
+                                Component.literal("设备码: " + code + "  →  " + com.dwinovo.numen.client.bot.PremiumAuth.verificationUri),
+                                cx, this.height / 4 + 26, 0xFFD060);
+                    }
+                } else if (!com.dwinovo.numen.client.bot.PremiumAuth.error.isBlank()) {
+                    graphics.drawCenteredString(this.font,
+                            Component.literal("登录失败: " + com.dwinovo.numen.client.bot.PremiumAuth.error),
+                            cx, this.height / 4 + 26, 0xFF8080);
+                } else if (com.dwinovo.numen.client.bot.PremiumAuth.manager() != null) {
+                    graphics.drawCenteredString(this.font, Component.literal("正版登录成功，重新连接即可。"),
+                            cx, this.height / 4 + 26, 0x80C080);
+                }
             }
         }
 
