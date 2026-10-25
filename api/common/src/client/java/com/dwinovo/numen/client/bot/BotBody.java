@@ -52,8 +52,15 @@ public final class BotBody implements BodyView {
         if (level == null || local == null) {
             return null;
         }
-        UUID uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.username())
-                .getBytes(StandardCharsets.UTF_8));
+        UUID uuid;
+        var premium = com.dwinovo.numen.client.bot.PremiumAuth.manager();
+        if (premium != null) {
+            var profile = premium.getMinecraftProfile().getCached();
+            uuid = profile != null ? profile.getId()
+                    : UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.username()).getBytes(StandardCharsets.UTF_8));
+        } else {
+            uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.username()).getBytes(StandardCharsets.UTF_8));
+        }
         BotPlayer shadow = new BotPlayer(level, new com.mojang.authlib.GameProfile(uuid, connection.username()));
         shadow.setPos(connection.x(), connection.y(), connection.z());
         shadow.setYRot(connection.yaw());
@@ -104,8 +111,20 @@ public final class BotBody implements BodyView {
                 slot.container.setItem(slot.getContainerSlot(), entry.getValue());
             }
         }
+        if (connection.health() < player.getHealth()) {
+            player.hurtTime = 10;
+        }
         player.setHealth(connection.health());
         player.getFoodData().setFoodLevel(connection.food());
+        BotConnection.Teleport teleport = connection.takeTeleport();
+        if (teleport != null) {
+            player.setPos(teleport.x(), teleport.y(), teleport.z());
+            player.setYRot(teleport.yaw());
+            player.setXRot(teleport.pitch());
+            player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            connection.resetPositionTracking(teleport.x(), teleport.y(), teleport.z(),
+                    teleport.yaw(), teleport.pitch());
+        }
         controls.apply(player);
         // 物理由客户端世界刻驱动；这里按原版 sendPosition 的规则发包
         connection.sendPosition(player);

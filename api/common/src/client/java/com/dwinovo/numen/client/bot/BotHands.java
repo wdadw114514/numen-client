@@ -43,6 +43,7 @@ public final class BotHands implements Effector {
             connection.send(new ServerboundPlayerActionPacket(PlayerAction.START_DIGGING,
                     Vector3i.from(pos.getX(), pos.getY(), pos.getZ()), face, sequence++));
         }
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
         if (++ticks >= need) {
             connection.send(new ServerboundPlayerActionPacket(PlayerAction.FINISH_DIGGING,
                     Vector3i.from(pos.getX(), pos.getY(), pos.getZ()), face, sequence++));
@@ -66,6 +67,7 @@ public final class BotHands implements Effector {
     @Override
     public Use use(BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
+        player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
         connection.send(new ServerboundUseItemOnPacket(
                 Vector3i.from(pos.getX(), pos.getY(), pos.getZ()),
                 face(hit.getDirection()), Hand.MAIN_HAND,

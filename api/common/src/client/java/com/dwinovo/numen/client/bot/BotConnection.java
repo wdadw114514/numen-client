@@ -95,6 +95,9 @@ public final class BotConnection {
     private volatile boolean skinPluginDetected;
     /** 服务器打开/关闭菜单的待处理事件；客户端主线程取走。 */
     public record OpenMenu(int id, org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerType type) {}
+    /** 服务器要求把假人拉到这个位置（回拉校正）；客户端主线程取走。 */
+    public record Teleport(double x, double y, double z, float yaw, float pitch) {}
+    private volatile Teleport pendingTeleport;
     private volatile OpenMenu pendingMenu;
     private volatile boolean pendingClose;
     private volatile int currentMenuId = 0;
@@ -232,6 +235,22 @@ public final class BotConnection {
 
     public Map<Integer, net.minecraft.world.item.ItemStack> menuItems() {
         return menuItems;
+    }
+
+    public Teleport takeTeleport() {
+        Teleport teleport = pendingTeleport;
+        pendingTeleport = null;
+        return teleport;
+    }
+
+    /** 传送之后本地物理从新位置继续，别把旧位置当基准。 */
+    public void resetPositionTracking(double x, double y, double z, float yaw, float pitch) {
+        lastX = x;
+        lastY = y;
+        lastZ = z;
+        lastYaw = yaw;
+        lastPitch = pitch;
+        positionReminder = 0;
     }
 
     public OpenMenu takePendingMenu() {
@@ -434,6 +453,7 @@ public final class BotConnection {
                     yaw = position.getYRot();
                     pitch = position.getXRot();
                     positionKnown = true;
+                    pendingTeleport = new Teleport(x, y, z, yaw, pitch);
                     session.send(new ServerboundAcceptTeleportationPacket(position.getId()));
                 } else if (packet instanceof ClientboundSystemChatPacket chat) {
                     add(plain(chat.getContent()));
