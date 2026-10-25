@@ -95,7 +95,10 @@ public final class BotBody implements BodyView {
                 case GENERIC_9X3 -> openChest(open.id(), 3);
                 case GENERIC_9X4 -> openChest(open.id(), 4);
                 case GENERIC_9X5 -> openChest(open.id(), 5);
-                case GENERIC_9X6, SHULKER_BOX -> openChest(open.id(), 6);
+                case GENERIC_9X6 -> openChest(open.id(), 6);
+                case SHULKER_BOX -> openShulker(open.id());
+                case HOPPER -> openHopper(open.id());
+                case FURNACE, BLAST_FURNACE, SMOKER -> openFurnace(open.id(), open.type());
                 default -> {
                 }
             }
@@ -171,6 +174,31 @@ public final class BotBody implements BodyView {
                     .ServerboundSetCarriedItemPacket(slot));
         }
         return Optional.empty();
+    }
+
+    private void openShulker(int id) {
+        player.containerMenu = new net.minecraft.world.inventory.ShulkerBoxMenu(id, player.getInventory(),
+                new net.minecraft.world.SimpleContainer(27));
+        connection.setMenuId(id);
+    }
+
+    private void openHopper(int id) {
+        player.containerMenu = new net.minecraft.world.inventory.HopperMenu(id, player.getInventory(),
+                new net.minecraft.world.SimpleContainer(5));
+        connection.setMenuId(id);
+    }
+
+    private void openFurnace(int id,
+                             org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerType type) {
+        net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(3);
+        net.minecraft.world.inventory.SimpleContainerData data = new net.minecraft.world.inventory.SimpleContainerData(4);
+        player.containerMenu = switch (type) {
+            case BLAST_FURNACE -> new net.minecraft.world.inventory.BlastFurnaceMenu(id, player.getInventory(),
+                    container, data);
+            case SMOKER -> new net.minecraft.world.inventory.SmokerMenu(id, player.getInventory(), container, data);
+            default -> new net.minecraft.world.inventory.FurnaceMenu(id, player.getInventory(), container, data);
+        };
+        connection.setMenuId(id);
     }
 
     private void openChest(int id, int rows) {
