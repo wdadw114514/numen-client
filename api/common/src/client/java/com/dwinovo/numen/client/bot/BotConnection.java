@@ -264,7 +264,8 @@ public final class BotConnection {
     }
 
     /** 发一次物品栏点击（合成、搬运都走这里）。 */
-    public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
+    public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type,
+                          net.minecraft.world.item.ItemStack carried) {
         org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerActionType actionType;
         org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerAction action;
         switch (type) {
@@ -283,9 +284,7 @@ public final class BotConnection {
             }
         }
         send(new org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundContainerClickPacket(
-                currentMenuId, menuStateId, slot, actionType, action,
-                new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(0, 0, java.util.Map.of(),
-                        java.util.Set.of()), java.util.Map.of()));
+                currentMenuId, menuStateId, slot, actionType, action, toHashedStack(carried), java.util.Map.of()));
     }
 
     private void applyMenuContent(org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack[] items) {
@@ -309,6 +308,66 @@ public final class BotConnection {
         } else if (slot == 45) {
             inventory.put(40, stack);
         }
+    }
+
+    private static final java.util.Map<Integer, org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType<?>>
+            COMPONENT_BY_ID = new java.util.HashMap<>();
+
+    static {
+        try {
+            for (java.lang.reflect.Field field
+                    : org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentTypes.class.getFields()) {
+                if (org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType.class
+                        .isAssignableFrom(field.getType())) {
+                    var type = (org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType<?>)
+                            field.get(null);
+                    COMPONENT_BY_ID.put(type.getId(), type);
+                }
+            }
+        } catch (ReflectiveOperationException ignored) {
+        }
+    }
+
+    /** MC 的物品栈 → 协议要的 HashedStack（组件按 registry id 映射，哈希用客户端连接同一套）。 */
+    public static org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack toHashedStack(
+            net.minecraft.world.item.ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(0, 0,
+                    java.util.Map.of(), java.util.Set.of());
+        }
+        int id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(stack.getItem());
+        net.minecraft.client.multiplayer.ClientPacketListener connection =
+                net.minecraft.client.Minecraft.getInstance().getConnection();
+        if (connection == null) {
+            return new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(id, stack.getCount(),
+                    java.util.Map.of(), java.util.Set.of());
+        }
+        net.minecraft.network.HashedStack hashed = net.minecraft.network.HashedStack.create(stack,
+                connection.decoratedHashOpsGenenerator());
+        if (!(hashed instanceof net.minecraft.network.HashedStack.ActualItem actual)) {
+            return new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(id, stack.getCount(),
+                    java.util.Map.of(), java.util.Set.of());
+        }
+        java.util.Map<org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType<?>, Integer> added =
+                new java.util.HashMap<>();
+        actual.components().addedComponents().forEach((type, hash) -> {
+            int typeId = net.minecraft.core.registries.BuiltInRegistries.DATA_COMPONENT_TYPE.getId(type);
+            var mapped = COMPONENT_BY_ID.get(typeId);
+            if (mapped != null) {
+                added.put(mapped, hash);
+            }
+        });
+        java.util.Set<org.geysermc.mcprotocollib.protocol.data.game.item.component.DataComponentType<?>> removed =
+                new java.util.HashSet<>();
+        for (var type : actual.components().removedComponents()) {
+            int typeId = net.minecraft.core.registries.BuiltInRegistries.DATA_COMPONENT_TYPE.getId(type);
+            var mapped = COMPONENT_BY_ID.get(typeId);
+            if (mapped != null) {
+                removed.add(mapped);
+            }
+        }
+        return new org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack(id, stack.getCount(),
+                added, removed);
     }
 
     private static net.minecraft.world.item.ItemStack toMc(

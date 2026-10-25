@@ -174,7 +174,7 @@ public final class BotBody implements BodyView {
 
     @Override
     public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
-        connection.clickSlot(slot, button, type);
+        connection.clickSlot(slot, button, type, player.containerMenu.getCarried());
     }
 
     @Override
