@@ -77,6 +77,16 @@ public final class ThemePanel {
         Label initHint = ui.add(new Label(hintText, Label.Role.MUTED));
         initHint.setBounds(x, sy + NumenStyle.CONTROL_H + 3,
                 Minecraft.getInstance().font.width(hintText), 9);
+
+        // 客户端假人的视距（区块）：只处理这个半径内的区块包，拉大看得远、也更吃内存。
+        int vy = sy + NumenStyle.ROW_PITCH + 14;
+        Label botTitle = ui.add(new Label("假人视距", Label.Role.SECONDARY));
+        botTitle.setBounds(x, vy + 1, Minecraft.getInstance().font.width("假人视距"), 9);
+        Slider botView = ui.add(new Slider(2, 16, 1,
+                com.dwinovo.numen.client.data.ClientPrefs.botViewDistance(),
+                v -> com.dwinovo.numen.client.data.ClientPrefs.setBotViewDistance((int) v),
+                v -> String.valueOf((int) v)));
+        botView.setBounds(x + 44, vy, Math.min(140, w - 44), NumenStyle.CONTROL_H);
     }
 
     private void renderRow(IDrawSurface s, NumenTheme.Colors c, UiTheme t, int index,

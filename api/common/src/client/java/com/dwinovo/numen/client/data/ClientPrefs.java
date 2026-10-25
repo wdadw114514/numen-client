@@ -29,6 +29,8 @@ public final class ClientPrefs {
     private static boolean talkHint = true;
     private static boolean messageNotices = true;
     private static int initiative = EventQueue.DEFAULT_LEVEL;
+    /** 客户端假人自己的视距（区块）：只处理这个半径内的区块包，默认 8。 */
+    private static int botViewDistance = 8;
     /** 最近用过的斜杠命令名,最新在前。排序归命令层,这里只负责存。 */
     private static final java.util.List<String> recentCommands = new java.util.ArrayList<>();
 
@@ -46,6 +48,7 @@ public final class ClientPrefs {
             if (o.has("talkHint")) talkHint = o.get("talkHint").getAsBoolean();
             if (o.has("messageNotices")) messageNotices = o.get("messageNotices").getAsBoolean();
             if (o.has("initiative")) initiative = EventQueue.clampLevel(o.get("initiative").getAsInt());
+            if (o.has("botViewDistance")) botViewDistance = clampViewDistance(o.get("botViewDistance").getAsInt());
             if (o.has("recentCommands") && o.get("recentCommands").isJsonArray()) {
                 for (var el : o.getAsJsonArray("recentCommands")) recentCommands.add(el.getAsString());
             }
@@ -96,6 +99,19 @@ public final class ClientPrefs {
         persist();
     }
 
+    public static int botViewDistance() {
+        return botViewDistance;
+    }
+
+    public static void setBotViewDistance(int chunks) {
+        botViewDistance = clampViewDistance(chunks);
+        persist();
+    }
+
+    private static int clampViewDistance(int chunks) {
+        return Math.max(2, Math.min(16, chunks));
+    }
+
     /** 最近用过的斜杠命令,最新的在前。补全列表按它排序。 */
     public static java.util.List<String> recentCommands() {
         return java.util.List.copyOf(recentCommands);
@@ -118,6 +134,7 @@ public final class ClientPrefs {
             o.addProperty("talkHint", talkHint);
             o.addProperty("messageNotices", messageNotices);
             o.addProperty("initiative", initiative);
+            o.addProperty("botViewDistance", botViewDistance);
             com.google.gson.JsonArray recent = new com.google.gson.JsonArray();
             for (String name : recentCommands) recent.add(name);
             o.add("recentCommands", recent);

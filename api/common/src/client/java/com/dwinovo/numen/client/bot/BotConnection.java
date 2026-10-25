@@ -18,6 +18,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.Serverbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientCommandPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundRespawnPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.level.ClientboundLevelChunkWithLightPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerCombatKillPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundSetHealthPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerClosePacket;
@@ -320,6 +321,8 @@ public final class BotConnection {
                 } else if (packet instanceof ClientboundPlayerChatPacket chat) {
                     Component content = chat.getUnsignedContent();
                     add(content != null ? plain(content) : chat.getContent());
+                } else if (packet instanceof ClientboundLevelChunkWithLightPacket chunk) {
+                    applyChunk(chunk);
                 } else if (packet instanceof ClientboundPlayerCombatKillPacket) {
                     add("假人死亡，自动重生");
                     send(new ServerboundClientCommandPacket(
@@ -475,6 +478,33 @@ public final class BotConnection {
                 sendCommand("skin url " + skinUrl);
             }
         }
+    }
+
+    /** 假人自己连接收到的区块写进本地世界（同一个服务器世界，数据一致）；按设置里的视距过滤。 */
+    private void applyChunk(ClientboundLevelChunkWithLightPacket packet) {
+        net.minecraft.client.Minecraft minecraft = net.minecraft.client.Minecraft.getInstance();
+        minecraft.execute(() -> {
+            net.minecraft.client.multiplayer.ClientLevel level = minecraft.level;
+            if (level == null) {
+                return;
+            }
+            int view = com.dwinovo.numen.client.data.ClientPrefs.botViewDistance();
+            int centerX = net.minecraft.core.SectionPos.blockToSectionCoord(
+                    net.minecraft.util.Mth.floor(positionKnown ? x : level.getSharedSpawnPos().getX()));
+            int centerZ = net.minecraft.core.SectionPos.blockToSectionCoord(
+                    net.minecraft.util.Mth.floor(positionKnown ? z : level.getSharedSpawnPos().getZ()));
+            if (Math.abs(packet.getX() - centerX) > view || Math.abs(packet.getZ() - centerZ) > view) {
+                return;
+            }
+            java.util.EnumMap<net.minecraft.world.level.levelgen.Heightmap.Types, long[]> heights =
+                    new java.util.EnumMap<>(net.minecraft.world.level.levelgen.Heightmap.Types.class);
+            packet.getHeightMaps().forEach((type, data) ->
+                    heights.put(net.minecraft.world.level.levelgen.Heightmap.Types.values()[type.ordinal()], data));
+            net.minecraft.network.FriendlyByteBuf buffer = new net.minecraft.network.FriendlyByteBuf(
+                    io.netty.buffer.Unpooled.wrappedBuffer(packet.getChunkData()));
+            level.getChunkSource().replaceWithPacketData(packet.getX(), packet.getZ(), buffer, heights,
+                    output -> { });
+        });
     }
 
     private static String plain(Component component) {
