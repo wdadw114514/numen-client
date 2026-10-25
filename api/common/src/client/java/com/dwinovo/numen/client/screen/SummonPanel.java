@@ -214,7 +214,7 @@ public final class SummonPanel extends ModalCard {
 
         alert = ui.add(new InlineAlert());
         alert.setBounds(x + DialogBox.PAD_X, y + 2, w - DialogBox.PAD_X * 2, DialogBox.TITLE_H);
-        buttons("跳过", this::next, "下一步", this::next);
+        buttons("上一步", this::previous, "下一步", this::next);
     }
 
     private void layoutConnect(int top) {
