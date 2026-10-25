@@ -35,10 +35,12 @@ public final class PremiumAuth {
         CompletableFuture.runAsync(() -> {
             try {
                 JavaAuthManager auth = JavaAuthManager.create(MinecraftAuth.createHttpClient("Numen/1.0"))
-                        .login(DeviceCodeMsaAuthService::new, (MsaDeviceCode code) -> {
-                            userCode = code.getUserCode();
-                            verificationUri = code.getVerificationUri();
-                        });
+                        .login((httpClient, config, java.util.function.Consumer<MsaDeviceCode> callback) ->
+                                new DeviceCodeMsaAuthService(httpClient, config, callback),
+                                (MsaDeviceCode code) -> {
+                                    userCode = code.getUserCode();
+                                    verificationUri = code.getVerificationUri();
+                                });
                 manager = auth;
                 BotConnection.setPremium(auth);
                 pending = false;

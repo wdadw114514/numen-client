@@ -306,8 +306,8 @@ public final class BotConnection {
         MinecraftProtocol protocol;
         net.raphimc.minecraftauth.java.JavaAuthManager auth = premium;
         if (auth != null) {
-            var profile = auth.getMinecraftProfile().getValue();
-            var token = auth.getMinecraftToken().getValue();
+            var profile = auth.getMinecraftProfile().getUpToDateUnchecked();
+            var token = auth.getMinecraftToken().getUpToDateUnchecked();
             protocol = new MinecraftProtocol(
                     new com.mojang.authlib.GameProfile(java.util.UUID.fromString(profile.getId()), profile.getName()),
                     token.getToken());
