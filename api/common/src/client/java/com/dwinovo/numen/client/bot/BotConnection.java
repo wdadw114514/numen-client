@@ -320,7 +320,24 @@ public final class BotConnection {
                     add(plain(chat.getContent()));
                 } else if (packet instanceof ClientboundPlayerChatPacket chat) {
                     Component content = chat.getUnsignedContent();
-                    add(content != null ? plain(content) : chat.getContent());
+                    String text = content != null ? plain(content) : chat.getContent();
+                    add(text);
+                    if (com.dwinovo.numen.client.data.ClientPrefs.chatVisible()) {
+                        java.util.UUID self = java.util.UUID.nameUUIDFromBytes(
+                                ("OfflinePlayer:" + username).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        if (!self.equals(chat.getSender())) {
+                            String prefix = com.dwinovo.numen.client.data.ClientPrefs.aiPrefix();
+                            int index = text.indexOf(prefix);
+                            if (index >= 0) {
+                                String prompt = text.substring(index + prefix.length()).strip();
+                                if (!prompt.isEmpty()) {
+                                    net.minecraft.client.Minecraft.getInstance().execute(() ->
+                                            com.dwinovo.numen.client.agent.AgentLoopRegistry.getOrCreate(self)
+                                                    .submitPrompt(prompt));
+                                }
+                            }
+                        }
+                    }
                 } else if (packet instanceof ClientboundLevelChunkWithLightPacket chunk) {
                     applyChunk(chunk);
                 } else if (packet instanceof ClientboundPlayerCombatKillPacket) {

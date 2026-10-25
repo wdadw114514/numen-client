@@ -152,7 +152,23 @@ public final class EntityAgentLoop {
     EntityAgentLoop(UUID entityUuid) {
         this.entityUuid = entityUuid;
         this.log = ConvoLog.atFile(CompanionHome.chat(entityUuid));
-        this.convo = new ConvoState(msg -> log.append(msg, conversation));
+        this.convo = new ConvoState(msg -> {
+            log.append(msg, conversation);
+            // 聊天公开：AI 的回复发到服务器聊天（原版聊天上限 256 字符）
+            if (msg instanceof ConvoState.Msg.Assistant assistant
+                    && com.dwinovo.numen.client.data.ClientPrefs.chatVisible()) {
+                String text = assistant.turn().content() == null ? "" : assistant.turn().content().strip();
+                if (!text.isEmpty()) {
+                    if (text.length() > 256) {
+                        text = text.substring(0, 256);
+                    }
+                    com.dwinovo.numen.client.bot.BotBody body = com.dwinovo.numen.client.bot.BotManager.body();
+                    if (body != null) {
+                        body.connection().sendChat(text);
+                    }
+                }
+            }
+        });
         this.memory = new MemoryPreamble(com.dwinovo.numen.agent.memory.NoteBook.of(entityUuid));
         this.runtime = new RuntimeState(entityUuid,
                 () -> com.dwinovo.numen.client.data.ClientNumenState.get(entityUuid).orElse(null));

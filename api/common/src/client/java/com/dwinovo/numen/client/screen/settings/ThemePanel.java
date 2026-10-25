@@ -87,6 +87,25 @@ public final class ThemePanel {
                 v -> com.dwinovo.numen.client.data.ClientPrefs.setBotViewDistance((int) v),
                 v -> String.valueOf((int) v)));
         botView.setBounds(x + 44, vy, Math.min(140, w - 44), NumenStyle.CONTROL_H);
+
+        // 聊天公开：AI 的回复发到服务器聊天，服务器里的 !ai 前缀也会唤醒她。
+        int cy = vy + NumenStyle.ROW_PITCH + 14;
+        Toggle chat = ui.add(new Toggle(com.dwinovo.numen.client.data.ClientPrefs.chatVisible(),
+                com.dwinovo.numen.client.data.ClientPrefs::setChatVisible));
+        chat.setBounds(x, cy, 22, 11);
+        String chatText = "聊天公开（AI 回复发到服务器）";
+        Label chatLabel = ui.add(new Label(chatText, Label.Role.SECONDARY));
+        chatLabel.setBounds(x + 28, cy + 1, Minecraft.getInstance().font.width(chatText), 9);
+
+        int py = cy + NumenStyle.ROW_PITCH;
+        String prefixText = "唤醒前缀";
+        Label prefixLabel = ui.add(new Label(prefixText, Label.Role.SECONDARY));
+        prefixLabel.setBounds(x, py + 1, Minecraft.getInstance().font.width(prefixText), 9);
+        com.dwinovo.numen.client.ui.widget.TextField prefix = ui.add(
+                new com.dwinovo.numen.client.ui.widget.TextField(
+                        com.dwinovo.numen.client.data.ClientPrefs.aiPrefix(),
+                        com.dwinovo.numen.client.data.ClientPrefs::setAiPrefix));
+        prefix.setBounds(x + 44, py, Math.min(120, w - 44), NumenStyle.CONTROL_H);
     }
 
     private void renderRow(IDrawSurface s, NumenTheme.Colors c, UiTheme t, int index,

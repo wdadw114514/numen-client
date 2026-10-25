@@ -31,6 +31,9 @@ public final class ClientPrefs {
     private static int initiative = EventQueue.DEFAULT_LEVEL;
     /** 客户端假人自己的视距（区块）：只处理这个半径内的区块包，默认 8。 */
     private static int botViewDistance = 8;
+    /** 聊天公开：AI 的话发到服务器聊天，服务器里的 !ai 前缀也会唤醒她。默认关。 */
+    private static boolean chatVisible;
+    private static String aiPrefix = "!ai";
     /** 最近用过的斜杠命令名,最新在前。排序归命令层,这里只负责存。 */
     private static final java.util.List<String> recentCommands = new java.util.ArrayList<>();
 
@@ -49,6 +52,8 @@ public final class ClientPrefs {
             if (o.has("messageNotices")) messageNotices = o.get("messageNotices").getAsBoolean();
             if (o.has("initiative")) initiative = EventQueue.clampLevel(o.get("initiative").getAsInt());
             if (o.has("botViewDistance")) botViewDistance = clampViewDistance(o.get("botViewDistance").getAsInt());
+            if (o.has("chatVisible")) chatVisible = o.get("chatVisible").getAsBoolean();
+            if (o.has("aiPrefix")) aiPrefix = o.get("aiPrefix").getAsString();
             if (o.has("recentCommands") && o.get("recentCommands").isJsonArray()) {
                 for (var el : o.getAsJsonArray("recentCommands")) recentCommands.add(el.getAsString());
             }
@@ -108,6 +113,24 @@ public final class ClientPrefs {
         persist();
     }
 
+    public static boolean chatVisible() {
+        return chatVisible;
+    }
+
+    public static void setChatVisible(boolean visible) {
+        chatVisible = visible;
+        persist();
+    }
+
+    public static String aiPrefix() {
+        return aiPrefix == null || aiPrefix.isBlank() ? "!ai" : aiPrefix;
+    }
+
+    public static void setAiPrefix(String prefix) {
+        aiPrefix = prefix == null || prefix.isBlank() ? "!ai" : prefix.strip();
+        persist();
+    }
+
     private static int clampViewDistance(int chunks) {
         return Math.max(2, Math.min(16, chunks));
     }
@@ -135,6 +158,8 @@ public final class ClientPrefs {
             o.addProperty("messageNotices", messageNotices);
             o.addProperty("initiative", initiative);
             o.addProperty("botViewDistance", botViewDistance);
+            o.addProperty("chatVisible", chatVisible);
+            o.addProperty("aiPrefix", aiPrefix);
             com.google.gson.JsonArray recent = new com.google.gson.JsonArray();
             for (String name : recentCommands) recent.add(name);
             o.add("recentCommands", recent);
