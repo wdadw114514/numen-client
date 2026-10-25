@@ -187,6 +187,12 @@ public final class SummonPanel extends ModalCard {
                 i -> draft.skinId = skinIds.get(i));
 
         // 页面级胶囊浮在标题那一行上:出现时它比标题要紧
+        ry += ROW_H;
+        Button clientBot = ui.add(new Button("客户端假人（进服务器）", Button.Style.LINK,
+                () -> Minecraft.getInstance().setScreen(
+                        new com.dwinovo.numen.client.wizard.JoinWizardScreen())));
+        clientBot.setBounds(x + DialogBox.PAD_X, ry + 2, w - DialogBox.PAD_X * 2, NumenStyle.CONTROL_H);
+
         alert = ui.add(new InlineAlert());
         alert.setBounds(x + DialogBox.PAD_X, y + 2, w - DialogBox.PAD_X * 2, DialogBox.TITLE_H);
 
