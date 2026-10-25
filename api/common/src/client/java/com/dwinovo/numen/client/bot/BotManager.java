@@ -60,7 +60,6 @@ public final class BotManager {
         if (current == null) {
             return;
         }
-        current.tick();
         BotBody currentBody = body();
         if (currentBody != null) {
             currentBody.tick();

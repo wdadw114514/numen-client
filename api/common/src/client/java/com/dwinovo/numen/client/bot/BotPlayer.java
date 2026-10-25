@@ -15,4 +15,9 @@ public class BotPlayer extends AbstractClientPlayer {
     public BotPlayer(ClientLevel level, GameProfile profile) {
         super(level, profile);
     }
+
+    /** 这一 tick 的跳跃输入（原版 {@code LivingEntity.jumping} 是 protected）。 */
+    public boolean jumpingInput() {
+        return this.jumping;
+    }
 }

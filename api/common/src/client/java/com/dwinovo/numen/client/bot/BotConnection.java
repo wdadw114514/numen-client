@@ -370,7 +370,7 @@ public final class BotConnection {
         if (player.zza < 0.0F) flags |= 0x02;
         if (player.xxa > 0.0F) flags |= 0x04;
         if (player.xxa < 0.0F) flags |= 0x08;
-        if (player.jumping) flags |= 0x10;
+        if (player instanceof BotPlayer bot && bot.jumpingInput()) flags |= 0x10;
         if (player.isShiftKeyDown()) flags |= 0x20;
         if (sprinting) flags |= 0x40;
         if (flags != lastInputFlags) {
