@@ -113,10 +113,6 @@ public interface BodyView {
         return player().getDeltaMovement();
     }
 
-    default double distanceTo(Entity entity) {
-        return player().distanceTo(entity);
-    }
-
     default FoodData getFoodData() {
         return player().getFoodData();
     }
