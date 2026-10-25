@@ -35,7 +35,9 @@ public final class PremiumAuth {
         CompletableFuture.runAsync(() -> {
             try {
                 JavaAuthManager auth = JavaAuthManager.create(MinecraftAuth.createHttpClient("Numen/1.0"))
-                        .login((httpClient, config, java.util.function.Consumer<MsaDeviceCode> callback) ->
+                        .login((net.lenni0451.commons.httpclient.HttpClient httpClient,
+                                net.raphimc.minecraftauth.msa.model.MsaApplicationConfig config,
+                                java.util.function.Consumer<MsaDeviceCode> callback) ->
                                 new DeviceCodeMsaAuthService(httpClient, config, callback),
                                 (MsaDeviceCode code) -> {
                                     userCode = code.getUserCode();
