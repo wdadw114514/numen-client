@@ -116,11 +116,14 @@ public final class CompanionHands implements Effector {
     /** 这一下过权限层:放行为 null;拒绝是裁决;要问是 {@link Unasked}。 */
     private Object refusal(Action action) {
         Gate gate = Permission.gateFor(player);
-        Verdict verdict = gate.judgeLive(action, player.level());
+        Verdict verdict = player.level() instanceof net.minecraft.server.level.ServerLevel sl
+                ? gate.judgeLive(action, sl) : gate.judge(action, player.level());
         return switch (verdict.kind()) {
             case ALLOW -> null;
             case DENY -> verdict;
-            case ASK -> new Unasked(verdict, gate.consentItemLive(action, verdict, player.level()));
+            case ASK -> new Unasked(verdict, player.level() instanceof net.minecraft.server.level.ServerLevel sl
+                    ? gate.consentItemLive(action, verdict, sl)
+                    : gate.consentItem(action, verdict, player.level()));
         };
     }
 }

@@ -102,7 +102,11 @@ public final class Planning {
      * 来回打转。在主线程上调。
      */
     public static RouteSpec base(BodyView her) {
-        LongSet built = Built.of(her.level().getServer()).standingIn(her.level());
+        net.minecraft.server.MinecraftServer server = her.server();
+        if (server == null) {
+            return RouteSpec.defaults();
+        }
+        LongSet built = Built.of(server).standingIn(her.level());
         if (built.isEmpty()) {
             return RouteSpec.defaults();
         }

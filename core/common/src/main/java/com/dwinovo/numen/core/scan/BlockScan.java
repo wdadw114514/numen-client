@@ -38,7 +38,10 @@ public final class BlockScan {
      * @return 这次搜索的句柄,交 {@link BlockSearch#cancel} 撤掉
      */
     public static int start(BodyView self, int radius, Set<Block> targets, Consumer<Found> done) {
-        ServerLevel level = self.level();
+        if (!(self.level() instanceof ServerLevel level)) {
+            done.accept(new Found(java.util.List.of(), null, self.blockPosition()));
+            return -1;
+        }
         BlockPos center = self.blockPosition();
         Live live = new Live(level, targets);
         // want 取收集上限:团要整团给,不能在"最近的几格已经证明"时就停,走满半径,内存由上限兜住

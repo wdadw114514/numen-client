@@ -197,7 +197,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
                             ? GotoReminders.cellsNoneDiggable(nearest.size(), firstWhy)
                             : GotoReminders.cellsNothingToDig(nearest.size()));
                 }
-                return new Destination(stop, Goals.dig(targets, Snapshots.stats(her), clearing.clearing()), toward);
+                return new Destination(stop, Goals.dig(targets, Snapshots.stats(her.player()), clearing.clearing()), toward);
             }
         }
         return new Destination(stop, members.size() == 1 ? members.get(0) : Goals.anyOf(members), toward);
@@ -230,7 +230,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
      * 往一格里放方块的目标:手够得着它、身体不占着它。{@code numen.build.place} 判"这一格够不够得着"问的也是它,走到了就放得了。
      */
     public static Goal reach(BodyView her, BlockPos cell) {
-        return Goals.place(cell, Snapshots.stats(her));
+        return Goals.place(cell, Snapshots.stats(her.player()));
     }
 
     /** 挖一格方块的目标;空气、流体没有可挖的,站到哪儿 {@code numen.work.dig} 都挖不成的({@link #undiggable}),都当场提醒。 */
@@ -243,7 +243,7 @@ public record Destination(Stop stop, Goal goal, BlockPos toward) {
         if (why != null) {
             throw new IllegalArgumentException(why + ".");
         }
-        return Goals.dig(cell, Snapshots.stats(her), clearing.clearing());
+        return Goals.dig(cell, Snapshots.stats(her.player()), clearing.clearing());
     }
 
     /**

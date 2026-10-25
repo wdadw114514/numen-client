@@ -37,8 +37,8 @@ public final class GuiItemsCompanionTask extends AbstractCompanionTask<GuiItemsT
 
     @Override
     protected TaskState onTick() {
-        AbstractContainerMenu menu = player.containerMenu;
-        if (menu == player.inventoryMenu) {
+        AbstractContainerMenu menu = player.containerMenu();
+        if (menu == player.inventoryMenu()) {
             fail("no window is open: open a chest, a furnace or a machine first (numen.use.block on it)",
                     FailureType.UNSUPPORTED);
             return TaskState.FAILED;

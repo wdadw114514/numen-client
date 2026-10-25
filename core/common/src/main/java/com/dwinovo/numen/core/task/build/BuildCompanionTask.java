@@ -288,7 +288,8 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
                 continue;
             }
             for (com.dwinovo.numen.permission.Action action : rules.actionsFor(target)) {
-                var verdict = gate.judgeLive(action, player.level());
+                var verdict = player.level() instanceof net.minecraft.server.level.ServerLevel sl
+                ? gate.judgeLive(action, sl) : gate.judge(action, player.level());
                 if (verdict.asks()) {
                     items.add(gate.consentItemLive(action, verdict, player.level()));
                 }
@@ -564,7 +565,7 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
         try {
             // 回调拿到的是"她手里那件东西"。有料单的格给单子上第一叠真货(带花纹的
             // 旗帜),不是一件同名的白货——回调会从里面读组件。
-            desired.getBlock().setPlacedBy(player.level(), pos, desired, player,
+            desired.getBlock().setPlacedBy(player.level(), pos, desired, player.player(),
                     needs.isEmpty() ? new ItemStack(target.item()) : needs.get(0).stack().copy());
         } catch (RuntimeException ignored) {
             // 放置本身已经成功,回调失败只影响那一格的附加数据
@@ -581,7 +582,10 @@ public final class BuildCompanionTask extends AbstractCompanionTask<BuildTaskRec
             }
         }
         // 照图直写不经 BlockItem.place,放置记录在这里记:这一格(连回调补出的另一半)是她放的。物品车道由那里的 mixin 记
-        PlacedBlocks.placedBy(player.level(), pos, player);
+        if (player.level() instanceof net.minecraft.server.level.ServerLevel sl
+                && player.player() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            PlacedBlocks.placedBy(sl, pos, sp);
+        }
         r.placedOne(occupied);
         recordPlaced(pos, desired);
         markObserved(target, true);

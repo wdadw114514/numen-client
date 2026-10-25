@@ -148,7 +148,7 @@ public final class ContainerOps {
             MenuOps.dripInto(menu, entity.player(), from, to, want);
         } else {
             menu.clicked(from, 0, ClickType.PICKUP, entity.player());          // grab the stack
-            menu.clicked(to, 0, ClickType.PICKUP, entity);            // place / merge / swap
+            menu.clicked(to, 0, ClickType.PICKUP, entity.player());            // place / merge / swap
             if (!menu.getCarried().isEmpty()) {
                 menu.clicked(from, 0, ClickType.PICKUP, entity.player());      // settle leftover / swapped item back
             }

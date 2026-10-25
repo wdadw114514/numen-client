@@ -125,7 +125,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
             + "facing open water (numen.scan.blocks finds water; numen.move.to takes you there), then numen.work.fish again";
 
     private TaskState prepare() {
-        if (player.fishing != null) {
+        if (player.fishing() != null) {
             discardHook();
             return TaskState.RUNNING;
         }
@@ -163,8 +163,8 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
         if (++phaseTicks < AIM_TICKS) return TaskState.RUNNING;
 
         double pitch = castPitchDegrees(player.getEyePosition(), target);
-        player.gameMode.useItem(player, player.level(), player.getMainHandItem(), InteractionHand.MAIN_HAND);
-        if (player.fishing == null) {
+        player.useItem(InteractionHand.MAIN_HAND);
+        if (player.fishing() == null) {
             return failedCast("the fishing rod did not cast");
         }
         Constants.LOG.debug("[numen-fish] cast target={} pitch={}",
@@ -175,7 +175,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
     }
 
     private TaskState waitForBite() {
-        FishingHook hook = player.fishing;
+        FishingHook hook = player.fishing();
         if (hook == null || hook.isRemoved()) {
             return failedCast("the fishing hook disappeared before a catch");
         }
@@ -223,7 +223,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
     }
 
     private void reelIn() {
-        if (player.fishing != null && player.getMainHandItem().is(Items.FISHING_ROD)) {
+        if (player.fishing() != null && player.getMainHandItem().is(Items.FISHING_ROD)) {
             player.gameMode.useItem(player, player.level(), player.getMainHandItem(),
                     InteractionHand.MAIN_HAND);
         }
@@ -340,7 +340,7 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
             Vec3 next = pos.add(ux * horizontalVelocity * fraction,
                     verticalVelocity * fraction, uz * horizontalVelocity * fraction);
             HitResult hit = player.level().clip(new ClipContext(pos, next,
-                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player.player()));
             if (hit.getType() != HitResult.Type.MISS) return false;
             travelled += horizontalVelocity * fraction;
             if (travelled >= distance - 1.0e-6) return true;
@@ -404,10 +404,10 @@ public final class FishCompanionTask extends AbstractCompanionTask<FishTaskRecor
     }
 
     private void discardHook() {
-        FishingHook hook = player.fishing;
+        FishingHook hook = player.fishing();
         if (hook != null) {
             hook.discard();
-            if (player.fishing == hook) player.fishing = null;
+            if (player.fishing() == hook) player.fishing() = null;
         }
     }
 

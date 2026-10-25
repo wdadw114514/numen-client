@@ -354,6 +354,18 @@ public interface BodyView {
         return player().drop(stack, throwRandomly);
     }
 
+    default net.minecraft.world.entity.projectile.FishingHook fishing() {
+        return player().fishing;
+    }
+
+    default net.minecraft.util.RandomSource getRandom() {
+        return player().getRandom();
+    }
+
+    default Vec3 getLookAngle() {
+        return player().getLookAngle();
+    }
+
     /** 转头看 {@code point}；客户端身体由协议连接同步朝向。 */
     default void lookAt(Vec3 point) {
         if (player() instanceof ServerPlayer serverPlayer) {

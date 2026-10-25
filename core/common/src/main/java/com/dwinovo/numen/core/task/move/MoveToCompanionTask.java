@@ -363,7 +363,7 @@ public final class MoveToCompanionTask extends AbstractCompanionTask<MoveToTaskR
             double dz = toward.getZ() + 0.5 - player.getZ();
             return Math.sqrt(dx * dx + dz * dz);
         }
-        return Math.sqrt(player.distanceToSqr(Vec3.atBottomCenterOf(toward)));
+        return Math.sqrt(player.player().distanceToSqr(Vec3.atBottomCenterOf(toward)));
     }
 
     /** {@code numen.move.go} 交回的值。 */

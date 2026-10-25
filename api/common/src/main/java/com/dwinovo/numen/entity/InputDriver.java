@@ -38,7 +38,7 @@ public final class InputDriver {
      * <p>马这类生物载具由原版 {@code travelRidden} 读<b>骑手</b>的朝向与前进键,
      * 转过去、按住她的前进键即可,不用碰载具。
      */
-    public static void steerVehicle(NumenPlayer p, Vec3 target) {
+    public static void steerVehicle(BodyView p, Vec3 target) {
         Entity vehicle = p.getVehicle();
         if (vehicle instanceof AbstractBoat boat) {
             double dx = target.x - boat.getX();
@@ -55,7 +55,7 @@ public final class InputDriver {
     }
 
     /** 松舵:船停桨,她的走路键松开。离开驾驶状态的每刻收尾。 */
-    public static void haltVehicle(NumenPlayer p) {
+    public static void haltVehicle(BodyView p) {
         if (p.getVehicle() instanceof AbstractBoat boat) {
             boat.setInput(false, false, false, false);
         }

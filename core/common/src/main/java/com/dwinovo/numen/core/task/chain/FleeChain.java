@@ -91,7 +91,7 @@ public final class FleeChain implements Task, Reflex {
     /** 扛不住,或者赤手而有东西在追她。 */
     private static boolean mustBreakOff(BodyView companion) {
         Loadout loadout = Loadout.forTarget(companion, companion.player());
-        return AttackPlan.breakOff(Menace.effectiveHealth(companion), loadout.hasMelee() || loadout.hasRanged(),
+        return AttackPlan.breakOff(Menace.effectiveHealth(companion.player()), loadout.hasMelee() || loadout.hasRanged(),
                 !chasers(companion).isEmpty());
     }
 

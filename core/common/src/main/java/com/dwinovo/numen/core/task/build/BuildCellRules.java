@@ -166,7 +166,7 @@ final class BuildCellRules {
      * 封进树叶)。我在哪儿,不需要问索引。
      */
     boolean blockedByEntity(BlockPos pos, BlockState state) {
-        VoxelShape shape = state.getCollisionShape(player.level(), pos, CollisionContext.of(player));
+        VoxelShape shape = state.getCollisionShape(player.level(), pos, CollisionContext.of(player.player()));
         if (shape.isEmpty()) {
             return false;
         }
@@ -177,6 +177,6 @@ final class BuildCellRules {
                 return true;
             }
         }
-        return !player.level().isUnobstructed(player, placed);
+        return !player.level().isUnobstructed(player.player(), placed);
     }
 }
