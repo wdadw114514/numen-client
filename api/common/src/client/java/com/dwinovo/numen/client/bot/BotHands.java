@@ -17,12 +17,11 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.Serv
  */
 public final class BotHands implements Effector {
 
-    private static final int DIG_TICKS = 20;
-
     private final Player player;
     private final BotConnection connection;
     private BlockPos digging;
     private int ticks;
+    private int need;
     private int sequence;
 
     BotHands(Player player, BotConnection connection) {
@@ -37,10 +36,14 @@ public final class BotHands implements Effector {
         if (!pos.equals(digging)) {
             digging = pos.immutable();
             ticks = 0;
+            net.minecraft.world.level.block.state.BlockState state = player.level().getBlockState(pos);
+            need = Math.max(1, com.dwinovo.numen.pathing.plan.DigTime.ticks(
+                    com.dwinovo.numen.pathing.body.Snapshots.of(player), player.getMainHandItem(), state,
+                    player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER), player.onGround()));
             connection.send(new ServerboundPlayerActionPacket(PlayerAction.START_DIGGING,
                     Vector3i.from(pos.getX(), pos.getY(), pos.getZ()), face, sequence++));
         }
-        if (++ticks >= DIG_TICKS) {
+        if (++ticks >= need) {
             connection.send(new ServerboundPlayerActionPacket(PlayerAction.FINISH_DIGGING,
                     Vector3i.from(pos.getX(), pos.getY(), pos.getZ()), face, sequence++));
             digging = null;

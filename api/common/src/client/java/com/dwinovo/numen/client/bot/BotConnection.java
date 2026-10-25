@@ -16,11 +16,16 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetContentPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundContainerSetSlotPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.inventory.ClientboundSetPlayerInventoryPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosRotPacket;
 
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -40,6 +45,8 @@ public final class BotConnection {
     private volatile State state = State.IDLE;
     private volatile String lastError = "";
     private final List<String> messages = new CopyOnWriteArrayList<>();
+    /** 服务器同步来的玩家背包：Inventory 槽位 → 物品。 */
+    private final Map<Integer, net.minecraft.world.item.ItemStack> inventory = new ConcurrentHashMap<>();
     private volatile ClientNetworkSession session;
     private volatile int entityId = -1;
     private volatile double x;
@@ -122,6 +129,40 @@ public final class BotConnection {
         return List.copyOf(messages);
     }
 
+    public Map<Integer, net.minecraft.world.item.ItemStack> inventory() {
+        return inventory;
+    }
+
+    private void applyMenuContent(org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack[] items) {
+        for (int i = 0; i < items.length; i++) {
+            applyMenuSlot(i, items[i]);
+        }
+    }
+
+    /** 玩家物品栏菜单：5-8 甲、9-35 主背包、36-44 快捷栏、45 副手。 */
+    private void applyMenuSlot(int slot, org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack item) {
+        net.minecraft.world.item.ItemStack stack = toMc(item);
+        if (slot >= 5 && slot <= 8) {
+            inventory.put(39 - (slot - 5), stack);
+        } else if (slot >= 9 && slot <= 35) {
+            inventory.put(slot, stack);
+        } else if (slot >= 36 && slot <= 44) {
+            inventory.put(slot - 36, stack);
+        } else if (slot == 45) {
+            inventory.put(40, stack);
+        }
+    }
+
+    private static net.minecraft.world.item.ItemStack toMc(
+            org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack stack) {
+        if (stack == null || stack.getAmount() <= 0) {
+            return net.minecraft.world.item.ItemStack.EMPTY;
+        }
+        net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(stack.getId());
+        return item == null ? net.minecraft.world.item.ItemStack.EMPTY
+                : new net.minecraft.world.item.ItemStack(item, stack.getAmount());
+    }
+
     public void clearMessages() {
         messages.clear();
     }
@@ -158,6 +199,16 @@ public final class BotConnection {
                 } else if (packet instanceof ClientboundPlayerChatPacket chat) {
                     Component content = chat.getUnsignedContent();
                     add(content != null ? plain(content) : chat.getContent());
+                } else if (packet instanceof ClientboundSetPlayerInventoryPacket slot) {
+                    inventory.put(slot.getSlot(), toMc(slot.getContents()));
+                } else if (packet instanceof ClientboundContainerSetContentPacket content) {
+                    if (content.getContainerId() == 0) {
+                        applyMenuContent(content.getItems());
+                    }
+                } else if (packet instanceof ClientboundContainerSetSlotPacket slot) {
+                    if (slot.getContainerId() == 0) {
+                        applyMenuSlot(slot.getSlot(), slot.getItem());
+                    }
                 } else if (packet instanceof ClientboundDisconnectPacket disconnect) {
                     add(plain(disconnect.getReason()));
                 }

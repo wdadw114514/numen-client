@@ -70,6 +70,9 @@ public final class BotBody implements BodyView {
         if (connection.state() != BotConnection.State.PLAY) {
             return;
         }
+        for (Map.Entry<Integer, net.minecraft.world.item.ItemStack> entry : connection.inventory().entrySet()) {
+            player.getInventory().setItem(entry.getKey(), entry.getValue());
+        }
         controls.apply(player);
         player.tick();
         connection.moveTo(player.getX(), player.getY(), player.getZ(),
