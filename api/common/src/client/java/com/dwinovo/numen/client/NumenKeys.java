@@ -97,6 +97,13 @@ public final class NumenKeys {
             if (mc.player == null || mc.screen != null) {
                 continue;
             }
+            // 客户端假人模式：没有服务端同伴，直接和协议连接进来的假人对话
+            var botBody = com.dwinovo.numen.client.bot.BotManager.body();
+            if (botBody != null) {
+                mc.setScreen(new CompanionChatScreen(
+                        Conversations.instance().of(botBody.getUUID())));
+                continue;
+            }
             // 有征询挂着先答征询:对象是最早在等的那位,不看准星——右上角弹出来说按这个键答的就是她
             var asking = com.dwinovo.numen.client.consent.ConsentCards.first();
             if (asking != null) {

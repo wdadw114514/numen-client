@@ -34,6 +34,10 @@ public final class ClientNumenLookup {
     /** The currently-loaded companion body with this UUID, or {@code null}. */
     public static AbstractClientPlayer resolve(UUID uuid) {
         if (uuid == null) return null;
+        com.dwinovo.numen.client.bot.BotBody bot = com.dwinovo.numen.client.bot.BotManager.body();
+        if (bot != null && uuid.equals(bot.getUUID()) && bot.player() instanceof AbstractClientPlayer shadow) {
+            return shadow;
+        }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return null;
         for (Entity e : mc.level.entitiesForRendering()) {

@@ -35,6 +35,9 @@ public final class BotManager {
         }
         BotBody created = BotBody.create(current);
         body = created;
+        if (created != null) {
+            com.dwinovo.numen.client.agent.AgentLoopRegistry.getOrCreate(created.getUUID());
+        }
         return created;
     }
 
