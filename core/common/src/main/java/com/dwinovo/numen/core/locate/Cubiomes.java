@@ -38,7 +38,15 @@ public final class Cubiomes {
         if (lib != null || tried) return lib;
         tried = true;
         try {
-            Path dir = Path.of(System.getProperty("user.home"), ".numen", "native");
+            String custom = System.getProperty("numen.native.dir");
+            Path dir;
+            if (custom != null && !custom.isBlank()) {
+                dir = Path.of(custom);
+            } else if (Files.isDirectory(Path.of("E:\\tmp"))) {
+                dir = Path.of("E:\\tmp", "numen", "native");
+            } else {
+                dir = Path.of(System.getProperty("user.home"), ".numen", "native");
+            }
             Files.createDirectories(dir);
             Path dll = dir.resolve("cubiomes.dll");
             try (InputStream in = Cubiomes.class.getResourceAsStream("/numen/native/cubiomes.dll")) {
