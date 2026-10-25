@@ -277,7 +277,28 @@ public final class BotBody implements BodyView {
 
     @Override
     public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
-        connection.clickSlot(slot, button, type, player.containerMenu.getCarried());
+        net.minecraft.world.inventory.AbstractContainerMenu menu = player.containerMenu;
+        int size = menu.slots.size();
+        net.minecraft.world.item.ItemStack[] before = new net.minecraft.world.item.ItemStack[size];
+        for (int i = 0; i < size; i++) {
+            before[i] = menu.getSlot(i).getItem().copy();
+        }
+        net.minecraft.world.item.ItemStack carriedBefore = menu.getCarried().copy();
+        menu.clicked(slot, button, type, player);
+        java.util.Map<Integer, org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack> changed =
+                new java.util.HashMap<>();
+        for (int i = 0; i < size; i++) {
+            net.minecraft.world.item.ItemStack now = menu.getSlot(i).getItem();
+            if (!net.minecraft.world.item.ItemStack.matches(before[i], now)) {
+                changed.put(i, BotConnection.toHashedStack(now));
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            var slotView = menu.getSlot(i);
+            slotView.container.setItem(slotView.getContainerSlot(), before[i]);
+        }
+        menu.setCarried(carriedBefore);
+        connection.clickSlot(slot, button, type, carriedBefore, changed);
     }
 
     @Override

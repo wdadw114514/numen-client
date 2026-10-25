@@ -297,7 +297,8 @@ public final class BotConnection {
 
     /** 发一次物品栏点击（合成、搬运都走这里）。 */
     public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type,
-                          net.minecraft.world.item.ItemStack carried) {
+                          net.minecraft.world.item.ItemStack carried,
+                          java.util.Map<Integer, org.geysermc.mcprotocollib.protocol.data.game.item.HashedStack> changed) {
         org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerActionType actionType;
         org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerAction action;
         switch (type) {
@@ -316,7 +317,7 @@ public final class BotConnection {
             }
         }
         send(new org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.inventory.ServerboundContainerClickPacket(
-                currentMenuId, menuStateId, slot, actionType, action, toHashedStack(carried), java.util.Map.of()));
+                currentMenuId, menuStateId, slot, actionType, action, toHashedStack(carried), changed));
     }
 
     private void applyMenuContent(org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack[] items) {
