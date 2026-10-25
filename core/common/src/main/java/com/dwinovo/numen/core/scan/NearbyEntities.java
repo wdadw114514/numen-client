@@ -22,4 +22,12 @@ public final class NearbyEntities {
                                                     Predicate<? super T> filter) {
         return self.nearbyEntities(radius, type, filter);
     }
+
+    /** 只有一具实体（不是同伴身体）时：直接问它所在的世界。 */
+    public static <T extends Entity> List<T> within(Entity self, double radius, Class<T> type,
+                                                    Predicate<? super T> filter) {
+        double radiusSqr = radius * radius;
+        return self.level().getEntitiesOfClass(type, self.getBoundingBox().inflate(radius),
+                e -> e != self && self.distanceToSqr(e) <= radiusSqr && filter.test(e));
+    }
 }
