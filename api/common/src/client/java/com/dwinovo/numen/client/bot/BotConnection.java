@@ -489,10 +489,10 @@ public final class BotConnection {
                 return;
             }
             int view = com.dwinovo.numen.client.data.ClientPrefs.botViewDistance();
-            int centerX = net.minecraft.core.SectionPos.blockToSectionCoord(
-                    net.minecraft.util.Mth.floor(positionKnown ? x : level.getSharedSpawnPos().getX()));
-            int centerZ = net.minecraft.core.SectionPos.blockToSectionCoord(
-                    net.minecraft.util.Mth.floor(positionKnown ? z : level.getSharedSpawnPos().getZ()));
+            int centerX = net.minecraft.core.SectionPos.blockToSectionCoord(positionKnown
+                    ? (int) x : (minecraft.player != null ? minecraft.player.getBlockX() : 0));
+            int centerZ = net.minecraft.core.SectionPos.blockToSectionCoord(positionKnown
+                    ? (int) z : (minecraft.player != null ? minecraft.player.getBlockZ() : 0));
             if (Math.abs(packet.getX() - centerX) > view || Math.abs(packet.getZ() - centerZ) > view) {
                 return;
             }
