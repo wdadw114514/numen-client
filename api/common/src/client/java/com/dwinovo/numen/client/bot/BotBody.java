@@ -76,10 +76,22 @@ public final class BotBody implements BodyView {
             player.getInventory().setItem(entry.getKey(), entry.getValue());
         }
         BotConnection.OpenMenu open = connection.takePendingMenu();
-        if (open != null && open.type()
-                == org.geysermc.mcprotocollib.protocol.data.game.inventory.ContainerType.CRAFTING) {
-            player.containerMenu = new net.minecraft.world.inventory.CraftingMenu(open.id(), player.getInventory());
-            connection.setMenuId(open.id());
+        if (open != null) {
+            switch (open.type()) {
+                case CRAFTING -> {
+                    player.containerMenu = new net.minecraft.world.inventory.CraftingMenu(open.id(),
+                            player.getInventory());
+                    connection.setMenuId(open.id());
+                }
+                case GENERIC_9X1 -> openChest(open.id(), 1);
+                case GENERIC_9X2 -> openChest(open.id(), 2);
+                case GENERIC_9X3 -> openChest(open.id(), 3);
+                case GENERIC_9X4 -> openChest(open.id(), 4);
+                case GENERIC_9X5 -> openChest(open.id(), 5);
+                case GENERIC_9X6, SHULKER_BOX -> openChest(open.id(), 6);
+                default -> {
+                }
+            }
         }
         if (connection.takePendingClose()) {
             player.containerMenu = player.inventoryMenu;
@@ -137,6 +149,13 @@ public final class BotBody implements BodyView {
                     .ServerboundSetCarriedItemPacket(slot));
         }
         return Optional.empty();
+    }
+
+    private void openChest(int id, int rows) {
+        net.minecraft.world.SimpleContainer container = new net.minecraft.world.SimpleContainer(rows * 9);
+        player.containerMenu = new net.minecraft.world.inventory.ChestMenu(
+                net.minecraft.world.inventory.MenuType.GENERIC_9X3, id, player.getInventory(), container, rows);
+        connection.setMenuId(id);
     }
 
     @Override
