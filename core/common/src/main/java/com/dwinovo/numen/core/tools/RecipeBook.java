@@ -3,6 +3,7 @@ package com.dwinovo.numen.core.tools;
 import com.dwinovo.numen.pathing.body.BodyView;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
@@ -29,9 +30,7 @@ public final class RecipeBook {
 
     /** 做这样东西的每一条配方,每个工位;找不到就是空表(它靠挖或交易得来,不是做出来的)。 */
     public static List<com.dwinovo.numen.core.tools.Recipe> recipesFor(Item target, BodyView self) {
-        if (!(self.level() instanceof ServerLevel level)) {
-            return List.of();
-        }
+        Level level = self.level();
         List<com.dwinovo.numen.core.tools.Recipe> out = new ArrayList<>();
         for (RecipeHolder<?> holder : level.recipeAccess().getRecipes()) {
             // 每条配方自成一格:整合包里一条坏配方(产出为 null、输入表为 null)只丢它自己,绝不让它杀掉整个查询。见 RecipeProbe。

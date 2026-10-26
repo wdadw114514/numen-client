@@ -10,6 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -67,9 +68,7 @@ public final class CraftOps {
 
     /** {@code numen.inv.craft}:在开着的格里照 {@code id} 那条配方合一次,至多合到 {@code count} 件。 */
     public static Crafted craft(Identifier id, int want, BodyView self) {
-        if (!(self.level() instanceof ServerLevel level)) {
-            throw new ApiError(ErrorKind.FAILED, "crafting needs a server-side body", null);
-        }
+        Level level = self.level();
         RecipeHolder<?> found = level.recipeAccess().byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
         if (found == null || !(found.value() instanceof CraftingRecipe recipe) || recipe.isSpecial()
                 || ingredientsOf(recipe).isEmpty()) {
@@ -160,9 +159,7 @@ public final class CraftOps {
 
     /** {@code numen.inv.craftable}:她背着的料现在合得出的每一条合成配方。 */
     public static List<Recipe> craftable(BodyView self) {
-        if (!(self.level() instanceof ServerLevel level)) {
-            return List.of();
-        }
+        Level level = self.level();
         Map<Item, Integer> pool = poolOf(self.inventoryMenu(), self);
         List<Recipe> recipes = new ArrayList<>();
         // 服务端没有按类型取配方表的公开口:全量遍历再筛合成配方
