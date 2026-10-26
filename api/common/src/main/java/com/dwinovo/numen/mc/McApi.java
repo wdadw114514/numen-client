@@ -71,7 +71,9 @@ public final class McApi {
             throw new ApiError(ErrorKind.BAD_ARGUMENT, "there is no command to run.", Call.of("numen.mc.run", HELP));
         }
         if (!(call.her() instanceof NumenPlayer her)) {
-            throw new ApiError(ErrorKind.FAILED, "numen.mc.run needs a server-side body", null);
+            // 客户端假人：以她的身份把命令发给服务器，回话进服务器聊天
+            call.her().sendCommand(line);
+            return Pending.of(new Ran("/" + line, List.of("已发送；服务器回话在聊天里"), 1));
         }
         CommandDispatcher<CommandSourceStack> dispatcher = her.level().getServer().getCommands().getDispatcher();
         String problem = problem(dispatcher, line, her.createCommandSourceStack());
