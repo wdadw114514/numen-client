@@ -15,6 +15,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundSystemChatPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientTickEndPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundClientCommandPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.ClientboundRespawnPacket;
@@ -724,6 +725,8 @@ public final class BotConnection {
                     (flags & 0x10) != 0, (flags & 0x20) != 0, (flags & 0x40) != 0));
             lastInputFlags = flags;
         }
+        // 原版 1.21.9+ 每刻的 tick 结束包：让服务端的 tick 与客户端对齐
+        current.send(ServerboundClientTickEndPacket.INSTANCE);
     }
 
     private void add(String message) {
