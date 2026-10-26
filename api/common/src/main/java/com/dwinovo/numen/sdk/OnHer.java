@@ -40,10 +40,10 @@ public final class OnHer {
      */
     public List<String> run(String command, String... values) {
         String line = line(name(), command, values);
-        if (her.player() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+        if (her.player() instanceof com.dwinovo.numen.entity.NumenPlayer serverPlayer) {
             MinecraftServer server = serverPlayer.level().getServer();
             Echo echo = new Echo(server.shouldInformAdmins());
-            ((NumenPlayer) serverPlayer).fakeClient().runCommand(echo::toHer, () -> server.getCommands()
+            serverPlayer.fakeClient().runCommand(echo::toHer, () -> server.getCommands()
                     .performPrefixedCommand(server.createCommandSourceStack().withSource(echo).withCallback(echo), line));
             return echo.lines();
         }
