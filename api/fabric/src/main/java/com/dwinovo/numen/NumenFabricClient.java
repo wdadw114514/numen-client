@@ -130,6 +130,7 @@ public class NumenFabricClient implements ClientModInitializer {
                 .register(client -> {
                     com.dwinovo.numen.client.NumenKeys.tick();
                     com.dwinovo.numen.client.bot.BotManager.tick();
+                    com.dwinovo.numen.client.wizard.JoinWizard.poll();
                     com.dwinovo.numen.program.LocalPrograms.tick();
                     com.dwinovo.numen.client.bot.BotBody clientBody =
                             com.dwinovo.numen.client.bot.BotManager.body();
