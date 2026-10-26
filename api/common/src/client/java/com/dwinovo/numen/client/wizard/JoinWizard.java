@@ -49,6 +49,7 @@ public final class JoinWizard {
     private static final java.util.List<String> SERVERS = new java.util.ArrayList<>();
     private static String code = "";
     private static String status = "";
+    private static java.nio.file.Path file;
 
     private JoinWizard() {}
 
@@ -138,6 +139,46 @@ public final class JoinWizard {
     }
 
     /** 每客户端刻调一次：把假人连接的新消息读进向导。 */
+    /** 启动时读回上次的假人配置；退出重进不用重新填。 */
+    public static void init(java.nio.file.Path configDir) {
+        file = configDir.resolve("bot.json");
+        if (!java.nio.file.Files.exists(file)) {
+            return;
+        }
+        try {
+            var o = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file))
+                    .getAsJsonObject();
+            if (o.has("address")) serverAddress = o.get("address").getAsString();
+            if (o.has("username")) username = o.get("username").getAsString();
+            if (o.has("password")) password = o.get("password").getAsString();
+            if (o.has("seed")) seed = o.get("seed").getAsString();
+            if (o.has("skin")) skinUrl = o.get("skin").getAsString();
+            if (o.has("lobby")) lobbyEnabled = o.get("lobby").getAsBoolean();
+            if (o.has("server")) serverName = o.get("server").getAsString();
+            WorldSeed.set(seed);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void save() {
+        if (file == null) {
+            return;
+        }
+        try {
+            java.nio.file.Files.createDirectories(file.getParent());
+            var o = new com.google.gson.JsonObject();
+            o.addProperty("address", serverAddress);
+            o.addProperty("username", username);
+            o.addProperty("password", password);
+            o.addProperty("seed", seed);
+            o.addProperty("skin", skinUrl);
+            o.addProperty("lobby", lobbyEnabled);
+            o.addProperty("server", serverName);
+            java.nio.file.Files.writeString(file, o.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
     public static void poll() {
         BotConnection bot = BotManager.bot();
         if (bot == null) {
@@ -198,6 +239,12 @@ public final class JoinWizard {
     /** 用独立账号连服务器（离线模式）。 */
     public static void connect() {
         if (serverAddress.isBlank()) {
+            var current = Minecraft.getInstance().getCurrentServer();
+            if (current != null) {
+                serverAddress = current.ip;
+            }
+        }
+        if (serverAddress.isBlank()) {
             status = "先填服务器地址";
             return;
         }
@@ -220,6 +267,7 @@ public final class JoinWizard {
         processedMessages = 0;
         RECENT.clear();
         BotManager.connect(host, port, username, skinUrl);
+        save();
         status = "正在连接 " + host + ":" + port + " …";
     }
 

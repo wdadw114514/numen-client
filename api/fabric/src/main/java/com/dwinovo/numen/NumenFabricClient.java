@@ -36,6 +36,8 @@ public class NumenFabricClient implements ClientModInitializer {
         System.setProperty("numen.game.dir", FabricLoader.getInstance().getGameDir().toString());
         com.dwinovo.numen.client.bot.PremiumAuth.init(
                 FabricLoader.getInstance().getConfigDir().resolve(com.dwinovo.numen.Constants.CONFIG_ROOT));
+        com.dwinovo.numen.client.wizard.JoinWizard.init(
+                FabricLoader.getInstance().getConfigDir().resolve(com.dwinovo.numen.Constants.CONFIG_ROOT));
         // 下行 payload 的处理体住在客户端源码集,先挂进主源码集的挂点
         com.dwinovo.numen.client.ClientPayloadHandlers.install();
         // 早先用 MOD_ID 当配置根,技能与 mcp_clients 落在了 config/numen_api/。
@@ -136,6 +138,14 @@ public class NumenFabricClient implements ClientModInitializer {
                     }
                     com.dwinovo.numen.client.agent.AgentLoopRegistry.tickAll();
                     com.dwinovo.numen.mcp.server.McpMode.instance().clientTick();
+                });
+
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN
+                .register((handler, sender, client) -> {
+                    if (!com.dwinovo.numen.client.wizard.JoinWizard.username().isBlank()
+                            && !com.dwinovo.numen.client.bot.BotManager.playing()) {
+                        com.dwinovo.numen.client.wizard.JoinWizard.connect();
+                    }
                 });
 
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT
