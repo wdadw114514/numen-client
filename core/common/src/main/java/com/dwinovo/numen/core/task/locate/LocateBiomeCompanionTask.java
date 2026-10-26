@@ -70,6 +70,8 @@ public final class LocateBiomeCompanionTask extends AbstractCompanionTask<Locate
     private boolean exhausted;
     private BlockPos best;
     private String failReason = "not on a server level";
+    /** 离线（Cubiomes）已经出结论。 */
+    private boolean offlineDone;
 
     public LocateBiomeCompanionTask(BodyView player, LocateBiomeTaskRecord record) {
         super(player, record);
@@ -82,9 +84,33 @@ public final class LocateBiomeCompanionTask extends AbstractCompanionTask<Locate
         ring = 0;
         perimIdx = 0;
         exhausted = false;
+        offlineDone = false;
+
+        Long seed = com.dwinovo.numen.sdk.WorldSeed.asLong();
+        if (seed != null) {
+            String type = r.biome.trim().toLowerCase(java.util.Locale.ROOT);
+            if (type.startsWith("minecraft:")) {
+                type = type.substring("minecraft:".length());
+            }
+            int[] found = com.dwinovo.numen.core.locate.Cubiomes.findBiome(type, "1.21.11", seed,
+                    player.getBlockX(), player.getBlockZ(), 6400);
+            if (found == null) {
+                fail("biome " + r.biome + " is not supported by the offline finder"
+                        + (com.dwinovo.numen.core.locate.Cubiomes.isAvailable() ? ""
+                                : " (" + com.dwinovo.numen.core.locate.Cubiomes.error() + ")"),
+                        FailureType.UNKNOWN);
+                return;
+            }
+            if (found.length == 2) {
+                best = new BlockPos(found[0], 64, found[1]);
+            }
+            offlineDone = true;
+            return;
+        }
 
         if (!(player.level() instanceof ServerLevel sl)) {
-            fail("not on a server level", FailureType.UNKNOWN);
+            fail("no world seed: fill the seed in the join wizard (step 1) so offline biome search can run",
+                    FailureType.UNKNOWN);
             return;
         }
         match = resolveBiomePredicate(sl, r.biome.trim());
@@ -153,6 +179,9 @@ public final class LocateBiomeCompanionTask extends AbstractCompanionTask<Locate
 
     @Override
     protected TaskState onTick() {
+        if (offlineDone) {
+            return TaskState.SUCCESS;
+        }
         if (!(player.level() instanceof ServerLevel sl)) {
             fail("not on a server level", FailureType.UNKNOWN);
             return TaskState.FAILED;

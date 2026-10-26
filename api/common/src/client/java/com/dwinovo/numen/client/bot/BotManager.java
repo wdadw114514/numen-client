@@ -41,6 +41,7 @@ public final class BotManager {
         body = created;
         if (created != null) {
             com.dwinovo.numen.client.agent.AgentLoopRegistry.getOrCreate(created.getUUID());
+            com.dwinovo.numen.task.CompanionTickDispatcher.onClientBodySpawned(created);
             // 步骤 2 选的人设/模型/声线落到这只假人身上
             var binding = com.dwinovo.numen.client.agent.CompanionHome.binding(created.getUUID())
                     .withProvider(com.dwinovo.numen.client.wizard.JoinWizard.providerId())

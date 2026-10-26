@@ -83,6 +83,20 @@ public final class Cubiomes {
         return result;
     }
 
+    /** 最近的群系；找不到返回空数组，库不支持返回 null。 */
+    public static int[] findBiome(String type, String mcVersion, long seed,
+                                  int centerX, int centerZ, int radiusBlocks) {
+        CubiomesNative nativeLibrary = nativeLib();
+        if (nativeLibrary == null) return null;
+        int mc = nativeLibrary.cb_version_id(mcVersion);
+        if (mc < 0) return null;
+        int[] x = new int[1];
+        int[] z = new int[1];
+        int found = nativeLibrary.cb_find_biome(type, mc, seed, centerX, centerZ, radiusBlocks, x, z);
+        if (found < 0) return null;
+        return found == 0 ? new int[0] : new int[]{x[0], z[0]};
+    }
+
     private static String cubiomesName(String type) {
         if (type == null) return null;
         return switch (type) {

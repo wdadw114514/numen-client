@@ -135,6 +135,7 @@ public class NumenFabricClient implements ClientModInitializer {
                             com.dwinovo.numen.client.bot.BotManager.body();
                     if (clientBody != null) {
                         com.dwinovo.numen.task.CompanionTickDispatcher.tickClient(clientBody);
+                        com.dwinovo.numen.task.TimerRegistry.client().tickClient(clientBody);
                     }
                     com.dwinovo.numen.client.agent.AgentLoopRegistry.tickAll();
                     com.dwinovo.numen.mcp.server.McpMode.instance().clientTick();

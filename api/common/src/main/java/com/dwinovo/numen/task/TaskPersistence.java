@@ -47,6 +47,9 @@ public final class TaskPersistence {
 
     private TaskPersistence() {}
 
+    /** 客户端假人：没有 CompanionRegistry，放内存里（重连后接着跑）。 */
+    private static final java.util.Map<UUID, String[]> CLIENT = new java.util.concurrent.ConcurrentHashMap<>();
+
     /**
      * 记下她现在在做什么(换槽时调):{@code taskName} 是这件活的名字,{@code lua} 是重启后再跑的那一行。全为 null = 记为空闲;
      * 只有名字没有那一行 = 在做、但接不回来。
@@ -54,6 +57,11 @@ public final class TaskPersistence {
     public static void remember(BodyView companion, String taskName, String lua) {
         MinecraftServer server = companion.server();
         if (server == null) {
+            if (taskName == null && lua == null) {
+                CLIENT.remove(companion.getUUID());
+            } else {
+                CLIENT.put(companion.getUUID(), new String[]{taskName, lua});
+            }
             return;
         }
         CompanionRegistry reg = CompanionRegistry.get(server);
@@ -80,7 +88,11 @@ public final class TaskPersistence {
     static LeftOver leftOver(BodyView companion) {
         MinecraftServer server = companion.server();
         if (server == null) {
-            return null;
+            String[] e = CLIENT.get(companion.getUUID());
+            if (e == null || (e[0] == null && e[1] == null)) {
+                return null;
+            }
+            return new LeftOver(e[0] == null ? "the task" : e[0], e[1] == null ? "" : e[1], "");
         }
         CompanionRegistry.Entry e = CompanionRegistry.get(server).find(companion.getUUID());
         if (e == null || (e.taskLua().isBlank() && e.taskOld().isBlank())) {
@@ -101,6 +113,12 @@ public final class TaskPersistence {
                     companion.getUUID(), left.old());
             abandon(companion, taskName, "it was saved by an older version of Numen as a command line ("
                     + left.old() + "), which this version no longer runs. Start it again if it is still wanted.");
+            return;
+        }
+        if (companion.server() == null) {
+            com.dwinovo.numen.program.LocalPrograms.run(companion, companion.getUUID(),
+                    companion.getOwnerUuid(), REPLAY_CALL_ID + "-" + taskName, left.lua(),
+                    com.dwinovo.numen.program.CallObserver.NONE, result -> { });
             return;
         }
         if (!(companion instanceof com.dwinovo.numen.entity.NumenPlayer serverBody)) {

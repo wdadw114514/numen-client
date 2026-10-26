@@ -99,6 +99,29 @@ public final class TimerRegistry extends SavedData {
         return server.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 
+    /** 客户端假人的表：没有服务端存档，放内存里，由客户端每刻推进。 */
+    private static final TimerRegistry CLIENT = new TimerRegistry();
+
+    public static TimerRegistry client() {
+        return CLIENT;
+    }
+
+    public void tickClient(com.dwinovo.numen.pathing.body.BodyView body) {
+        long now = body.level().getGameTime();
+        List<String> spent = new ArrayList<>();
+        for (Timer t : dueAt(now)) {
+            NumenEvents.emit(body, com.dwinovo.numen.agent.inbox.EventTypes.TIMER,
+                    Map.of("id", t.id()),
+                    "你定的表到点了：" + t.reason()
+                            + "。表只负责提醒，不代表那件事已经完成——先看清现在的状况再决定下一步。",
+                    true);
+            spent.add(t.id());
+        }
+        if (!spent.isEmpty()) {
+            spent.forEach(timers::remove);
+        }
+    }
+
     // ---- 定 / 查 / 撤 ----
 
     /** 把请求的秒数夹进合法区间。工具据此告诉模型「你要 X,按 Y 定的」。 */

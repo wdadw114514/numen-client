@@ -190,6 +190,14 @@ public final class CompanionTickDispatcher {
      * {@code NumenDeathPayload} already abandons the in-flight tool call and records the death cause (so a
      * result here would be a late arrival the client ignores).
      */
+    /** 客户端假人刚建好：接手上次没干完的活（内存记录）。 */
+    public static void onClientBodySpawned(com.dwinovo.numen.pathing.body.BodyView body) {
+        CompanionBrain brain = brainFor(body.getUUID());
+        if (brain.boundTo(body)) {
+            brain.inherit(TaskPersistence.leftOver(body));
+        }
+    }
+
     /** 客户端假人：每客户端刻驱动一次它的任务槽（服务端 tick 不会跑这具身体）。 */
     public static void tickClient(com.dwinovo.numen.pathing.body.BodyView body) {
         if (body == null) {

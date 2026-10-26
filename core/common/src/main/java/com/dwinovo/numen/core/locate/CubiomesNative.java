@@ -10,6 +10,9 @@ public interface CubiomesNative extends Library {
 
     int cb_find_strongholds(int mc, long seed, int centerX, int centerZ, int limit, int[] out);
 
+    int cb_find_biome(String biome, int mc, long seed, int centerX, int centerZ,
+                       int radiusBlocks, int[] outX, int[] outZ);
+
     int cb_version_id(String name);
 
     int cb_newest_version();

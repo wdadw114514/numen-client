@@ -95,7 +95,8 @@ public final class TaskApi {
         long now = companion.level().getGameTime();
         TaskRecord active = CompanionTickDispatcher.currentTaskFor(companion.getUUID());
         // 指名道姓的表:先在表里找,找到就撤
-        if (wanted != null && server != null && TimerRegistry.get(server).cancel(companion.getUUID(), wanted)) {
+        TimerRegistry registry = server != null ? TimerRegistry.get(server) : TimerRegistry.client();
+        if (wanted != null && registry.cancel(companion.getUUID(), wanted)) {
             return new Stopped(Optional.empty(), Optional.of(wanted));
         }
         if (active == null || (wanted != null && !wanted.equals(active.publicId()))) {
@@ -143,11 +144,8 @@ public final class TaskApi {
         }
         MinecraftServer server = companion.server();
         int seconds = TimerRegistry.clampSeconds(args.after().orElse(DEFAULT_AFTER_S));
-        if (server == null) {
-            throw new ApiError(ErrorKind.FAILED, "timers need a server-side body", null);
-        }
-        TimerRegistry registry = TimerRegistry.get(server);
-        long now = server.overworld().getGameTime();
+        TimerRegistry registry = server != null ? TimerRegistry.get(server) : TimerRegistry.client();
+        long now = server != null ? server.overworld().getGameTime() : companion.level().getGameTime();
         TimerRegistry.Timer timer = registry.set(companion.getUUID(), now, seconds, reason);
         if (timer == null) {
             List<Timer> pending = timers(companion, now);
@@ -171,10 +169,8 @@ public final class TaskApi {
 
     private static List<Timer> timers(BodyView companion, long now) {
         MinecraftServer server = companion.server();
-        if (server == null) {
-            return List.of();
-        }
-        return TimerRegistry.get(server).list(companion.getUUID()).stream()
+        TimerRegistry registry = server != null ? TimerRegistry.get(server) : TimerRegistry.client();
+        return registry.list(companion.getUUID()).stream()
                 .map(t -> new Timer(t.id(), (int) TimerRegistry.remainingSeconds(t, now), t.reason())).toList();
     }
 
