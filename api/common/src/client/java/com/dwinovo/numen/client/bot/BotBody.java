@@ -57,9 +57,11 @@ public final class BotBody implements BodyView {
         if (premium != null) {
             var profile = premium.getMinecraftProfile().getCached();
             uuid = profile != null ? profile.getId()
-                    : UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.username()).getBytes(StandardCharsets.UTF_8));
+                    : UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.host() + ":" + connection.username())
+                    .getBytes(StandardCharsets.UTF_8));
         } else {
-            uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.username()).getBytes(StandardCharsets.UTF_8));
+            uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + connection.host() + ":" + connection.username())
+                    .getBytes(StandardCharsets.UTF_8));
         }
         BotPlayer shadow = new BotPlayer(level, new com.mojang.authlib.GameProfile(uuid, connection.username()));
         shadow.setPos(connection.x(), connection.y(), connection.z());

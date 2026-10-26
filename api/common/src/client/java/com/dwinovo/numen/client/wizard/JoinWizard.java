@@ -139,16 +139,35 @@ public final class JoinWizard {
     }
 
     /** 每客户端刻调一次：把假人连接的新消息读进向导。 */
-    /** 启动时读回上次的假人配置；退出重进不用重新填。 */
+    /** 启动时只记路径；具体服务器配置在进服那一刻按地址读。 */
     public static void init(java.nio.file.Path configDir) {
         file = configDir.resolve("bot.json");
-        if (!java.nio.file.Files.exists(file)) {
+    }
+
+    /** 按服务器地址读回假人配置；这个服没有配置就清空，绝不把别的服的 AI 带过来。 */
+    public static void loadForServer(String address) {
+        serverAddress = address == null ? "" : address;
+        username = "";
+        password = "";
+        seed = "";
+        skinUrl = "";
+        lobbyEnabled = false;
+        serverName = "";
+        WorldSeed.set("");
+        if (file == null || !java.nio.file.Files.exists(file)) {
             return;
         }
         try {
-            var o = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file))
+            var root = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file))
                     .getAsJsonObject();
-            if (o.has("address")) serverAddress = o.get("address").getAsString();
+            if (!root.has("servers")) {
+                return;
+            }
+            var servers = root.getAsJsonObject("servers");
+            if (!servers.has(serverAddress)) {
+                return;
+            }
+            var o = servers.getAsJsonObject(serverAddress);
             if (o.has("username")) username = o.get("username").getAsString();
             if (o.has("password")) password = o.get("password").getAsString();
             if (o.has("seed")) seed = o.get("seed").getAsString();
@@ -161,20 +180,28 @@ public final class JoinWizard {
     }
 
     public static void save() {
-        if (file == null) {
+        if (file == null || serverAddress.isBlank()) {
             return;
         }
         try {
             java.nio.file.Files.createDirectories(file.getParent());
+            com.google.gson.JsonObject root = new com.google.gson.JsonObject();
+            if (java.nio.file.Files.exists(file)) {
+                root = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file))
+                        .getAsJsonObject();
+            }
+            if (!root.has("servers")) {
+                root.add("servers", new com.google.gson.JsonObject());
+            }
             var o = new com.google.gson.JsonObject();
-            o.addProperty("address", serverAddress);
             o.addProperty("username", username);
             o.addProperty("password", password);
             o.addProperty("seed", seed);
             o.addProperty("skin", skinUrl);
             o.addProperty("lobby", lobbyEnabled);
             o.addProperty("server", serverName);
-            java.nio.file.Files.writeString(file, o.toString());
+            root.getAsJsonObject("servers").add(serverAddress, o);
+            java.nio.file.Files.writeString(file, root.toString());
         } catch (Exception ignored) {
         }
     }

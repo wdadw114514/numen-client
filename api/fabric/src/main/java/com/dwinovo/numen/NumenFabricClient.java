@@ -142,6 +142,10 @@ public class NumenFabricClient implements ClientModInitializer {
 
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN
                 .register((handler, sender, client) -> {
+                    var server = client.getCurrentServer();
+                    com.dwinovo.numen.client.agent.NumenRoster.instance().clear();
+                    com.dwinovo.numen.client.wizard.JoinWizard.loadForServer(
+                            server == null ? "" : server.ip);
                     if (!com.dwinovo.numen.client.wizard.JoinWizard.username().isBlank()
                             && !com.dwinovo.numen.client.bot.BotManager.playing()) {
                         com.dwinovo.numen.client.wizard.JoinWizard.connect();
