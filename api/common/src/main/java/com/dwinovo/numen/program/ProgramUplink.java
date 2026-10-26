@@ -70,7 +70,9 @@ public final class ProgramUplink {
      */
     public void run(UUID companion, String programId, String code, Consumer<RunResult> done) {
         LocalRunner local = localRunner;
-        if (local != null && local.run(companion, programId, code, done)) {
+        if (local != null) {
+            // 客户端假人：一律本地执行，绝不送回服务端
+            local.run(companion, programId, code, done);
             return;
         }
         send(companion, programId, new Waiting(companion, code, done, false));

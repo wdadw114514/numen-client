@@ -23,7 +23,8 @@ public class NumenFabricClient implements ClientModInitializer {
             // 只要假人的身体在，Lua 就本地跑，绝不送回服务端
             com.dwinovo.numen.client.bot.BotBody body = com.dwinovo.numen.client.bot.BotManager.body();
             if (body == null) {
-                return false;
+                done.accept(com.dwinovo.numen.program.RunResult.refused("client body is not ready yet"));
+                return true;
             }
             com.dwinovo.numen.program.LocalPrograms.run(body, companion, body.getOwnerUuid(), programId, code,
                     com.dwinovo.numen.program.CallObserver.NONE, done);
