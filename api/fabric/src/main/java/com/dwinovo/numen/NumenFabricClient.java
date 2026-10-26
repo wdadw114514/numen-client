@@ -129,6 +129,11 @@ public class NumenFabricClient implements ClientModInitializer {
                     com.dwinovo.numen.client.NumenKeys.tick();
                     com.dwinovo.numen.client.bot.BotManager.tick();
                     com.dwinovo.numen.program.LocalPrograms.tick();
+                    com.dwinovo.numen.client.bot.BotBody clientBody =
+                            com.dwinovo.numen.client.bot.BotManager.body();
+                    if (clientBody != null) {
+                        com.dwinovo.numen.task.CompanionTickDispatcher.tickClient(clientBody);
+                    }
                     com.dwinovo.numen.client.agent.AgentLoopRegistry.tickAll();
                     com.dwinovo.numen.mcp.server.McpMode.instance().clientTick();
                 });
@@ -137,6 +142,8 @@ public class NumenFabricClient implements ClientModInitializer {
                 .register((handler, client) -> {
                     // 先掐大脑:作废在飞回合与工具链,别让上一个存档的回合漂进下一个存档
                     com.dwinovo.numen.client.agent.AgentLoopRegistry.quiesceAll();
+                    // 本地玩家退出服务器：假人也一起退出，别留在服务器里
+                    com.dwinovo.numen.client.bot.BotManager.disconnect();
                     com.dwinovo.numen.client.data.ClientNumenState.clear();
                     com.dwinovo.numen.client.agent.KnownSkins.clear();
                     com.dwinovo.numen.client.hud.SpeechBubbles.clear();

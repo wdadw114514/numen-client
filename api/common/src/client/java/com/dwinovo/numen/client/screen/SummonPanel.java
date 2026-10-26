@@ -107,10 +107,6 @@ public final class SummonPanel extends ModalCard {
                 new TextField(JoinWizard.username(), JoinWizard::username)
                         .placeholder("3-16 位字母/数字/_"));
         int ry = top + COVER_H;
-        addressField = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, "服务器地址",
-                new TextField(JoinWizard.serverAddress(), JoinWizard::serverAddress)
-                        .placeholder("play.example.com 或 ip:port"));
-        ry += FIELD_H;
         passwordField = field(x + DialogBox.PAD_X, ry, w - DialogBox.PAD_X * 2, "服务器密码",
                 new TextField(JoinWizard.password(), JoinWizard::password).masked(true));
         ry += FIELD_H;
@@ -286,7 +282,6 @@ public final class SummonPanel extends ModalCard {
 
     private void capture() {
         if (nameField != null) JoinWizard.username(nameField.value());
-        if (addressField != null) JoinWizard.serverAddress(addressField.value());
         if (passwordField != null) JoinWizard.password(passwordField.value());
         if (seedField != null) JoinWizard.seed(seedField.value());
         if (skinField != null) JoinWizard.skinUrl(skinField.value());
@@ -301,6 +296,10 @@ public final class SummonPanel extends ModalCard {
 
     private void submit() {
         capture();
+        var server = Minecraft.getInstance().getCurrentServer();
+        if (server != null && !server.ip.isBlank()) {
+            JoinWizard.serverAddress(server.ip);
+        }
         if (loginMode == 0) {
             com.dwinovo.numen.client.bot.BotConnection.clearAuth();
         }

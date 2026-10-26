@@ -190,6 +190,22 @@ public final class CompanionTickDispatcher {
      * {@code NumenDeathPayload} already abandons the in-flight tool call and records the death cause (so a
      * result here would be a late arrival the client ignores).
      */
+    /** 客户端假人：每客户端刻驱动一次它的任务槽（服务端 tick 不会跑这具身体）。 */
+    public static void tickClient(com.dwinovo.numen.pathing.body.BodyView body) {
+        if (body == null) {
+            return;
+        }
+        CompanionBrain brain = brainFor(body.getUUID());
+        if (!brain.boundTo(body)) {
+            if (!brain.boundBodyGone()) {
+                return;
+            }
+            BRAINS.remove(body.getUUID());
+            brain = brainFor(body.getUUID());
+        }
+        brain.tick(body);
+    }
+
     public static void clearActiveTask(NumenPlayer player) {
         CompanionBrain brain = BRAINS.get(player.getUUID());   // never create: a late death
         if (brain != null) brain.dropActiveNoResult(player);   // event must not leak a brain
