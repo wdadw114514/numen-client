@@ -44,8 +44,14 @@ public final class JoinWizard {
     private static String seed = "";
     private static String skinUrl = "";
     private static String serverName = "";
+    private static String personaId = "";
+    private static String providerId = "";
+    private static String voiceId = "";
     private static boolean lobbyEnabled;
     private static boolean serverProbeSent;
+    private static boolean autoLoginSent;
+    private static boolean loggedIn;
+    private static long lastReconnectMs;
     private static final java.util.List<String> SERVERS = new java.util.ArrayList<>();
     private static String code = "";
     private static String status = "";
@@ -96,6 +102,30 @@ public final class JoinWizard {
 
     public static String skinUrl() {
         return skinUrl;
+    }
+
+    public static String personaId() {
+        return personaId;
+    }
+
+    public static void personaId(String value) {
+        personaId = value == null ? "" : value;
+    }
+
+    public static String providerId() {
+        return providerId;
+    }
+
+    public static void providerId(String value) {
+        providerId = value == null ? "" : value;
+    }
+
+    public static String voiceId() {
+        return voiceId;
+    }
+
+    public static void voiceId(String value) {
+        voiceId = value == null ? "" : value;
     }
 
     public static void skinUrl(String value) {
@@ -221,18 +251,35 @@ public final class JoinWizard {
         }
         processedMessages = all.size();
 
-        if (lobbyEnabled && !serverProbeSent && bot.state() == BotConnection.State.PLAY) {
-            serverProbeSent = true;
-            bot.sendCommand("server");
-        }
         switch (bot.state()) {
             case CONNECTING -> status = "正在连接服务器…";
             case PLAY -> {
+                // 先自动登录，登录成功（或不需要登录）之后才发 /server
+                if (!autoLoginSent && !password.isBlank()) {
+                    autoLoginSent = true;
+                    bot.sendCommand("login " + password);
+                    status = "自动登录中…";
+                }
+                if (!loggedIn && password.isBlank()) {
+                    loggedIn = true;
+                }
+                if (lobbyEnabled && !serverProbeSent && loggedIn) {
+                    serverProbeSent = true;
+                    bot.sendCommand("server");
+                }
                 if (status.isBlank() || status.startsWith("正在连接")) {
                     status = "假人已进入服务器";
                 }
             }
-            case DISCONNECTED -> status = "连接断开: " + bot.lastError();
+            case DISCONNECTED -> {
+                status = "连接断开: " + bot.lastError();
+                // 被踢/掉线：5 秒后自动重连（本地玩家还在服务器时）
+                long now = System.currentTimeMillis();
+                if (!username.isBlank() && now - lastReconnectMs > 5000) {
+                    lastReconnectMs = now;
+                    connect();
+                }
+            }
             default -> {
             }
         }
@@ -251,6 +298,7 @@ public final class JoinWizard {
         }
         if (text.contains("登录成功") || text.contains("注册成功") || text.contains("已登录")) {
             status = text;
+            loggedIn = true;
         }
         java.util.regex.Matcher list = SERVER_LIST.matcher(text);
         if (list.find()) {
@@ -293,6 +341,9 @@ public final class JoinWizard {
         }
         processedMessages = 0;
         RECENT.clear();
+        autoLoginSent = false;
+        loggedIn = false;
+        serverProbeSent = false;
         BotManager.connect(host, port, username, skinUrl);
         save();
         status = "正在连接 " + host + ":" + port + " …";

@@ -41,6 +41,12 @@ public final class BotManager {
         body = created;
         if (created != null) {
             com.dwinovo.numen.client.agent.AgentLoopRegistry.getOrCreate(created.getUUID());
+            // 步骤 2 选的人设/模型/声线落到这只假人身上
+            var binding = com.dwinovo.numen.client.agent.CompanionHome.binding(created.getUUID())
+                    .withProvider(com.dwinovo.numen.client.wizard.JoinWizard.providerId())
+                    .withPersona(com.dwinovo.numen.client.wizard.JoinWizard.personaId())
+                    .withVoice(com.dwinovo.numen.client.wizard.JoinWizard.voiceId());
+            com.dwinovo.numen.client.agent.CompanionHome.bind(created.getUUID(), binding);
             // 把假人放进 Numen 的名册，聊天左栏/名册才看得到她
             com.dwinovo.numen.client.agent.NumenRoster.instance().replaceAll("client",
                     java.util.List.of(new com.dwinovo.numen.client.agent.NumenRoster.Entry(

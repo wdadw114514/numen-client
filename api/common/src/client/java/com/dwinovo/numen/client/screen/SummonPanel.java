@@ -286,6 +286,9 @@ public final class SummonPanel extends ModalCard {
         if (seedField != null) JoinWizard.seed(seedField.value());
         if (skinField != null) JoinWizard.skinUrl(skinField.value());
         if (serverField != null) JoinWizard.serverName(serverField.value());
+        JoinWizard.personaId(draft.personaId);
+        JoinWizard.providerId(draft.providerId);
+        JoinWizard.voiceId(draft.voiceId);
     }
 
     public void setBusy(String message) {

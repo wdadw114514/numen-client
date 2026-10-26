@@ -1,6 +1,7 @@
 package com.dwinovo.numen.sdk;
 
 import com.dwinovo.numen.entity.NumenPlayer;
+import com.dwinovo.numen.pathing.body.BodyView;
 import com.dwinovo.numen.mc.Completions;
 import com.dwinovo.numen.mc.Echo;
 import com.mojang.brigadier.CommandDispatcher;
@@ -25,9 +26,9 @@ import java.util.List;
  */
 public final class OnHer {
 
-    private final NumenPlayer her;
+    private final BodyView her;
 
-    OnHer(NumenPlayer her) {
+    OnHer(BodyView her) {
         this.her = her;
     }
 
@@ -38,11 +39,16 @@ public final class OnHer {
      * @param values  目标之后的值,各自需要时加引号
      */
     public List<String> run(String command, String... values) {
-        MinecraftServer server = her.level().getServer();
-        Echo echo = new Echo(server.shouldInformAdmins());
-        her.fakeClient().runCommand(echo::toHer, () -> server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack().withSource(echo).withCallback(echo), line(name(), command, values)));
-        return echo.lines();
+        String line = line(name(), command, values);
+        if (her.player() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            MinecraftServer server = serverPlayer.level().getServer();
+            Echo echo = new Echo(server.shouldInformAdmins());
+            ((NumenPlayer) serverPlayer).fakeClient().runCommand(echo::toHer, () -> server.getCommands()
+                    .performPrefixedCommand(server.createCommandSourceStack().withSource(echo).withCallback(echo), line));
+            return echo.lines();
+        }
+        her.sendCommand(line);
+        return List.of();
     }
 
     /**
@@ -50,7 +56,10 @@ public final class OnHer {
      * 模组自己维护的清单(有哪些模型、一个模型有哪些贴图)从这里问。
      */
     public List<String> next(String command, String... values) {
-        CommandDispatcher<CommandSourceStack> dispatcher = her.level().getServer().getCommands().getDispatcher();
+        if (!(her.player() instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+            return List.of();
+        }
+        CommandDispatcher<CommandSourceStack> dispatcher = serverPlayer.level().getServer().getCommands().getDispatcher();
         String typed = line(name(), command, values) + " ";
         List<String> out = new ArrayList<>();
         for (String text : Completions.texts(Completions.at(

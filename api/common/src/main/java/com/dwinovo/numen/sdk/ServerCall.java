@@ -169,10 +169,6 @@ public final class ServerCall {
      * 作用对象写死为她,够不着别人。
      */
     public OnHer onHer() {
-        if (her instanceof com.dwinovo.numen.entity.NumenPlayer serverBody) {
-            return new OnHer(serverBody);
-        }
-        throw new ApiError(ErrorKind.FAILED, "onHer needs a server-side body; a client body has no command authority",
-                null);
+        return new OnHer(her);
     }
 }

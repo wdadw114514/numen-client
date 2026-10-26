@@ -117,6 +117,13 @@ public interface BodyView {
         return player().hasLineOfSight(entity);
     }
 
+    /** 以她的身份发一条服务器命令；客户端假人走协议连接。 */
+    default void sendCommand(String command) {
+        if (player() instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection.sendCommand(command);
+        }
+    }
+
     /** 右键 {@code pos} 这一格(原版 {@code useItemOn} 那条路);客户端身体由协议连接实现。 */
     default boolean useItemOn(BlockPos pos, InteractionHand hand) {
         if (player() instanceof ServerPlayer serverPlayer) {

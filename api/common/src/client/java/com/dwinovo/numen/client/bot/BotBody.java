@@ -278,6 +278,11 @@ public final class BotBody implements BodyView {
     }
 
     @Override
+    public void sendCommand(String command) {
+        connection.sendCommand(command);
+    }
+
+    @Override
     public void clickSlot(int slot, int button, net.minecraft.world.inventory.ClickType type) {
         net.minecraft.world.inventory.AbstractContainerMenu menu = player.containerMenu;
         int size = menu.slots.size();
