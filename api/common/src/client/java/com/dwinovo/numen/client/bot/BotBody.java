@@ -170,11 +170,10 @@ public final class BotBody implements BodyView {
             return;
         }
         controls.apply(player);
-        var input = player.input;
-        physics.simulate(player.level(), player.getYRot(), player.getXRot(),
-                input.forwardImpulse > 0, input.forwardImpulse < 0,
-                input.leftImpulse > 0, input.leftImpulse < 0,
-                input.jumping, input.shiftKeyDown, player.isSprinting());
+        physics.simulate((ClientLevel) player.level(), player.getYRot(), player.getXRot(),
+                player.zza > 0, player.zza < 0,
+                player.xxa > 0, player.xxa < 0,
+                player.jumpingInput(), player.isShiftKeyDown(), player.isSprinting());
         player.setPos(physics.x, physics.y, physics.z);
         player.setDeltaMovement(physics.vx, physics.vy, physics.vz);
         player.setOnGround(physics.onGround);
