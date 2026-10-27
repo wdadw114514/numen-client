@@ -211,6 +211,7 @@ public final class CompanionTickDispatcher {
             BRAINS.remove(body.getUUID());
             brain = brainFor(body.getUUID());
         }
+        com.dwinovo.numen.sdk.Consents.tick(body);
         brain.tick(body);
     }
 

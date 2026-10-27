@@ -80,6 +80,10 @@ public final class ServerCall {
      * @param action 要做的事,如 {@code Action.useEntity(maid)}、{@code Action.command(…)}
      */
     public Pending<Void> authorize(Action action) {
+        // 客户端假人没有服务端权限层，也没有主人客户端可以征询：本地直接放行，避免调用永远挂着。
+        if (!(her.level() instanceof ServerLevel)) {
+            return Pending.of(null);
+        }
         Gate gate = Permission.gateFor(her);
         boolean live = her.level() instanceof ServerLevel;
         Verdict verdict = live
