@@ -19,7 +19,9 @@ public class NumenFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // 客户端假人：Lua 在本机跑，工具落在 BotBody 上，不送服务端
-        com.dwinovo.numen.permission.ConsentDesk.clientLine =\n                com.dwinovo.numen.client.consent.ClientConsentLine::new;\n        com.dwinovo.numen.program.ProgramUplink.localRunner = (companion, programId, code, done) -> {
+        com.dwinovo.numen.permission.ConsentDesk.clientLine =
+                com.dwinovo.numen.client.consent.ClientConsentLine::new;
+        com.dwinovo.numen.program.ProgramUplink.localRunner = (companion, programId, code, done) -> {
             // 只要假人的身体在，Lua 就本地跑，绝不送回服务端
             com.dwinovo.numen.client.bot.BotBody body = com.dwinovo.numen.client.bot.BotManager.body();
             if (body == null) {
