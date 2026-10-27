@@ -34,6 +34,7 @@ public final class BotBody implements BodyView {
     private final Map<Class<?>, Object> state = new HashMap<>();
     private final BotHands hands;
     private final UUID owner;
+    private final BotPhysics physics = new BotPhysics();
     private int lastTickCount = -1;
 
     private BotBody(BotPlayer player, BotConnection connection, UUID owner) {
@@ -41,6 +42,15 @@ public final class BotBody implements BodyView {
         this.connection = connection;
         this.owner = owner;
         this.hands = new BotHands(player, connection);
+        this.physics.x = player.getX();
+        this.physics.y = player.getY();
+        this.physics.z = player.getZ();
+        this.physics.vx = player.getDeltaMovement().x;
+        this.physics.vy = player.getDeltaMovement().y;
+        this.physics.vz = player.getDeltaMovement().z;
+        this.physics.yaw = player.getYRot();
+        this.physics.pitch = player.getXRot();
+        this.physics.onGround = player.onGround();
     }
 
     /** 连接进入 PLAY 之后建一具身体；世界还没加载或连接不在 PLAY 时 null。 */
@@ -159,12 +169,17 @@ public final class BotBody implements BodyView {
         if (!connection.dimensionMatches(player.level())) {
             return;
         }
-        // 客户端世界不一定 tick 手动加进来的实体：没 tick 就补一次，避免悬浮
-        if (player.tickCount == lastTickCount) {
-            player.tick();
-        }
-        lastTickCount = player.tickCount;
         controls.apply(player);
+        var input = player.input;
+        physics.simulate(player.level(), player.getYRot(), player.getXRot(),
+                input.forwardImpulse > 0, input.forwardImpulse < 0,
+                input.leftImpulse > 0, input.leftImpulse < 0,
+                input.jumping, input.shiftKeyDown, player.isSprinting());
+        player.setPos(physics.x, physics.y, physics.z);
+        player.setDeltaMovement(physics.vx, physics.vy, physics.vz);
+        player.setOnGround(physics.onGround);
+        player.setYRot(physics.yaw);
+        player.setXRot(physics.pitch);
         connection.sendPosition(player);
     }
 
