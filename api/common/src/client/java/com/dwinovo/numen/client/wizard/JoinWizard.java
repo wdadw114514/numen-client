@@ -52,6 +52,7 @@ public final class JoinWizard {
     private static boolean autoLoginSent;
     private static boolean loggedIn;
     private static long lastReconnectMs;
+    private static long loginSentMs;
     private static final java.util.List<String> SERVERS = new java.util.ArrayList<>();
     private static String code = "";
     private static String status = "";
@@ -257,8 +258,12 @@ public final class JoinWizard {
                 // 先自动登录，登录成功（或不需要登录）之后才发 /server
                 if (!autoLoginSent && !password.isBlank()) {
                     autoLoginSent = true;
+                    loginSentMs = System.currentTimeMillis();
                     bot.sendCommand("login " + password);
                     status = "自动登录中…";
+                }
+                if (autoLoginSent && !loggedIn && System.currentTimeMillis() - loginSentMs > 2000) {
+                    loggedIn = true;
                 }
                 if (!loggedIn && password.isBlank()) {
                     loggedIn = true;

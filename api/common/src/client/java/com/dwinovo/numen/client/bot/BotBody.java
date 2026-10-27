@@ -34,6 +34,7 @@ public final class BotBody implements BodyView {
     private final Map<Class<?>, Object> state = new HashMap<>();
     private final BotHands hands;
     private final UUID owner;
+    private int lastTickCount = -1;
 
     private BotBody(BotPlayer player, BotConnection connection, UUID owner) {
         this.player = player;
@@ -158,8 +159,12 @@ public final class BotBody implements BodyView {
         if (!connection.dimensionMatches(player.level())) {
             return;
         }
+        // 客户端世界不一定 tick 手动加进来的实体：没 tick 就补一次，避免悬浮
+        if (player.tickCount == lastTickCount) {
+            player.tick();
+        }
+        lastTickCount = player.tickCount;
         controls.apply(player);
-        // 物理由客户端世界刻驱动；这里按原版 sendPosition 的规则发包
         connection.sendPosition(player);
     }
 
