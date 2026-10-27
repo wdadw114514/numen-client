@@ -48,7 +48,7 @@ public final class InteractEntityCompanionTask extends InReachTask<InteractEntit
         return List.of(
                 // Resolve + cache the target; fail fast if it despawned / moved out of range.
                 () -> {
-                    entity = ((ServerLevel) player.level()).getEntity(r.entityId);
+                    entity = player.level().getEntity(r.entityId);
                     return (entity == null || !entity.isAlive())
                             ? new Precondition.Failure("no entity with id " + r.entityId
                                     + " nearby (it may have despawned or moved out of range)",

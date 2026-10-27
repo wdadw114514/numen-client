@@ -200,7 +200,7 @@ public final class FollowCompanionTask extends AbstractCompanionTask<FollowTaskR
             var owner = companion.resolveOwnerPlayer();
             return owner == null || owner.level() != companion.level() ? null : owner;
         }
-        Entity e = ((ServerLevel) companion.level()).getEntity(r.target);
+        Entity e = companion.level().getEntity(r.target);
         return e == null || e.isRemoved() ? null : e;
     }
 
