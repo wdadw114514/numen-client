@@ -91,7 +91,7 @@ public final class ConsentDesk {
     }
 
     /** 登记处与外界的接线:时钟、主人在不在、把请求推给主人或撤回、把记住的规则写进主人的表。 */
-    interface Line {
+    public interface Line {
         long gameTime();
 
         boolean ownerPresent();
@@ -104,7 +104,7 @@ public final class ConsentDesk {
         void remember(List<Rule> allow);
     }
 
-    private static final AtomicLong IDS = new AtomicLong();
+    /** 客户端假人没有服务端登记处：由客户端注入一条本地线（对话流卡片）。 */\n    public static volatile java.util.function.Function<BodyView, Line> clientLine;\n\n    private static final AtomicLong IDS = new AtomicLong();
 
     private final UUID companion;
     private final Line line;
@@ -121,7 +121,7 @@ public final class ConsentDesk {
 
     /** 这具身体的登记处(首次取时建)。主线程。 */
     public static ConsentDesk of(BodyView companion) {
-        return companion.state(ConsentDesk.class, () -> new ConsentDesk(companion.getUUID(), new BodyLine(companion)));
+        return companion.state(ConsentDesk.class, () -> new ConsentDesk(companion.getUUID(),\n                clientLine != null && !(companion.level() instanceof net.minecraft.server.level.ServerLevel)\n                        ? clientLine.apply(companion) : new BodyLine(companion)));
     }
 
     /**

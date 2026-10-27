@@ -218,7 +218,7 @@ public final class ConsentCards {
             said = said.substring(0, ConsentReplyPayload.MAX_NOTE_LENGTH);
         }
         ConsentAnswer.Decision decision = key == NOTE ? ConsentAnswer.Decision.DENY : DECISIONS[key];
-        NumenNetwork.sendToServer(new ConsentReplyPayload(card.companion(), card.request.id(), decision, said));
+        var body = com.dwinovo.numen.client.bot.BotManager.body();\n        if (body != null && body.getUUID().equals(card.companion())) {\n            ConsentDesk.of(body).answer(card.request.id(), decision, said);\n            card.settle();\n            return;\n        }\n        NumenNetwork.sendToServer(new ConsentReplyPayload(card.companion(), card.request.id(), decision, said));
         card.chosen = key;
         card.note = said;
         card.settle();
