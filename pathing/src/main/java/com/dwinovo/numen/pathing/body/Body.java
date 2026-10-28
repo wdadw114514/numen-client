@@ -2,7 +2,7 @@ package com.dwinovo.numen.pathing.body;
 
 import com.dwinovo.numen.pathing.plan.BodySnapshot;
 
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * 端口:要驱动的身体。模块从这里拿到身体本身(视角、手都落在它上面)、它的键盘与它此刻的身体快照。
@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public interface Body {
 
-    ServerPlayer entity();
+    Player entity();
 
     /** 这具身体的键盘。 */
     Controls controls();

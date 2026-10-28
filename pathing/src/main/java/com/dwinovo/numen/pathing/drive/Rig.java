@@ -13,7 +13,7 @@ import com.dwinovo.numen.pathing.plan.Materials;
 import com.dwinovo.numen.pathing.plan.TerrainPolicy;
 import com.dwinovo.numen.pathing.plan.Threats;
 
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
@@ -23,7 +23,7 @@ import net.minecraft.world.phys.BlockHitResult;
 final class Rig {
 
     final Body body;
-    final ServerPlayer entity;
+    final Player entity;
     /** 身体的键盘(一具身体一副,宿主每刻在身体的物理步进里落一次)。 */
     final Controls keys;
     final Effector hands;

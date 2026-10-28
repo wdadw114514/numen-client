@@ -5,7 +5,7 @@ import com.dwinovo.numen.pathing.body.Controls;
 import com.dwinovo.numen.pathing.body.Controls.Key;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -33,7 +33,7 @@ final class Steering {
     private Steering() {}
 
     /** 不减速地朝 {@code (x, z)} 走。 */
-    static void pass(ServerPlayer body, Controls keys, double x, double z) {
+    static void pass(Player body, Controls keys, double x, double z) {
         if (body.onGround()) {
             Aim.faceToward(body, x, z);
         }
@@ -45,7 +45,7 @@ final class Steering {
      * 朝 {@code (x, z)} 走,沿那个方向的速度不超过 {@code speed}(格每刻):低于它就按前进,否则松开。走出边沿时用它压住
      * 冲出去的速度,离地之后再由 {@link #stop} 在空中修正落点。
      */
-    static void approach(ServerPlayer body, Controls keys, double x, double z, double speed) {
+    static void approach(Player body, Controls keys, double x, double z, double speed) {
         Aim.faceToward(body, x, z);
         double yaw = Math.toRadians(body.getYRot());
         Vec3 motion = body.getDeltaMovement();
@@ -55,7 +55,7 @@ final class Steering {
     }
 
     /** 按住前进的下一刻,身体沿它此刻朝着的方向会挪多远:原版先把这一刻的输入加速度加进速度,再移动。 */
-    static double nextStride(ServerPlayer body) {
+    static double nextStride(Player body) {
         double yaw = Math.toRadians(body.getYRot());
         Vec3 motion = body.getDeltaMovement();
         double along = motion.x * -Math.sin(yaw) + motion.z * Math.cos(yaw);
@@ -67,7 +67,7 @@ final class Steering {
      *
      * @return 已经停在那一点上
      */
-    static boolean stop(ServerPlayer body, Controls keys, double x, double z, double landingY) {
+    static boolean stop(Player body, Controls keys, double x, double z, double landingY) {
         double dx = x - body.getX();
         double dz = z - body.getZ();
         double distance = Math.sqrt(dx * dx + dz * dz);
@@ -147,13 +147,13 @@ final class Steering {
     }
 
     /** 地上按前进一刻加的速度:原版 {@code getFrictionInfluencedSpeed} 乘输入的 0.98。 */
-    private static double groundAccel(ServerPlayer body) {
+    private static double groundAccel(Player body) {
         double f = friction(body);
         return body.getSpeed() * (0.21600002 / (f * f * f)) * 0.98;
     }
 
     /** 脚下影响移动的那一格的摩擦(原版看脚下半格处)。 */
-    private static double friction(ServerPlayer body) {
+    private static double friction(Player body) {
         BlockPos below = BlockPos.containing(body.getX(), body.getY() - 0.5000001, body.getZ());
         float friction = body.level().getBlockState(below).getBlock().getFriction();
         return friction > 0 ? friction : DEFAULT_FRICTION;

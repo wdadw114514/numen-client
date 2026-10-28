@@ -39,7 +39,19 @@ public final class CompanionPorts {
             return Navigator.of(body, new Ports(CompanionHands.of(player), terrain(player),
                     materials(player, materials), threats));
         }
-        throw new UnsupportedOperationException("client navigation driver is not wired yet");
+        com.dwinovo.numen.pathing.body.Body adapter = new com.dwinovo.numen.pathing.body.Body() {
+            @Override
+            public net.minecraft.world.entity.player.Player entity() {
+                return player.player();
+            }
+
+            @Override
+            public com.dwinovo.numen.pathing.body.Controls controls() {
+                return player.controls();
+            }
+        };
+        return Navigator.of(adapter, new Ports(CompanionHands.of(player), terrain(player),
+                materials(player, materials), threats));
     }
 
     /** 按 {@code spec} 与她此刻的身体、端口组一份成本模型:估一格挖多久、许不许挖,与寻路用的是同一份定价。 */

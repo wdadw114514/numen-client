@@ -11,7 +11,7 @@ import com.dwinovo.numen.pathing.plan.ToolChoice;
 import com.dwinovo.numen.pathing.world.Faces;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -82,7 +82,7 @@ final class Work {
     // ==================== 挖 ====================
 
     private Beat dig(Edit.Dig edit) {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         BlockPos pos = edit.pos();
         Vec3 point = Aim.point(body, pos);
         if (point == null) {
@@ -112,7 +112,7 @@ final class Work {
     // ==================== 放 ====================
 
     private Beat place(Edit.Place edit) {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         BlockPos pos = edit.pos();
         Hotbar.Grip grip = Hotbar.grip(body, edit.block().asItem());
         rig.act(grip.action());
@@ -154,7 +154,7 @@ final class Work {
      * 就是落点那一格。
      */
     private Beat pour(Edit.Catch caught) {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         Hotbar.Grip grip = Hotbar.grip(body, Items.WATER_BUCKET);
         rig.act(grip.action());
         if (!grip.ready()) {
@@ -187,7 +187,7 @@ final class Work {
      * 落进水里之后把水收回桶里:空桶拿在手上,低头看着脚下这一格的水,右键——原版空桶顺着视线舀起碰到的第一格水源。
      */
     private Beat scoop(Edit.Catch caught) {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         BlockPos pos = caught.pos();
         if (!rig.world().getBlockState(pos).is(Blocks.WATER)) {
             scooped = true;

@@ -1,6 +1,6 @@
 package com.dwinovo.numen.pathing.body;
 
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -22,7 +22,9 @@ public final class Physics {
 
     /** 走这一刻。 */
     public static void step(Body body) {
-        ServerPlayer entity = body.entity();
+        if (!(body.entity() instanceof net.minecraft.server.level.ServerPlayer entity)) {
+            return;
+        }
         body.controls().apply(entity);
         Vec3 before = entity.position();
         entity.doTick();

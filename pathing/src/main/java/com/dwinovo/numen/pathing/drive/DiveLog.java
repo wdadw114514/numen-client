@@ -6,7 +6,7 @@ import java.util.List;
 import com.dwinovo.numen.pathing.world.Semantics;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * 这次导航里身体真在水下憋过的气:眼睛换不了气(第 0 层 {@link Semantics#breathless},与规划算憋气同一个判据)起、到眼睛
@@ -34,7 +34,7 @@ public final class DiveLog {
     private int lowest;
 
     /** 看这一刻的身体;一段水下在这一刻结束时交出它,否则 null。 */
-    Dive observe(ServerPlayer body) {
+    Dive observe(Player body) {
         boolean under = Semantics.breathless(body.level(), body.getX(), body.getEyeY(), body.getZ());
         if (under) {
             if (from == null) {
@@ -57,7 +57,7 @@ public final class DiveLog {
     }
 
     /** 到此刻为止的每一段,按先后;此刻还在水下的那一段算到此刻为止。 */
-    List<Dive> dives(ServerPlayer body) {
+    List<Dive> dives(Player body) {
         List<Dive> out = new ArrayList<>(dives);
         if (from != null) {
             out.add(new Dive(from, last, ticks, lowest, body.getMaxAirSupply()));

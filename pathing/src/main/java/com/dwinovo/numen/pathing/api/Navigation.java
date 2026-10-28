@@ -8,7 +8,7 @@ import com.dwinovo.numen.pathing.search.Goal;
 import com.dwinovo.numen.pathing.search.Pending;
 import com.dwinovo.numen.pathing.search.Searches;
 
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * 一次在走的导航。宿主每个服务端刻调一次 {@link #tick}(在世界所在的线程上),直到它不再是 {@code RUNNING};
@@ -20,7 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 public final class Navigation {
 
     private final Driver driver;
-    private final ServerPlayer entity;
+    private final Player entity;
     private final String who;
     /** 出发时的游戏刻与墙钟:结局里对比用了几刻、几秒,看得出刻速。 */
     private final long startTick;
@@ -28,7 +28,7 @@ public final class Navigation {
     private Pending<Outcome> diagnosis;
     private NavStatus status = NavStatus.RUNNING;
 
-    Navigation(Driver driver, ServerPlayer entity) {
+    Navigation(Driver driver, Player entity) {
         this.driver = driver;
         this.entity = entity;
         this.who = PathLog.who(entity);

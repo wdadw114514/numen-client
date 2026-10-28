@@ -30,7 +30,7 @@ import com.dwinovo.numen.pathing.world.BodyStats;
 import com.dwinovo.numen.pathing.world.Sight;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -327,7 +327,7 @@ public final class Driver {
     private BodyAction.Dismounted pendingDismount;
 
     private void drive() {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         BlockPos node = node();
         if (legs.isEmpty() && !complete || cur >= legs.size() && !complete) {
             // 没有路,或路走完了还没到:等在飞的搜索,没有就从脚下搜
@@ -381,7 +381,7 @@ public final class Driver {
 
     /** 身体此刻所在的节点(与搜索定起点同一条规则);悬在半空、卡在方块里为 null。 */
     private BlockPos node() {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         BodyStats stats = rig.snapshot().stats();
         return Origin.of(rig.world(), stats, body.getX(), body.getY(), body.getZ()).orElse(null);
     }
@@ -391,7 +391,7 @@ public final class Driver {
      * 挪过去,挪到了就能从那里搜。悬在半空、旁边都待不住时什么也不做。
      */
     private void stepOut() {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         if (!body.onGround()) {
             return;
         }
@@ -421,7 +421,7 @@ public final class Driver {
 
     /** 身体此刻稳稳地以 {@code kind} 的方式待着。 */
     private boolean settled(Stance.Kind kind) {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         return switch (kind) {
             case GROUND -> body.onGround();
             case CLIMBING -> body.onClimbable();
@@ -483,7 +483,7 @@ public final class Driver {
 
     /** 路线走完了:在终点上停稳,再看目标自己的判定与视线;路过的导航走进目标就算到了。 */
     private void arrive(BlockPos node) {
-        ServerPlayer body = rig.entity;
+        Player body = rig.entity;
         BlockPos end = legs.isEmpty() ? start : legs.get(legs.size() - 1).maneuver().to();
         Stance endStance = legs.isEmpty() ? startStance : legs.get(legs.size() - 1).maneuver().landing();
         step = null;

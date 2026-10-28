@@ -18,7 +18,7 @@ import com.dwinovo.numen.pathing.search.Searches;
 import com.dwinovo.numen.pathing.search.WorldSnapshot;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * 寻路的门面:一具身体加宿主的端口。规划是查询——{@link #plan} 只搜不走,不占身体、不碰世界,交出候选路线与预算账;
@@ -43,7 +43,7 @@ public final class Navigator {
 
     /** 只搜不走:从身体脚下(或接在 {@link PlanQuery#after} 那条路线后面)出候选路线。 */
     public Planning plan(PlanQuery query) {
-        ServerPlayer entity = body.entity();
+        Player entity = body.entity();
         BodySnapshot snapshot = body.snapshot();
         String who = PathLog.who(entity);
         BlockPos from;
@@ -75,7 +75,7 @@ public final class Navigator {
 
     /** 去:交出一次在走的导航,宿主每刻 {@link Navigation#tick} 一次。 */
     public Navigation drive(NavRequest request) {
-        ServerPlayer entity = body.entity();
+        Player entity = body.entity();
         PathLog.debug("{} 出发 去 {} {} 预算 {}{} 刻速 {} {}", PathLog.who(entity), request.goal(),
                 PathLog.spec(request.spec()), request.budget(),
                 request.route() != null ? " 先照候选 " + PathLog.route(request.route()) : "",

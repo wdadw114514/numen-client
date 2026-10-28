@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -77,7 +77,7 @@ public final class PathLog {
     // ==================== 事实的写法 ====================
 
     /** 谁:身体名,加 UUID 前六位(同名的身体分得开)。 */
-    public static String who(ServerPlayer body) {
+    public static String who(Player body) {
         return body.getScoreboardName() + "#" + body.getStringUUID().substring(0, 6);
     }
 
@@ -178,7 +178,7 @@ public final class PathLog {
     }
 
     /** 身体此刻的状态:精确位置、在地上还是空中、泡没泡水、眼睛在不在水里、氧气、血量。 */
-    public static String body(ServerPlayer body) {
+    public static String body(Player body) {
         return "身体 " + at(body.position()) + (body.onGround() ? " 地上" : " 空中") + (body.isInWater() ? " 水里" : "")
                 + (body.isEyeInFluid(net.minecraft.tags.FluidTags.WATER) ? " 眼在水里" : "")
                 + " 氧气 " + body.getAirSupply() + "/" + body.getMaxAirSupply() + " 血 " + num(body.getHealth());
