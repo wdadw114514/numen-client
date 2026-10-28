@@ -114,7 +114,7 @@ final class Work {
     private Beat place(Edit.Place edit) {
         Player body = rig.entity;
         BlockPos pos = edit.pos();
-        Hotbar.Grip grip = Hotbar.grip(body, edit.block().asItem());
+        Hotbar.Grip grip = Hotbar.grip(rig.body, edit.block().asItem());
         rig.act(grip.action());
         if (!grip.ready()) {
             return new Beat.Blocked(new Blockage(pos, rig.world().getBlockState(pos), move, null, Hitch.NO_MATERIALS));
@@ -155,7 +155,7 @@ final class Work {
      */
     private Beat pour(Edit.Catch caught) {
         Player body = rig.entity;
-        Hotbar.Grip grip = Hotbar.grip(body, Items.WATER_BUCKET);
+        Hotbar.Grip grip = Hotbar.grip(rig.body, Items.WATER_BUCKET);
         rig.act(grip.action());
         if (!grip.ready()) {
             return new Beat.Blocked(new Blockage(caught.pos(), rig.world().getBlockState(caught.pos()), move, null,
@@ -193,7 +193,7 @@ final class Work {
             scooped = true;
             return Beat.WORKED;
         }
-        Hotbar.Grip grip = Hotbar.grip(body, Items.BUCKET);
+        Hotbar.Grip grip = Hotbar.grip(rig.body, Items.BUCKET);
         rig.act(grip.action());
         if (!grip.ready()) {
             return new Beat.Blocked(new Blockage(pos, rig.world().getBlockState(pos), move, null, Hitch.NO_MATERIALS));
