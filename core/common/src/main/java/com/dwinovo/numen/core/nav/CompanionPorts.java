@@ -81,6 +81,11 @@ public final class CompanionPorts {
         public void sendCommand(String command) {
             delegate.sendCommand(command);
         }
+
+        @Override
+        public java.util.UUID getOwnerUuid() {
+            return delegate.getOwnerUuid();
+        }
     }
 
     /** 按 {@code spec} 与她此刻的身体、端口组一份成本模型:估一格挖多久、许不许挖,与寻路用的是同一份定价。 */
