@@ -27,6 +27,28 @@ public final class Hotbar {
     private Hotbar() {}
 
     /** 身体无关的版本:服务端身体走原版按键,客户端身体交给它自己的协议实现。 */
+    public static Optional<BodyAction> hold(com.dwinovo.numen.pathing.body.Body body, int slot) {
+        if (body instanceof BodyView view) {
+            return hold(view, slot);
+        }
+        if (body.entity() instanceof ServerPlayer serverPlayer) {
+            return hold(serverPlayer, slot);
+        }
+        return Optional.empty();
+    }
+
+    /** 身体无关的版本:服务端身体走原版按键,客户端身体交给它自己的协议实现。 */
+    public static Grip grip(com.dwinovo.numen.pathing.body.Body body, Item item) {
+        if (body instanceof BodyView view) {
+            return grip(view, item);
+        }
+        if (body.entity() instanceof ServerPlayer serverPlayer) {
+            return grip(serverPlayer, item);
+        }
+        return new Grip(null, null);
+    }
+
+    /** 身体无关的版本:服务端身体走原版按键,客户端身体交给它自己的协议实现。 */
     public static Optional<BodyAction> hold(BodyView body, int slot) {
         if (body.player() instanceof ServerPlayer serverPlayer) {
             return hold(serverPlayer, slot);

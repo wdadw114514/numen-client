@@ -39,19 +39,48 @@ public final class CompanionPorts {
             return Navigator.of(body, new Ports(CompanionHands.of(player), terrain(player),
                     materials(player, materials), threats));
         }
-        com.dwinovo.numen.pathing.body.Body adapter = new com.dwinovo.numen.pathing.body.Body() {
-            @Override
-            public net.minecraft.world.entity.player.Player entity() {
-                return player.player();
-            }
-
-            @Override
-            public com.dwinovo.numen.pathing.body.Controls controls() {
-                return player.controls();
-            }
-        };
-        return Navigator.of(adapter, new Ports(CompanionHands.of(player), terrain(player),
+        return Navigator.of(new ViewBody(player), new Ports(CompanionHands.of(player), terrain(player),
                 materials(player, materials), threats));
+    }
+
+    /** 客户端假人的身体：寻路只认 Body，物品栏/输入仍交给它自己的 BodyView 实现。 */
+    private static final class ViewBody implements com.dwinovo.numen.pathing.body.Body, BodyView {
+
+        private final BodyView delegate;
+
+        ViewBody(BodyView delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public net.minecraft.world.entity.player.Player entity() {
+            return delegate.player();
+        }
+
+        @Override
+        public net.minecraft.world.entity.player.Player player() {
+            return delegate.player();
+        }
+
+        @Override
+        public net.minecraft.world.level.Level level() {
+            return delegate.level();
+        }
+
+        @Override
+        public com.dwinovo.numen.pathing.body.Controls controls() {
+            return delegate.controls();
+        }
+
+        @Override
+        public <T> T state(Class<T> type, java.util.function.Supplier<T> init) {
+            return delegate.state(type, init);
+        }
+
+        @Override
+        public void sendCommand(String command) {
+            delegate.sendCommand(command);
+        }
     }
 
     /** 按 {@code spec} 与她此刻的身体、端口组一份成本模型:估一格挖多久、许不许挖,与寻路用的是同一份定价。 */

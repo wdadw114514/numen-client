@@ -68,7 +68,7 @@ final class Work {
             if (edit instanceof Edit.Dig dig) {
                 // 先把挑中的工具拿到手上:按此刻的身体挑,与规划定价是同一个选择
                 BlockState state = rig.world().getBlockState(dig.pos());
-                rig.act(Hotbar.hold(rig.entity, new ToolChoice(rig.snapshot()).best(state).slot()).orElse(null));
+                rig.act(Hotbar.hold(rig.body, new ToolChoice(rig.snapshot()).best(state).slot()).orElse(null));
             }
         }
         return switch (edit) {

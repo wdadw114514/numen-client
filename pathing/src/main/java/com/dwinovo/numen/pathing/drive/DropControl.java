@@ -33,7 +33,7 @@ final class DropControl extends Control {
     private Beat water() {
         boolean up = rig.entity.getY() > m.landing().feetY() + DROPPED;
         if (up && rig.entity.onGround()) {
-            rig.act(com.dwinovo.numen.pathing.body.Hotbar.grip(rig.entity,
+            rig.act(com.dwinovo.numen.pathing.body.Hotbar.grip(rig.body,
                     net.minecraft.world.item.Items.WATER_BUCKET).action());
             return Beat.IDLE;
         }
